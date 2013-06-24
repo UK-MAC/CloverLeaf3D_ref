@@ -31,12 +31,12 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,field,              
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_snd_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Pack 
 
@@ -62,7 +62,7 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,field,              
   DO k=y_min-depth,y_max+y_inc+depth
     DO j=1,depth
       index=buffer_offset + j+(k+depth-1)*depth
-      left_snd_buffer(index)=field(x_min+x_inc-1+j,k)
+      left_snd_buffer(index)=field(x_min+x_inc-1+j,k,l)
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -77,12 +77,12 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,            
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_rcv_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -108,7 +108,7 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,            
   DO k=y_min-depth,y_max+y_inc+depth
     DO j=1,depth
       index= buffer_offset + j+(k+depth-1)*depth
-      field(x_min-j,k)=left_rcv_buffer(index)
+      field(x_min-j,k,l)=left_rcv_buffer(index)
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -123,12 +123,12 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,             
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: right_snd_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Pack 
 
@@ -154,7 +154,7 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,             
   DO k=y_min-depth,y_max+y_inc+depth
     DO j=1,depth
       index= buffer_offset + j+(k+depth-1)*depth
-      right_snd_buffer(index)=field(x_max+1-j,k)
+      right_snd_buffer(index)=field(x_max+1-j,k,l)
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -169,12 +169,12 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,           
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: right_rcv_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -200,7 +200,7 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,           
   DO k=y_min-depth,y_max+y_inc+depth
     DO j=1,depth
       index= buffer_offset + j+(k+depth-1)*depth
-      field(x_max+x_inc+j,k)=right_rcv_buffer(index)
+      field(x_max+x_inc+j,k,l)=right_rcv_buffer(index)
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -215,12 +215,12 @@ SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,               
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: top_snd_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Pack 
 
@@ -246,7 +246,7 @@ SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,               
 !$OMP PARALLEL DO PRIVATE(index)
     DO j=x_min-depth,x_max+x_inc+depth
       index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
-      top_snd_buffer(index)=field(j,y_max+1-k)
+      top_snd_buffer(index)=field(j,y_max+1-k,l)
     ENDDO
 !$OMP END PARALLEL DO
   ENDDO
@@ -261,12 +261,12 @@ SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,             
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: top_rcv_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -292,7 +292,7 @@ SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,             
 !$OMP PARALLEL DO PRIVATE(index)
     DO j=x_min-depth,x_max+x_inc+depth
       index= buffer_offset + j + depth+(k-1)*(x_max+x_inc+(2*depth))
-      field(j,y_max+y_inc+k)=top_rcv_buffer(index)
+      field(j,y_max+y_inc+k,l)=top_rcv_buffer(index)
     ENDDO
 !$OMP END PARALLEL DO
   ENDDO
@@ -307,12 +307,12 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,            
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_snd_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Pack 
 
@@ -338,7 +338,7 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,            
   DO k=1,depth
     DO j=x_min-depth,x_max+x_inc+depth
       index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
-      bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k)
+      bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k,l)
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO
@@ -353,12 +353,12 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,          
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_rcv_buffer(:)
 
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -384,7 +384,7 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,          
 !$OMP PARALLEL DO PRIVATE(index)
     DO j=x_min-depth,x_max+x_inc+depth
       index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
-      field(j,y_min-k)=bottom_rcv_buffer(index)
+      field(j,y_min-k,l)=bottom_rcv_buffer(index)
     ENDDO
 !$OMP END PARALLEL DO
   ENDDO
@@ -402,10 +402,10 @@ SUBROUTINE pack_left_right_buffers(x_min,x_max,y_min,y_max,              &
   INTEGER      :: chunk_left,chunk_right,external_face
   INTEGER      :: x_inc,y_inc,depth
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_snd_buffer(:),right_snd_buffer(:)
 
-  INTEGER      :: j,k,index
+  INTEGER      :: j,k,l,index
 
 !$OMP PARALLEL
   IF(chunk_left.NE.external_face) THEN
@@ -413,7 +413,7 @@ SUBROUTINE pack_left_right_buffers(x_min,x_max,y_min,y_max,              &
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
         index=j+(k+depth-1)*depth
-        left_snd_buffer(index)=field(x_min+x_inc-1+j,k)
+        left_snd_buffer(index)=field(x_min+x_inc-1+j,k,l)
       ENDDO
     ENDDO
 !$OMP END DO
@@ -423,7 +423,7 @@ SUBROUTINE pack_left_right_buffers(x_min,x_max,y_min,y_max,              &
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
         index=j+(k+depth-1)*depth
-        right_snd_buffer(index)=field(x_max+1-j,k)
+        right_snd_buffer(index)=field(x_max+1-j,k,l)
       ENDDO
     ENDDO
 !$OMP END DO
@@ -443,10 +443,10 @@ SUBROUTINE unpack_left_right_buffers(x_min,x_max,y_min,y_max,              &
   INTEGER      :: chunk_left,chunk_right,external_face
   INTEGER      :: x_inc,y_inc,depth
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_rcv_buffer(:),right_rcv_buffer(:)
 
-  INTEGER      :: j,k,index
+  INTEGER      :: j,k,l,index
 
 !$OMP PARALLEL
   IF(chunk_left.NE.external_face) THEN
@@ -454,7 +454,7 @@ SUBROUTINE unpack_left_right_buffers(x_min,x_max,y_min,y_max,              &
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
         index=j+(k+depth-1)*depth
-        field(x_min-j,k)=left_rcv_buffer(index)
+        field(x_min-j,k,l)=left_rcv_buffer(index)
       ENDDO
     ENDDO
 !$OMP END DO
@@ -464,7 +464,7 @@ SUBROUTINE unpack_left_right_buffers(x_min,x_max,y_min,y_max,              &
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
         index=j+(k+depth-1)*depth
-        field(x_max+x_inc+j,k)=right_rcv_buffer(index)
+        field(x_max+x_inc+j,k,l)=right_rcv_buffer(index)
       ENDDO
     ENDDO
 !$OMP END DO
@@ -484,10 +484,10 @@ SUBROUTINE pack_top_bottom_buffers(x_min,x_max,y_min,y_max,              &
   INTEGER      :: chunk_bottom,chunk_top,external_face
   INTEGER      :: x_inc,y_inc,depth
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_snd_buffer(:),top_snd_buffer(:)
 
-  INTEGER      :: j,k,index
+  INTEGER      :: j,k,l,index
 
 !$OMP PARALLEL
   IF(chunk_bottom.NE.external_face) THEN
@@ -495,7 +495,7 @@ SUBROUTINE pack_top_bottom_buffers(x_min,x_max,y_min,y_max,              &
 !$OMP DO PRIVATE(index)
       DO j=x_min-depth,x_max+x_inc+depth
         index=j+depth+(k-1)*(x_max+x_inc+(2*depth))
-        bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k)
+        bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k,l)
       ENDDO
 !$OMP END DO
     ENDDO
@@ -505,7 +505,7 @@ SUBROUTINE pack_top_bottom_buffers(x_min,x_max,y_min,y_max,              &
 !$OMP DO PRIVATE(index)
       DO j=x_min-depth,x_max+x_inc+depth
         index=j+depth+(k-1)*(x_max+x_inc+(2*depth))
-        top_snd_buffer(index)=field(j,y_max+1-k)
+        top_snd_buffer(index)=field(j,y_max+1-k,l)
       ENDDO
 !$OMP END DO
     ENDDO
@@ -525,10 +525,10 @@ SUBROUTINE unpack_top_bottom_buffers(x_min,x_max,y_min,y_max,             &
   INTEGER      :: chunk_bottom,chunk_top,external_face
   INTEGER      :: x_inc,y_inc,depth
 
-  REAL(KIND=8) :: field(-1:,-1:) ! This seems to work for any type of mesh data
+  REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_rcv_buffer(:),top_rcv_buffer(:)
 
-  INTEGER      :: j,k,index
+  INTEGER      :: j,k,l,index
 
 !$OMP PARALLEL
   IF(chunk_bottom.NE.external_face) THEN
@@ -536,7 +536,7 @@ SUBROUTINE unpack_top_bottom_buffers(x_min,x_max,y_min,y_max,             &
 !$OMP DO PRIVATE(index)
       DO j=x_min-depth,x_max+x_inc+depth
         index=j+depth+(k-1)*(x_max+x_inc+(2*depth))
-        field(j,y_min-k)=bottom_rcv_buffer(index)
+        field(j,y_min-k,l)=bottom_rcv_buffer(index)
       ENDDO
 !$OMP END DO
     ENDDO
@@ -546,7 +546,7 @@ SUBROUTINE unpack_top_bottom_buffers(x_min,x_max,y_min,y_max,             &
 !$OMP DO PRIVATE(index)
       DO j=x_min-depth,x_max+x_inc+depth
         index=j+depth+(k-1)*(x_max+x_inc+(2*depth))
-        field(j,y_max+y_inc+k)=top_rcv_buffer(index)
+        field(j,y_max+y_inc+k,l)=top_rcv_buffer(index)
       ENDDO
 !$OMP END DO
     ENDDO

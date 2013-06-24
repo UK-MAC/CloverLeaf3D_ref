@@ -32,13 +32,16 @@ MODULE data_module
 
    INTEGER,      PARAMETER :: g_name_len_max=255 &
                              ,g_xdir=1           &
-                             ,g_ydir=2
+                             ,g_ydir=2           &
+                             ,g_zdir=3
 
    ! These two need to be kept consistent with update_halo
    INTEGER,      PARAMETER :: CHUNK_LEFT   =1    &
                              ,CHUNK_RIGHT  =2    &
                              ,CHUNK_BOTTOM =3    &
                              ,CHUNK_TOP    =4    &
+                             ,CHUNK_BACK   =6    &
+                             ,CHUNK_FRONT  =7    &
                              ,EXTERNAL_FACE=-1
 
    INTEGER,         PARAMETER :: FIELD_DENSITY0   = 1         &
@@ -52,23 +55,29 @@ MODULE data_module
                                 ,FIELD_XVEL1      = 9         &
                                 ,FIELD_YVEL0      =10         &
                                 ,FIELD_YVEL1      =11         &
-                                ,FIELD_VOL_FLUX_X =12         &
-                                ,FIELD_VOL_FLUX_Y =13         &
-                                ,FIELD_MASS_FLUX_X=14         &
-                                ,FIELD_MASS_FLUX_Y=15         &
-                                ,NUM_FIELDS       =15
+                                ,FIELD_ZVEL0      =12         &
+                                ,FIELD_ZVEL1      =13         &
+                                ,FIELD_VOL_FLUX_X =14         &
+                                ,FIELD_VOL_FLUX_Y =15         &
+                                ,FIELD_VOL_FLUX_Z =16         &
+                                ,FIELD_MASS_FLUX_X=17         &
+                                ,FIELD_MASS_FLUX_Y=18         &
+                                ,FIELD_MASS_FLUX_Z=19         &
+                                ,NUM_FIELDS       =20
 
    INTEGER,         PARAMETER :: CELL_DATA     = 1,        &
                                  VERTEX_DATA   = 2,        &
                                  X_FACE_DATA   = 3,        &
-                                 y_FACE_DATA   = 4
+                                 y_FACE_DATA   = 4,        &
+                                 z_FACE_DATA   = 5
 
 
    ! Time step control constants
    INTEGER,        PARAMETER ::  SOUND = 1     &
                                 ,X_VEL = 2     &
                                 ,Y_VEL = 3     &
-                                ,DIVERG= 4
+                                ,Z_VEL = 4     &
+                                ,DIVERG= 5
 
    INTEGER,                      PARAMETER :: g_rect=1 &
                                 ,g_circ=2 &

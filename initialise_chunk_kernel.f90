@@ -23,37 +23,47 @@ MODULE initialise_chunk_kernel_module
 
 CONTAINS
 
-SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,       &
-                                   xmin,ymin,dx,dy,               &
-                                   vertexx,                       &
-                                   vertexdx,                      &
-                                   vertexy,                       &
-                                   vertexdy,                      &
-                                   cellx,                         &
-                                   celldx,                        &
-                                   celly,                         &
-                                   celldy,                        &
-                                   volume,                        &
-                                   xarea,                         &
-                                   yarea                          )
+SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
+                                   xmin,ymin,zmin,dx,dy,dz,            &
+                                   vertexx,                            &
+                                   vertexdx,                           &
+                                   vertexy,                            &
+                                   vertexdy,                           &
+                                   vertexz,                            &
+                                   vertexdz,                           &
+                                   cellx,                              &
+                                   celldx,                             &
+                                   celly,                              &
+                                   celldy,                             &
+                                   cellz,                              &
+                                   celldz,                             &
+                                   volume,                             &
+                                   xarea,                              &
+                                   yarea,                              &
+                                   zarea                               )
 
   IMPLICIT NONE
 
-  INTEGER      :: x_min,x_max,y_min,y_max
-  REAL(KIND=8) :: xmin,ymin,dx,dy
+  INTEGER      :: x_min,x_max,y_min,y_max,z_min,z_max
+  REAL(KIND=8) :: xmin,ymin,zmin,dx,dy,dz
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3) :: vertexx
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3) :: vertexdx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+3) :: vertexy
   REAL(KIND=8), DIMENSION(y_min-2:y_max+3) :: vertexdy
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+3) :: vertexz
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+3) :: vertexdz
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2) :: cellx
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2) :: celldx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2) :: celly
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2) :: celldy
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2) :: volume
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+2) :: xarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+3) :: yarea
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2) :: cellz
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2) :: celldz
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2,z_min-2:z_max+2) :: volume
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+2,z_min-2:z_max+2) :: xarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+3,z_min-2:z_max+2) :: yarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2,z_min-2:z_max+3) :: zarea
 
-  INTEGER      :: j,k
+  INTEGER      :: j,k,l
 
 !$OMP PARALLEL
 !$OMP DO
@@ -104,27 +114,43 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,       &
   ENDDO
 !$OMP END DO
 
-!$OMP DO PRIVATE(j)
-  DO k=y_min-2,y_max+2
-    DO j=x_min-2,x_max+2
-        volume(j,k)=dx*dy
-     ENDDO
+!$OMP DO PRIVATE(j,k)
+  DO l=z_min-2,z_max+2
+    DO k=y_min-2,y_max+2
+      DO j=x_min-2,x_max+2
+        volume(j,k,l)=dx*dy*dz
+      ENDDO
+    ENDDO
   ENDDO
 !$OMP END DO
 
-!$OMP DO PRIVATE(j)
-  DO k=y_min-2,y_max+2
-    DO j=x_min-2,x_max+2
-        xarea(j,k)=celldy(k)
-     ENDDO
+!$OMP DO PRIVATE(j,k)
+  DO l=z_min-2,z_max+2
+    DO k=y_min-2,y_max+2
+      DO j=x_min-2,x_max+2
+        xarea(j,k,l)=celldy(k)
+      ENDDO
+    ENDDO
   ENDDO
 !$OMP END DO
 
-!$OMP DO PRIVATE(j)
-  DO k=y_min-2,y_max+2
-    DO j=x_min-2,x_max+2
-        yarea(j,k)=celldx(j)
-     ENDDO
+!$OMP DO PRIVATE(j,k)
+  DO l=z_min-2,z_max+2
+    DO k=y_min-2,y_max+2
+      DO j=x_min-2,x_max+2
+        yarea(j,k,l)=celldx(j)
+      ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+
+!$OMP DO PRIVATE(j,k)
+  DO l=z_min-2,z_max+2
+    DO k=y_min-2,y_max+2
+      DO j=x_min-2,x_max+2
+        zarea(j,k,l)=celldz(j)
+      ENDDO
+    ENDDO
   ENDDO
 !$OMP END DO
 !$OMP END PARALLEL

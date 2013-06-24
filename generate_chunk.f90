@@ -29,8 +29,8 @@ SUBROUTINE generate_chunk(chunk)
   INTEGER         :: chunk
 
   INTEGER         :: state
-  REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy,state_xvel,state_yvel
-  REAL(KIND=8), DIMENSION(number_of_states) :: state_xmin,state_xmax,state_ymin,state_ymax,state_radius
+  REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy,state_xvel,state_yvel,state_zvel
+  REAL(KIND=8), DIMENSION(number_of_states) :: state_xmin,state_xmax,state_ymin,state_ymax,state_zmin,state_zmax,state_radius
   INTEGER,      DIMENSION(number_of_states) :: state_geometry
 
   DO state=1,number_of_states 
@@ -38,10 +38,13 @@ SUBROUTINE generate_chunk(chunk)
    state_energy(state)=states(state)%energy
    state_xvel(state)=states(state)%xvel
    state_yvel(state)=states(state)%yvel
+   state_yvel(state)=states(state)%zvel
    state_xmin(state)=states(state)%xmin
    state_xmax(state)=states(state)%xmax
    state_ymin(state)=states(state)%ymin
    state_ymax(state)=states(state)%ymax
+   state_ymin(state)=states(state)%zmin
+   state_ymax(state)=states(state)%zmax
    state_radius(state)=states(state)%radius
    state_geometry(state)=states(state)%geometry
   ENDDO
@@ -51,23 +54,31 @@ SUBROUTINE generate_chunk(chunk)
                                chunks(chunk)%field%x_max,             &
                                chunks(chunk)%field%y_min,             &
                                chunks(chunk)%field%y_max,             &
+                               chunks(chunk)%field%z_min,             &
+                               chunks(chunk)%field%z_max,             &
                                chunks(chunk)%field%vertexx,           &
                                chunks(chunk)%field%vertexy,           &
+                               chunks(chunk)%field%vertexz,           &
                                chunks(chunk)%field%cellx,             &
                                chunks(chunk)%field%celly,             &
+                               chunks(chunk)%field%cellz,             &
                                chunks(chunk)%field%density0,          &
                                chunks(chunk)%field%energy0,           &
                                chunks(chunk)%field%xvel0,             &
                                chunks(chunk)%field%yvel0,             &
+                               chunks(chunk)%field%zvel0,             &
                                number_of_states,                      &
                                state_density,                         &
                                state_energy,                          &
                                state_xvel,                            &
                                state_yvel,                            &
+                               state_zvel,                            &
                                state_xmin,                            &
                                state_xmax,                            &
                                state_ymin,                            &
                                state_ymax,                            &
+                               state_zmin,                            &
+                               state_zmax,                            &
                                state_radius,                          &
                                state_geometry,                        &
                                g_rect,                                &

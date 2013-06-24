@@ -31,7 +31,7 @@ SUBROUTINE read_input()
 
   INTEGER            :: state,stat,state_max,n
 
-  REAL(KIND=8) :: dx,dy
+  REAL(KIND=8) :: dx,dy,dz
 
   CHARACTER(LEN=500) :: word
 
@@ -41,11 +41,14 @@ SUBROUTINE read_input()
 
   grid%xmin=  0.0
   grid%ymin=  0.0
+  grid%zmin=  0.0
   grid%xmax=100.0
   grid%ymax=100.0
+  grid%zmax=  0.0
 
   grid%x_cells=10
   grid%y_cells=10
+  grid%z_cells=1
 
   end_time=10.0
   end_step=g_ibig
@@ -61,6 +64,7 @@ SUBROUTINE read_input()
   dtc_safe=0.7
   dtu_safe=0.5
   dtv_safe=0.5
+  dtw_safe=0.5
   dtdiv_safe=0.7
 
   use_fortran_kernels=.TRUE.
@@ -112,6 +116,7 @@ SUBROUTINE read_input()
   states(:)%density=0.0
   states(:)%xvel=0.0
   states(:)%yvel=0.0
+  states(:)%zvel=0.0
 
   DO
     stat=parse_getline(dummy)
@@ -150,12 +155,21 @@ SUBROUTINE read_input()
       CASE('ymax')
         grid%ymax=parse_getrval(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'ymax',grid%ymax
+      CASE('zmin')
+        grid%zmin=parse_getrval(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'zmin',grid%zmin
+      CASE('zmax')
+        grid%zmax=parse_getrval(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'ymax',grid%zmax
       CASE('x_cells')
         grid%x_cells=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'x_cells',grid%x_cells
       CASE('y_cells')
         grid%y_cells=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'y_cells',grid%y_cells
+      CASE('z_cells')
+        grid%z_cells=parse_getival(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'z_cells',grid%z_cells
       CASE('visit_frequency')
         visit_frequency=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'visit_frequency',visit_frequency
@@ -203,18 +217,27 @@ SUBROUTINE read_input()
           CASE('yvel')
             states(state)%yvel=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'yvel ',states(state)%yvel
+          CASE('zvel')
+            states(state)%zvel=parse_getrval(parse_getword(.TRUE.))
+            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'zvel ',states(state)%zvel
           CASE('xmin')
             states(state)%xmin=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state xmin ',states(state)%xmin
           CASE('ymin')
             states(state)%ymin=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state ymin ',states(state)%ymin
+          CASE('zmin')
+            states(state)%zmin=parse_getrval(parse_getword(.TRUE.))
+            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state zmin ',states(state)%zmin
           CASE('xmax')
             states(state)%xmax=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state xmax ',states(state)%xmax
           CASE('ymax')
             states(state)%ymax=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state ymax ',states(state)%ymax
+          CASE('zmax')
+            states(state)%ymax=parse_getrval(parse_getword(.TRUE.))
+            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state zmax ',states(state)%zmax
           CASE('radius')
             states(state)%radius=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state radius ',states(state)%radius
@@ -227,10 +250,10 @@ SUBROUTINE read_input()
           CASE('geometry')
             word=TRIM(parse_getword(.TRUE.))
             SELECT CASE(word)
-            CASE("rectangle")
+            CASE("cuboid")
               states(state)%geometry=g_rect
               IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry rectangular'
-            CASE("circle")
+            CASE("sphere")
               states(state)%geometry=g_circ
               IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry circular'
             CASE("point")
@@ -266,11 +289,14 @@ SUBROUTINE read_input()
   ! modification to the state extents does not change the answers.
   dx=(grid%xmax-grid%xmin)/float(grid%x_cells)
   dy=(grid%ymax-grid%ymin)/float(grid%y_cells)
+  dz=(grid%zmax-grid%zmin)/float(grid%z_cells)
   DO n=2,number_of_states
     states(n)%xmin=states(n)%xmin+(dx/100.0)
     states(n)%ymin=states(n)%ymin+(dy/100.0)
+    states(n)%zmin=states(n)%zmin+(dz/100.0)
     states(n)%xmax=states(n)%xmax-(dx/100.0)
     states(n)%ymax=states(n)%ymax-(dy/100.0)
+    states(n)%zmax=states(n)%zmax-(dz/100.0)
   ENDDO
 
 END SUBROUTINE read_input
