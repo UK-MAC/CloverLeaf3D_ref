@@ -76,43 +76,70 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
                                       chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
 
    ALLOCATE(chunks(chunk)%field%vol_flux_x (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%mass_flux_x(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%vol_flux_y (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%mass_flux_y(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
+   ALLOCATE(chunks(chunk)%field%vol_flux_z (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
+   ALLOCATE(chunks(chunk)%field%mass_flux_z(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
 
    ALLOCATE(chunks(chunk)%field%work_array1(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array2(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array3(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array4(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array5(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array6(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%work_array7(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
 
    ALLOCATE(chunks(chunk)%field%cellx   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2))
    ALLOCATE(chunks(chunk)%field%celly   (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+   ALLOCATE(chunks(chunk)%field%cellz   (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%vertexx (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3))
    ALLOCATE(chunks(chunk)%field%vertexy (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+   ALLOCATE(chunks(chunk)%field%vertexz (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%celldx  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2))
    ALLOCATE(chunks(chunk)%field%celldy  (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+   ALLOCATE(chunks(chunk)%field%celldz  (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%vertexdx(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3))
    ALLOCATE(chunks(chunk)%field%vertexdy(chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+   ALLOCATE(chunks(chunk)%field%vertexdz(chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
    ALLOCATE(chunks(chunk)%field%volume  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%xarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
+                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
    ALLOCATE(chunks(chunk)%field%yarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
+                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
+   ALLOCATE(chunks(chunk)%field%zarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
+                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
+                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
 
    ! Zeroing isn't strictly neccessary but it ensures physical pages
    ! are allocated. This prevents first touch overheads in the main code
@@ -137,23 +164,31 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    chunks(chunk)%field%xvel1=0.0
    chunks(chunk)%field%yvel0=0.0
    chunks(chunk)%field%yvel1=0.0
+   chunks(chunk)%field%zvel0=0.0
+   chunks(chunk)%field%zvel1=0.0
    
    chunks(chunk)%field%vol_flux_x=0.0
    chunks(chunk)%field%mass_flux_x=0.0
    chunks(chunk)%field%vol_flux_y=0.0
    chunks(chunk)%field%mass_flux_y=0.0
+   chunks(chunk)%field%vol_flux_z=0.0
+   chunks(chunk)%field%mass_flux_z=0.0
 
    chunks(chunk)%field%cellx=0.0
    chunks(chunk)%field%celly=0.0
+   chunks(chunk)%field%cellz=0.0
    chunks(chunk)%field%vertexx=0.0
    chunks(chunk)%field%vertexy=0.0
+   chunks(chunk)%field%vertexz=0.0
    chunks(chunk)%field%celldx=0.0
    chunks(chunk)%field%celldy=0.0
    chunks(chunk)%field%vertexdx=0.0
    chunks(chunk)%field%vertexdy=0.0
+   chunks(chunk)%field%vertexdz=0.0
    chunks(chunk)%field%volume=0.0
    chunks(chunk)%field%xarea=0.0
    chunks(chunk)%field%yarea=0.0
+   chunks(chunk)%field%zarea=0.0
   
 END SUBROUTINE build_field
 

@@ -31,8 +31,8 @@ SUBROUTINE visit
 
   IMPLICIT NONE
 
-  INTEGER :: j,k,c,err,get_unit,u,dummy
-  INTEGER :: nxc,nyc,nxv,nyv,nblocks
+  INTEGER :: j,k,l,c,err,get_unit,u,dummy
+  INTEGER :: nxc,nyc,nzc,nxv,nyv,nzv,nblocks
   REAL(KIND=8)    :: temp_var
 
   CHARACTER(len=80)           :: name
@@ -101,8 +101,10 @@ SUBROUTINE visit
     IF(chunks(c)%task.EQ.parallel%task) THEN
       nxc=chunks(c)%field%x_max-chunks(c)%field%x_min+1
       nyc=chunks(c)%field%y_max-chunks(c)%field%y_min+1
+      nzc=chunks(c)%field%z_max-chunks(c)%field%z_min+1
       nxv=nxc+1
       nyv=nyc+1
+      nzv=nzc+1
       WRITE(chunk_name, '(i6)') c+100000
       chunk_name(1:1) = "."
       WRITE(step_name, '(i6)') step+100000
@@ -114,7 +116,7 @@ SUBROUTINE visit
       WRITE(u,'(a)')'vtk output'
       WRITE(u,'(a)')'ASCII'
       WRITE(u,'(a)')'DATASET RECTILINEAR_GRID'
-      WRITE(u,'(a,2i12,a)')'DIMENSIONS',nxv,nyv,' 1'
+      WRITE(u,'(a,3i12)')'DIMENSIONS',nxv,nyv,nzv
       WRITE(u,'(a,i5,a)')'X_COORDINATES ',nxv,' double'
       DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
         WRITE(u,'(e12.4)')chunks(c)%field%vertexx(j)
@@ -123,46 +125,71 @@ SUBROUTINE visit
       DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
         WRITE(u,'(e12.4)')chunks(c)%field%vertexy(k)
       ENDDO
-      WRITE(u,'(a)')'Z_COORDINATES 1 double'
+      WRITE(u,'(a,i5,a)')'Z_COORDINATES ',nzv,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
+        WRITE(u,'(e12.4)')chunks(c)%field%vertexy(l)
+      ENDDO
       WRITE(u,'(a)')'0'
-      WRITE(u,'(a,i20)')'CELL_DATA ',nxc*nyc
+      WRITE(u,'(a,i20)')'CELL_DATA ',nxc*nyc*nzc
       WRITE(u,'(a)')'FIELD FieldData 4'
       WRITE(u,'(a,i20,a)')'density 1 ',nxc*nyc,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
-        WRITE(u,'(e12.4)')(chunks(c)%field%density0(j,k),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
-      ENDDO
-      WRITE(u,'(a,i20,a)')'energy 1 ',nxc*nyc,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
-        WRITE(u,'(e12.4)')(chunks(c)%field%energy0(j,k),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
-      ENDDO
-      WRITE(u,'(a,i20,a)')'pressure 1 ',nxc*nyc,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
-        WRITE(u,'(e12.4)')(chunks(c)%field%pressure(j,k),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
-      ENDDO
-      WRITE(u,'(a,i20,a)')'viscosity 1 ',nxc*nyc,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
-        DO j=chunks(c)%field%x_min,chunks(c)%field%x_max
-          temp_var=0.0
-          IF(chunks(c)%field%viscosity(j,k).GT.0.00000001) temp_var=chunks(c)%field%viscosity(j,k)
-          WRITE(u,'(e12.4)') temp_var
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
+          WRITE(u,'(e12.4)')(chunks(c)%field%density0(j,k,l),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
         ENDDO
       ENDDO
-      WRITE(u,'(a,i20)')'POINT_DATA ',nxv*nyv
+      WRITE(u,'(a,i20,a)')'energy 1 ',nxc*nyc*nzc,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
+          WRITE(u,'(e12.4)')(chunks(c)%field%energy0(j,k,l),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
+        ENDDO
+      ENDDO
+      WRITE(u,'(a,i20,a)')'pressure 1 ',nxc*nyc*nzc,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
+          WRITE(u,'(e12.4)')(chunks(c)%field%pressure(j,k,l),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
+        ENDDO
+      ENDDO
+      WRITE(u,'(a,i20,a)')'viscosity 1 ',nxc*nyc*nzc,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
+          DO j=chunks(c)%field%x_min,chunks(c)%field%x_max
+            temp_var=0.0
+            IF(chunks(c)%field%viscosity(j,k,l).GT.0.00000001) temp_var=chunks(c)%field%viscosity(j,k,l)
+            WRITE(u,'(e12.4)') temp_var
+          ENDDO
+        ENDDO
+      ENDDO
+      WRITE(u,'(a,i20)')'POINT_DATA ',nxv*nyv*nzv
       WRITE(u,'(a)')'FIELD FieldData 2'
-      WRITE(u,'(a,i20,a)')'x_vel 1 ',nxv*nyv,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
-        DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
-          temp_var=0.0
-          IF(ABS(chunks(c)%field%xvel0(j,k)).GT.0.00000001) temp_var=chunks(c)%field%xvel0(j,k)
-          WRITE(u,'(e12.4)') temp_var
+      WRITE(u,'(a,i20,a)')'x_vel 1 ',nxv*nyv*nzv,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
+          DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
+            temp_var=0.0
+            IF(ABS(chunks(c)%field%xvel0(j,k,l)).GT.0.00000001) temp_var=chunks(c)%field%xvel0(j,k,l)
+            WRITE(u,'(e12.4)') temp_var
+          ENDDO
         ENDDO
       ENDDO
-      WRITE(u,'(a,i20,a)')'y_vel 1 ',nxv*nyv,' double'
-      DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
-        DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
-          temp_var=0.0
-          IF(ABS(chunks(c)%field%yvel0(j,k)).GT.0.00000001) temp_var=chunks(c)%field%yvel0(j,k)
-          WRITE(u,'(e12.4)') temp_var
+      WRITE(u,'(a,i20,a)')'y_vel 1 ',nxv*nyv*nzv,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
+          DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
+            temp_var=0.0
+            IF(ABS(chunks(c)%field%yvel0(j,k,l)).GT.0.00000001) temp_var=chunks(c)%field%yvel0(j,k,l)
+            WRITE(u,'(e12.4)') temp_var
+          ENDDO
+        ENDDO
+      ENDDO
+      WRITE(u,'(a,i20,a)')'z_vel 1 ',nxv*nyv*nzv,' double'
+      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
+        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
+          DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
+            temp_var=0.0
+            IF(ABS(chunks(c)%field%zvel0(j,k,l)).GT.0.00000001) temp_var=chunks(c)%field%zvel0(j,k,l)
+            WRITE(u,'(e12.4)') temp_var
+          ENDDO
         ENDDO
       ENDDO
       CLOSE(u)

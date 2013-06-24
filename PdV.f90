@@ -51,14 +51,17 @@ SUBROUTINE PdV(predict)
     IF(chunks(c)%task.EQ.parallel%task) THEN
 
       IF(use_fortran_kernels)THEN
-        CALL PdV_kernel(predict,                  &
+        CALL PdV_kernel(THREE_D,predict,          &
                       chunks(c)%field%x_min,      &
                       chunks(c)%field%x_max,      &
                       chunks(c)%field%y_min,      &
                       chunks(c)%field%y_max,      &
+                      chunks(c)%field%z_min,      &
+                      chunks(c)%field%z_max,      &
                       dt,                         &
                       chunks(c)%field%xarea,      &
                       chunks(c)%field%yarea,      &
+                      chunks(c)%field%zarea,      &
                       chunks(c)%field%volume ,    &
                       chunks(c)%field%density0,   &
                       chunks(c)%field%density1,   &
@@ -70,6 +73,8 @@ SUBROUTINE PdV(predict)
                       chunks(c)%field%xvel1,      &
                       chunks(c)%field%yvel0,      &
                       chunks(c)%field%yvel1,      &
+                      chunks(c)%field%zvel0,      &
+                      chunks(c)%field%zvel1,      &
                       chunks(c)%field%work_array1 )
       ELSEIF(use_C_kernels)THEN
 
