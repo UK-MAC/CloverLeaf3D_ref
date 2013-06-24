@@ -43,6 +43,8 @@ SUBROUTINE ideal_gas(chunk,predict)
                             chunks(chunk)%field%x_max,      &
                             chunks(chunk)%field%y_min,      &
                             chunks(chunk)%field%y_max,      &
+                            chunks(chunk)%field%z_min,      &
+                            chunks(chunk)%field%z_max,      &
                             chunks(chunk)%field%density0,   &
                             chunks(chunk)%field%energy0,    &
                             chunks(chunk)%field%pressure,   &
@@ -52,6 +54,8 @@ SUBROUTINE ideal_gas(chunk,predict)
                             chunks(chunk)%field%x_max,      &
                             chunks(chunk)%field%y_min,      &
                             chunks(chunk)%field%y_max,      &
+                            chunks(chunk)%field%z_min,      &
+                            chunks(chunk)%field%z_max,      &
                             chunks(chunk)%field%density0,   &
                             chunks(chunk)%field%energy0,    &
                             chunks(chunk)%field%pressure,   &
@@ -63,6 +67,8 @@ SUBROUTINE ideal_gas(chunk,predict)
                             chunks(chunk)%field%x_max,      &
                             chunks(chunk)%field%y_min,      &
                             chunks(chunk)%field%y_max,      &
+                            chunks(chunk)%field%z_min,      &
+                            chunks(chunk)%field%z_max,      &
                             chunks(chunk)%field%density1,   &
                             chunks(chunk)%field%energy1,    &
                             chunks(chunk)%field%pressure,   &
@@ -72,6 +78,8 @@ SUBROUTINE ideal_gas(chunk,predict)
                             chunks(chunk)%field%x_max,      &
                             chunks(chunk)%field%y_min,      &
                             chunks(chunk)%field%y_max,      &
+                            chunks(chunk)%field%z_min,      &
+                            chunks(chunk)%field%z_max,      &
                             chunks(chunk)%field%density1,   &
                             chunks(chunk)%field%energy1,    &
                             chunks(chunk)%field%pressure,   &

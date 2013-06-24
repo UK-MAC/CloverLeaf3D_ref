@@ -76,33 +76,35 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
 
 !$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,total_flux,min_cell_volume, &
 !$OMP            energy_change,recip_volume)
-    DO k=y_min,y_max
-      DO j=x_min,x_max
+    DO l=z_min,z_max
+      DO k=y_min,y_max
+        DO j=x_min,x_max
 
-        left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )                     &
-                                    +xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )))*0.25_8*dt*0.5
-        right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )                     &
-                                    +xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
-        bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
-                                    +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
-        top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
-                                    +yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
-        total_flux=right_flux-left_flux+top_flux-bottom_flux
+          left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )                     &
+                                         +xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )))*0.25_8*dt*0.5
+          right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )                     &
+                                         +xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
+          bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
+                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
+          top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
+                                         +yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
+          total_flux=right_flux-left_flux+top_flux-bottom_flux
 
-        volume_change(j,k,l  )=volume(j,k,l  )/(volume(j,k,l  )+total_flux)
+          volume_change(j,k,l  )=volume(j,k,l  )/(volume(j,k,l  )+total_flux)
 
-        min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux &
-                           ,volume(j,k,l)+right_flux-left_flux                      &
-                           ,volume(j,k,l)+top_flux-bottom_flux)
+          min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux &
+                             ,volume(j,k,l)+right_flux-left_flux                      &
+                             ,volume(j,k,l)+top_flux-bottom_flux)
  
-        recip_volume=1.0/volume(j,k,l) 
+          recip_volume=1.0/volume(j,k,l) 
 
-        energy_change=(pressure(j,k,l)/density0(j,k,l)+viscosity(j,k,l)/density0(j,k,l))*total_flux*recip_volume
+          energy_change=(pressure(j,k,l)/density0(j,k,l)+viscosity(j,k,l)/density0(j,k,l))*total_flux*recip_volume
 
-        energy1(j,k,l)=energy0(j,k,l)-energy_change
+          energy1(j,k,l)=energy0(j,k,l)-energy_change
 
-        density1(j,k,l)=density0(j,k,l)*volume_change(j,k,l)
+          density1(j,k,l)=density0(j,k,l)*volume_change(j,k,l)
 
+        ENDDO
       ENDDO
     ENDDO
 !$OMP END DO

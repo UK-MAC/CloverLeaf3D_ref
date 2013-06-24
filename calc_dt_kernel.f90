@@ -25,116 +25,137 @@ MODULE calc_dt_kernel_module
 
 CONTAINS
 
-SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,             &
+SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
                           g_small,g_big,dtmin,                 &
                           dtc_safe,                            &
                           dtu_safe,                            &
                           dtv_safe,                            &
+                          dtw_safe,                            &
                           dtdiv_safe,                          &
                           xarea,                               &
                           yarea,                               &
+                          zarea,                               &
                           cellx,                               &
                           celly,                               &
+                          cellz,                               &
                           celldx,                              &
                           celldy,                              &
+                          celldz,                              &
                           volume,                              &
                           density0,                            &
                           energy0,                             &
                           pressure,                            &
                           viscosity,                           &
                           soundspeed,                          &
-                          xvel0,yvel0,                         &
+                          xvel0,yvel0,zvel0,                   &
                           dt_min,                              &
                           dt_min_val,                          &
                           dtl_control,                         &
                           xl_pos,                              &
                           yl_pos,                              &
+                          zl_pos,                              &
                           jldt,                                &
                           kldt,                                &
+                          lldt,                                &
                           small)
 
   IMPLICIT NONE
 
-  INTEGER :: x_min,x_max,y_min,y_max
+  INTEGER :: x_min,x_max,y_min,y_max,z_min,z_max
   REAL(KIND=8)  :: g_small,g_big,dtmin,dt_min_val
-  REAL(KIND=8)  :: dtc_safe,dtu_safe,dtv_safe,dtdiv_safe
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2) :: xarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3) :: yarea
+  REAL(KIND=8)  :: dtc_safe,dtu_safe,dtv_safe,dtw_safe,dtdiv_safe
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: xarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: yarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: zarea
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2)             :: cellx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2)             :: celly
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2)             :: cellz
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2)             :: celldx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2)             :: celldy
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: volume
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: density0
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: energy0
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: pressure
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: viscosity
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: soundspeed
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3) :: xvel0,yvel0
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3) :: dt_min
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2)             :: celldz
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: volume
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: pressure
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: viscosity
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: soundspeed
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: dt_min
 
   INTEGER          :: dtl_control
-  REAL(KIND=8)     :: xl_pos,yl_pos
-  INTEGER          :: jldt,kldt
+  REAL(KIND=8)     :: xl_pos,yl_pos,zl_pos
+  INTEGER          :: jldt,kldt,lldt
   INTEGER          :: small
 
-  INTEGER          :: j,k
+  INTEGER          :: j,k,l
 
-  REAL(KIND=8)     :: div,dsx,dsy,dtut,dtvt,dtct,dtdivt,cc,dv1,dv2,jk_control
+  REAL(KIND=8)     :: div,dsx,dsy,dsz,dtut,dtvt,dtwt,dtct,dtdivt,cc,dv1,dv2,jk_control
 
   small=0
   dt_min_val = g_big
-  jk_control=1.1
+  jkl_control=1.1
 
 !$OMP PARALLEL
 
 !$OMP DO PRIVATE(dsx,dsy,cc,dv1,dv2,div,dtct,dtut,dtvt,dtdivt)
-  DO k=y_min,y_max
-    DO j=x_min,x_max
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+      DO j=x_min,x_max
 
-       dsx=celldx(j)
-       dsy=celldy(k)
+        dsx=celldx(j)
+        dsy=celldy(k)
+        dsz=celldz(l)
 
-       cc=soundspeed(j,k)*soundspeed(j,k)
-       cc=cc+2.0_8*viscosity(j,k)/density0(j,k)
-       cc=MAX(SQRT(cc),g_small)
+        cc=soundspeed(j,k,l)*soundspeed(j,k,l)
+        cc=cc+2.0_8*viscosity(j,k,l)/density0(j,k,l)
+        cc=MAX(SQRT(cc),g_small)
 
-       dtct=dtc_safe*MIN(dsx,dsy)/cc
+        dtct=dtc_safe*MIN(dsx,dsy)/cc
 
-       div=0.0
+        div=0.0
 
-       dv1=(xvel0(j  ,k)+xvel0(j  ,k+1))*xarea(j  ,k)
-       dv2=(xvel0(j+1,k)+xvel0(j+1,k+1))*xarea(j+1,k)
+        dv1=(xvel0(j  ,k,l  )+xvel0(j  ,k+1,l  ))*xarea(j  ,k,l  )
+        dv2=(xvel0(j+1,k,l  )+xvel0(j+1,k+1,l  ))*xarea(j+1,k,l  )
 
-       div=div+dv2-dv1
+        div=div+dv2-dv1
 
-       dtut=dtu_safe*2.0_8*volume(j,k)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k))
+        dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
 
-       dv1=(yvel0(j,k  )+yvel0(j+1,k  ))*yarea(j,k  )
-       dv2=(yvel0(j,k+1)+yvel0(j+1,k+1))*yarea(j,k+1)
+        dv1=(yvel0(j,k  ,l  )+yvel0(j+1,k  ,l  ))*yarea(j,k  ,l  )
+        dv2=(yvel0(j,k+1,l  )+yvel0(j+1,k+1,l  ))*yarea(j,k+1,l  )
 
-       div=div+dv2-dv1
+        div=div+dv2-dv1
 
-       dtvt=dtv_safe*2.0_8*volume(j,k)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k))
+        dtvt=dtv_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
 
-       div=div/(2.0_8*volume(j,k))
+        div=div/(2.0_8*volume(j,k,l  ))
 
-       IF(div.LT.-g_small)THEN
-         dtdivt=dtdiv_safe*(-1.0_8/div)
-       ELSE
-         dtdivt=g_big
-       ENDIF
+        dv1=(zvel0(j,k  ,l  )+zvel0(j+1,k  ,l  ))*zarea(j,k  ,l  )
+        dv2=(zvel0(j,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j,k+1,l  )
 
-       dt_min(j,k)=MIN(dtct,dtut,dtvt,dtdivt)
+        div=div+dv2-dv1
 
+        dtwt=dtw_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
+
+        IF(div.LT.-g_small)THEN
+          dtdivt=dtdiv_safe*(-1.0_8/div)
+        ELSE
+          dtdivt=g_big
+        ENDIF
+
+        dt_min(j,k)=MIN(dtct,dtut,dtvt,dtwt,dtdivt)
+
+      ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
 
 !$OMP DO REDUCTION(MIN : dt_min_val)
-  DO k=y_min,y_max
-    DO j=x_min,x_max
-      IF(dt_min(j,k).LT.dt_min_val) dt_min_val=dt_min(j,k)
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+      DO j=x_min,x_max
+        IF(dt_min(j,k,l).LT.dt_min_val) dt_min_val=dt_min(j,k,l)
+      ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
@@ -142,12 +163,14 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,             &
 !$OMP END PARALLEL
 
   ! Extract the mimimum timestep information
-  dtl_control=10.01*(jk_control-INT(jk_control))
-  jk_control=jk_control-(jk_control-INT(jk_control))
-  jldt=MOD(INT(jk_control),x_max)
+  dtl_control=10.01*(jk_control-INT(jkl_control))
+  jkl_control=jkl_control-(jkl_control-INT(jkl_control))
+  jldt=MOD(INT(jkl_control),x_max)
   kldt=1+(jk_control/x_max)
+  lldt=1+(jk_control/x_max)
   xl_pos=cellx(jldt)
   yl_pos=celly(kldt)
+  zl_pos=cellz(lldt)
 
   IF(dt_min_val.LT.dtmin) small=1
 

@@ -44,29 +44,41 @@ SUBROUTINE flux_calc()
                             chunks(c)%field%x_max,           &
                             chunks(c)%field%y_min,           &
                             chunks(c)%field%y_max,           &
+                            chunks(c)%field%z_min,           &
+                            chunks(c)%field%z_max,           &
                             dt,                              &
                             chunks(c)%field%xarea,           &
                             chunks(c)%field%yarea,           &
+                            chunks(c)%field%zarea,           &
                             chunks(c)%field%xvel0,           &
                             chunks(c)%field%yvel0,           &
+                            chunks(c)%field%zvel0,           &
                             chunks(c)%field%xvel1,           &
                             chunks(c)%field%yvel1,           &
+                            chunks(c)%field%zvel1,           &
                             chunks(c)%field%vol_flux_x,      &
-                            chunks(c)%field%vol_flux_y       )
+                            chunks(c)%field%vol_flux_y,      &
+                            chunks(c)%field%vol_flux_z       )
       ELSEIF(use_C_kernels)THEN
         CALL flux_calc_kernel_c(chunks(c)%field%x_min,       &
                             chunks(c)%field%x_max,           &
                             chunks(c)%field%y_min,           &
                             chunks(c)%field%y_max,           &
+                            chunks(c)%field%z_min,           &
+                            chunks(c)%field%z_max,           &
                             dt,                              &
                             chunks(c)%field%xarea,           &
                             chunks(c)%field%yarea,           &
+                            chunks(c)%field%zarea,           &
                             chunks(c)%field%xvel0,           &
                             chunks(c)%field%yvel0,           &
+                            chunks(c)%field%zvel0,           &
                             chunks(c)%field%xvel1,           &
                             chunks(c)%field%yvel1,           &
+                            chunks(c)%field%zvel1,           &
                             chunks(c)%field%vol_flux_x,      &
-                            chunks(c)%field%vol_flux_y       )
+                            chunks(c)%field%vol_flux_y,      &
+                            chunks(c)%field%vol_flux_z       )
       ENDIF
 
     ENDIF

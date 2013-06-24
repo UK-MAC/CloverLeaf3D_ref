@@ -23,45 +23,66 @@ MODULE flux_calc_kernel_module
 
 CONTAINS
 
-SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,dt,              &
+SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
                             xarea,                           &
                             yarea,                           &
+                            zarea,                           &
                             xvel0,                           &
                             yvel0,                           &
+                            zvel0,                           &
                             xvel1,                           &
                             yvel1,                           &
+                            zvel1,                           &
                             vol_flux_x,                      &
-                            vol_flux_y                       )
+                            vol_flux_y,                      &
+                            vol_flux_z                       )
 
   IMPLICIT NONE
 
-  INTEGER       :: x_min, x_max, y_min, y_max
+  INTEGER       :: x_min, x_max, y_min, y_max, z_min, z_max
   REAL(KIND=8) :: dt
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2) :: xarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3) :: yarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3) :: xvel0,yvel0
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3) :: xvel1,yvel1
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2) :: vol_flux_x
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3) :: vol_flux_y
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: xarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: yarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: zarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0,zvel0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel1,yvel1,zvel1
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: vol_flux_x
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: vol_flux_y
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: vol_flux_z
 
-  INTEGER :: j,k
+  INTEGER :: j,k,l
 
 !$OMP PARALLEL
 
 !$OMP DO
-  DO k=y_min,y_max
-    DO j=x_min,x_max+1 
-      vol_flux_x(j,k)=0.25_8*dt*xarea(j,k)                  &
-                     *(xvel0(j,k)+xvel0(j,k+1)+xvel1(j,k)+xvel1(j,k+1))
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+      DO j=x_min,x_max+1 
+        vol_flux_x(j,k,l)=0.25_8*dt*xarea(j,k,l)                  &
+                         *(xvel0(j,k,l)+xvel0(j,k+1,l)+xvel1(j,k,l)+xvel1(j,k+1,l))
+      ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
 
 !$OMP DO
-  DO k=y_min,y_max+1
-    DO j=x_min,x_max
-      vol_flux_y(j,k)=0.25_8*dt*yarea(j,k)                  &
-                     *(yvel0(j,k)+yvel0(j+1,k)+yvel1(j,k)+yvel1(j+1,k))
+  DO l=z_min,z_max
+    DO k=y_min,y_max+1
+      DO j=x_min,x_max
+        vol_flux_y(j,k,l)=0.25_8*dt*yarea(j,k,l)                  &
+                         *(yvel0(j,k,l)+yvel0(j+1,k,l)+yvel1(j,k,l)+yvel1(j+1,k,l))
+      ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+
+!$OMP DO
+  DO l=z_min,z_max+1
+    DO k=y_min,y_max
+      DO j=x_min,x_max
+        vol_flux_z(j,k,l)=0.25_8*dt*zarea(j,k,l)                  &
+                         *(zvel0(j,k,l)+zvel0(j+1,k,l)+zvel1(j,k,l)+zvel1(j+1,k,l))
+      ENDDO
     ENDDO
   ENDDO
 !$OMP END DO

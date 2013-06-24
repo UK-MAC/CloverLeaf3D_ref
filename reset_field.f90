@@ -44,6 +44,8 @@ SUBROUTINE reset_field()
                               chunks(c)%field%x_max,     &
                               chunks(c)%field%y_min,     &
                               chunks(c)%field%y_max,     &
+                              chunks(c)%field%z_min,     &
+                              chunks(c)%field%z_max,     &
                               chunks(c)%field%density0,  &
                               chunks(c)%field%density1,  &
                               chunks(c)%field%energy0,   &
@@ -51,12 +53,16 @@ SUBROUTINE reset_field()
                               chunks(c)%field%xvel0,     &
                               chunks(c)%field%xvel1,     &
                               chunks(c)%field%yvel0,     &
-                              chunks(c)%field%yvel1      )
+                              chunks(c)%field%yvel1,     &
+                              chunks(c)%field%zvel0,     &
+                              chunks(c)%field%zvel1      )
       ELSEIF(use_C_kernels)THEN
         CALL reset_field_kernel_c(chunks(c)%field%x_min, &
                               chunks(c)%field%x_max,     &
                               chunks(c)%field%y_min,     &
                               chunks(c)%field%y_max,     &
+                              chunks(c)%field%z_min,     &
+                              chunks(c)%field%z_max,     &
                               chunks(c)%field%density0,  &
                               chunks(c)%field%density1,  &
                               chunks(c)%field%energy0,   &
@@ -64,7 +70,9 @@ SUBROUTINE reset_field()
                               chunks(c)%field%xvel0,     &
                               chunks(c)%field%xvel1,     &
                               chunks(c)%field%yvel0,     &
-                              chunks(c)%field%yvel1      )
+                              chunks(c)%field%yvel1,     &
+                              chunks(c)%field%zvel0,     &
+                              chunks(c)%field%zvel1      )
       ENDIF
 
     ENDIF
