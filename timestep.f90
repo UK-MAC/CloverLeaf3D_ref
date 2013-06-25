@@ -38,10 +38,10 @@ SUBROUTINE timestep()
   IMPLICIT NONE
 
   INTEGER :: c
-  INTEGER :: jldt,kldt
+  INTEGER :: jldt,kldt,lldt
 
   REAL(KIND=8)    :: dtlp
-  REAL(KIND=8)    :: x_pos,y_pos,xl_pos,yl_pos
+  REAL(KIND=8)    :: x_pos,y_pos,xl_pos,yl_pos,zl_pos
 
   REAL(KIND=8)    :: kernel_time,timer
 
@@ -84,7 +84,7 @@ SUBROUTINE timestep()
 
   IF(profiler_on) kernel_time=timer()
   DO c = 1, number_of_chunks
-    CALL calc_dt(c,dtlp,dtl_control,xl_pos,yl_pos,jldt,kldt)
+    CALL calc_dt(c,dtlp,dtl_control,xl_pos,yl_pos,zl_pos,jldt,kldt,lldt)
 
     IF(dtlp.LE.dt) THEN
       dt=dtlp

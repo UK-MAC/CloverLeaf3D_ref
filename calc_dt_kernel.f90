@@ -79,7 +79,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: pressure
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: viscosity
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: soundspeed
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0,zvel0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: dt_min
 
   INTEGER          :: dtl_control
@@ -89,7 +89,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
   INTEGER          :: j,k,l
 
-  REAL(KIND=8)     :: div,dsx,dsy,dsz,dtut,dtvt,dtwt,dtct,dtdivt,cc,dv1,dv2,jk_control
+  REAL(KIND=8)     :: div,dsx,dsy,dsz,dtut,dtvt,dtwt,dtct,dtdivt,cc,dv1,dv2,jkl_control
 
   small=0
   dt_min_val = g_big
@@ -143,7 +143,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           dtdivt=g_big
         ENDIF
 
-        dt_min(j,k)=MIN(dtct,dtut,dtvt,dtwt,dtdivt)
+        dt_min(j,k,l)=MIN(dtct,dtut,dtvt,dtwt,dtdivt)
 
       ENDDO
     ENDDO
@@ -163,11 +163,11 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 !$OMP END PARALLEL
 
   ! Extract the mimimum timestep information
-  dtl_control=10.01*(jk_control-INT(jkl_control))
+  dtl_control=10.01*(jkl_control-INT(jkl_control))
   jkl_control=jkl_control-(jkl_control-INT(jkl_control))
   jldt=MOD(INT(jkl_control),x_max)
-  kldt=1+(jk_control/x_max)
-  lldt=1+(jk_control/x_max)
+  kldt=1+(jkl_control/x_max)
+  lldt=1+(jkl_control/x_max)
   xl_pos=cellx(jldt)
   yl_pos=celly(kldt)
   zl_pos=cellz(lldt)
@@ -180,12 +180,12 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     WRITE(0,*) 'x, y                 : ',cellx(jldt),celly(kldt)
     WRITE(0,*) 'timestep : ',dt_min_val
     WRITE(0,*) 'Cell velocities;'
-    WRITE(0,*) xvel0(jldt  ,kldt  ),yvel0(jldt  ,kldt  )
-    WRITE(0,*) xvel0(jldt+1,kldt  ),yvel0(jldt+1,kldt  )
-    WRITE(0,*) xvel0(jldt+1,kldt+1),yvel0(jldt+1,kldt+1)
-    WRITE(0,*) xvel0(jldt  ,kldt+1),yvel0(jldt  ,kldt+1)
+    WRITE(0,*) xvel0(jldt  ,kldt  ,lldt),yvel0(jldt  ,kldt  ,lldt)
+    WRITE(0,*) xvel0(jldt+1,kldt  ,lldt),yvel0(jldt+1,kldt  ,lldt)
+    WRITE(0,*) xvel0(jldt+1,kldt+1,lldt),yvel0(jldt+1,kldt+1,lldt)
+    WRITE(0,*) xvel0(jldt  ,kldt+1,lldt),yvel0(jldt  ,kldt+1,lldt)
     WRITE(0,*) 'density, energy, pressure, soundspeed '
-    WRITE(0,*) density0(jldt,kldt),energy0(jldt,kldt),pressure(jldt,kldt),soundspeed(jldt,kldt)
+    WRITE(0,*) density0(jldt,kldt,lldt),energy0(jldt,kldt,lldt),pressure(jldt,kldt,lldt),soundspeed(jldt,kldt,lldt)
   ENDIF
 
 END SUBROUTINE calc_dt_kernel

@@ -38,11 +38,14 @@ SUBROUTINE advec_cell_driver(chunk,sweep_number,dir)
       CALL advec_cell_kernel(chunks(chunk)%field%x_min,               &
                            chunks(chunk)%field%x_max,                 &
                            chunks(chunk)%field%y_min,                 &
-                           chunks(chunk)%field%y_max,                 &
+			   chunks(chunk)%field%y_min,                 &
+			   chunks(chunk)%field%z_max,                 &
+                           chunks(chunk)%field%z_max,                 &
                            dir,                                       &
                            sweep_number,                              &
                            chunks(chunk)%field%vertexdx,              &
                            chunks(chunk)%field%vertexdy,              &
+                           chunks(chunk)%field%vertexdz,              &
                            chunks(chunk)%field%volume,                &
                            chunks(chunk)%field%density1,              &
                            chunks(chunk)%field%energy1,               &
@@ -50,6 +53,8 @@ SUBROUTINE advec_cell_driver(chunk,sweep_number,dir)
                            chunks(chunk)%field%vol_flux_x,            &
                            chunks(chunk)%field%mass_flux_y,           &
                            chunks(chunk)%field%vol_flux_y,            &
+                           chunks(chunk)%field%mass_flux_z,           &
+                           chunks(chunk)%field%vol_flux_z,            &
                            chunks(chunk)%field%work_array1,           &
                            chunks(chunk)%field%work_array2,           &
                            chunks(chunk)%field%work_array3,           &

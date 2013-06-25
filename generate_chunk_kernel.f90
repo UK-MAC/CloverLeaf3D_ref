@@ -147,7 +147,7 @@ SUBROUTINE generate_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     y_cent=state_ymin(state)
     z_cent=state_zmin(state)
 
-!$OMP DO PRIVATE(radius,jt,kt)
+!$OMP DO PRIVATE(radius,jt,kt,lt)
     DO l=z_min-2,z_max+2
       DO k=y_min-2,y_max+2
         DO j=x_min-2,x_max+2
