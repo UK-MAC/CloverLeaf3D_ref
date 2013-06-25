@@ -74,6 +74,13 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    ALLOCATE(chunks(chunk)%field%yvel1(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
                                       chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
                                       chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
+   ALLOCATE(chunks(chunk)%field%zvel0(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
+                                      chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                      chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
+   ALLOCATE(chunks(chunk)%field%zvel1(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
+                                      chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                      chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
+
 
    ALLOCATE(chunks(chunk)%field%vol_flux_x (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
                                             chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &

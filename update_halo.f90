@@ -44,6 +44,8 @@ SUBROUTINE update_halo(fields,depth)
                                 chunks(c)%field%x_max,          &
                                 chunks(c)%field%y_min,          &
                                 chunks(c)%field%y_max,          &
+                                chunks(c)%field%z_min,          &
+                                chunks(c)%field%z_max,          &
                                 chunks(c)%chunk_neighbours,     &
                                 chunks(c)%field%density0,       &
                                 chunks(c)%field%energy0,        &
@@ -54,12 +56,16 @@ SUBROUTINE update_halo(fields,depth)
                                 chunks(c)%field%energy1,        &
                                 chunks(c)%field%xvel0,          &
                                 chunks(c)%field%yvel0,          &
+                                chunks(c)%field%zvel0,          &
                                 chunks(c)%field%xvel1,          &
                                 chunks(c)%field%yvel1,          &
+                                chunks(c)%field%zvel1,          &
                                 chunks(c)%field%vol_flux_x,     &
                                 chunks(c)%field%vol_flux_y,     &
+                                chunks(c)%field%vol_flux_z,     &
                                 chunks(c)%field%mass_flux_x,    &
                                 chunks(c)%field%mass_flux_y,    &
+                                chunks(c)%field%mass_flux_z,    &
                                 fields,                         &
                                 depth                           )
       ELSEIF(use_C_kernels)THEN

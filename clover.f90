@@ -118,9 +118,9 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
   INTEGER :: c,delta_x,delta_y,delta_z
 
   REAL(KIND=8) :: mesh_ratio,factor_x,factor_y,factor_z
-  INTEGER  :: chunk_x,chunk_y,mod_x,mod_y,split_found
+  INTEGER  :: chunk_x,chunk_y,chunk_z,mod_x,mod_y,split_found
 
-  INTEGER  :: cx,cy,chunk,add_x,add_y,add_x_prev,add_y_prev
+  INTEGER  :: cx,cy,cz,chunk,add_x,add_y,add_x_prev,add_y_prev
 
   ! 2D Decomposition of the mesh
 
@@ -154,6 +154,8 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
     ENDIF
   ENDIF
 
+  chunk_z=1
+
   delta_x=x_cells/chunk_x
   delta_y=y_cells/chunk_y
   mod_x=MOD(x_cells,chunk_x)
@@ -164,35 +166,39 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
   add_x_prev=0
   add_y_prev=0
   chunk=1
-  DO cy=1,chunk_y
-    DO cx=1,chunk_x
-      add_x=0
-      add_y=0
-      IF(cx.LE.mod_x)add_x=1
-      IF(cy.LE.mod_y)add_y=1
-      left(chunk)=(cx-1)*delta_x+1+add_x_prev
-      right(chunk)=left(chunk)+delta_x-1+add_x
-      bottom(chunk)=(cy-1)*delta_y+1+add_y_prev
-      top(chunk)=bottom(chunk)+delta_y-1+add_y
-      chunks(chunk)%chunk_neighbours(chunk_left)=chunk_x*(cy-1)+cx-1
-      chunks(chunk)%chunk_neighbours(chunk_right)=chunk_x*(cy-1)+cx+1
-      chunks(chunk)%chunk_neighbours(chunk_bottom)=chunk_x*(cy-2)+cx
-      chunks(chunk)%chunk_neighbours(chunk_top)=chunk_x*(cy)+cx
-      IF(cx.EQ.1)chunks(chunk)%chunk_neighbours(chunk_left)=external_face
-      IF(cx.EQ.chunk_x)chunks(chunk)%chunk_neighbours(chunk_right)=external_face
-      IF(cy.EQ.1)chunks(chunk)%chunk_neighbours(chunk_bottom)=external_face
-      IF(cy.EQ.chunk_y)chunks(chunk)%chunk_neighbours(chunk_top)=external_face
-      IF(cx.LE.mod_x)add_x_prev=add_x_prev+1
-      chunk=chunk+1
+  DO cz=1,chunk_z
+    DO cy=1,chunk_y
+      DO cx=1,chunk_x
+        add_x=0
+        add_y=0
+        IF(cx.LE.mod_x)add_x=1
+        IF(cy.LE.mod_y)add_y=1
+        left(chunk)=(cx-1)*delta_x+1+add_x_prev
+        right(chunk)=left(chunk)+delta_x-1+add_x
+        bottom(chunk)=(cy-1)*delta_y+1+add_y_prev
+        top(chunk)=bottom(chunk)+delta_y-1+add_y
+        chunks(chunk)%chunk_neighbours(chunk_left)=chunk_x*(cy-1)+cx-1
+        chunks(chunk)%chunk_neighbours(chunk_right)=chunk_x*(cy-1)+cx+1
+        chunks(chunk)%chunk_neighbours(chunk_bottom)=chunk_x*(cy-2)+cx
+        chunks(chunk)%chunk_neighbours(chunk_top)=chunk_x*(cy)+cx
+        IF(cx.EQ.1)chunks(chunk)%chunk_neighbours(chunk_left)=external_face
+        IF(cx.EQ.chunk_x)chunks(chunk)%chunk_neighbours(chunk_right)=external_face
+        IF(cy.EQ.1)chunks(chunk)%chunk_neighbours(chunk_bottom)=external_face
+        IF(cy.EQ.chunk_y)chunks(chunk)%chunk_neighbours(chunk_top)=external_face
+        IF(cx.LE.mod_x)add_x_prev=add_x_prev+1
+        chunks(chunk)%chunk_neighbours(chunk_back)=external_face
+        chunks(chunk)%chunk_neighbours(chunk_front)=external_face
+        chunk=chunk+1
+      ENDDO
+      add_x_prev=0
+      IF(cy.LE.mod_y)add_y_prev=add_y_prev+1
     ENDDO
-    add_x_prev=0
-    IF(cy.LE.mod_y)add_y_prev=add_y_prev+1
   ENDDO
 
   IF(parallel%boss)THEN
     WRITE(g_out,*)
     WRITE(g_out,*)"Mesh ratio of ",mesh_ratio
-    WRITE(g_out,*)"Decomposing the mesh into ",chunk_x," by ",chunk_y," chunks"
+    WRITE(g_out,*)"Decomposing the mesh into ",chunk_x," by ",chunk_y," by ",chunk_z," chunks"
     WRITE(g_out,*)
   ENDIF
 
@@ -222,6 +228,14 @@ SUBROUTINE clover_allocate_buffers(chunk)
     !IF(chunks(chunk)%chunk_neighbours(chunk_top).NE.external_face) THEN
       ALLOCATE(chunks(chunk)%top_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
       ALLOCATE(chunks(chunk)%top_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+    !ENDIF
+    !IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
+      ALLOCATE(chunks(chunk)%back_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%back_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+    !ENDIF
+    !IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
+      ALLOCATE(chunks(chunk)%front_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%front_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
     !ENDIF
   ENDIF
 

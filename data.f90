@@ -40,8 +40,8 @@ MODULE data_module
                              ,CHUNK_RIGHT  =2    &
                              ,CHUNK_BOTTOM =3    &
                              ,CHUNK_TOP    =4    &
-                             ,CHUNK_BACK   =6    &
-                             ,CHUNK_FRONT  =7    &
+                             ,CHUNK_BACK   =5    &
+                             ,CHUNK_FRONT  =6    &
                              ,EXTERNAL_FACE=-1
 
    INTEGER,         PARAMETER :: FIELD_DENSITY0   = 1         &
@@ -63,7 +63,7 @@ MODULE data_module
                                 ,FIELD_MASS_FLUX_X=17         &
                                 ,FIELD_MASS_FLUX_Y=18         &
                                 ,FIELD_MASS_FLUX_Z=19         &
-                                ,NUM_FIELDS       =20
+                                ,NUM_FIELDS       =19
 
    INTEGER,         PARAMETER :: CELL_DATA     = 1,        &
                                  VERTEX_DATA   = 2,        &

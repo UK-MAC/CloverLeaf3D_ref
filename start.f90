@@ -153,7 +153,7 @@ SUBROUTINE start
   fields(FIELD_ZVEL1)=1
 
   CALL update_halo(fields,2)
-
+stop
   IF(parallel%boss)THEN
      WRITE(g_out,*)
      WRITE(g_out,*) 'Problem initialised and generated'

@@ -91,6 +91,18 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
 !$OMP END DO
 
 !$OMP DO
+  DO l=z_min-2,z_max+3
+     vertexz(l)=zmin+dz*float(l-z_min)
+  ENDDO
+!$OMP END DO
+
+!$OMP DO
+  DO l=z_min-2,z_max+3
+    vertexdz(l)=dz
+  ENDDO
+!$OMP END DO
+
+!$OMP DO
   DO j=x_min-2,x_max+2
      cellx(j)=0.5*(vertexx(j)+vertexx(j+1))
   ENDDO
@@ -111,6 +123,18 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
 !$OMP DO
   DO k=y_min-2,y_max+2
      celldy(k)=dy
+  ENDDO
+!$OMP END DO
+
+!$OMP DO
+  DO l=z_min-2,z_max+2
+     celly(l)=0.5*(vertexz(l)+vertexz(l+1))
+  ENDDO
+!$OMP END DO
+
+!$OMP DO
+  DO l=z_min-2,z_max+2
+     celldz(l)=dz
   ENDDO
 !$OMP END DO
 
@@ -148,7 +172,7 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
   DO l=z_min-2,z_max+2
     DO k=y_min-2,y_max+2
       DO j=x_min-2,x_max+2
-        zarea(j,k,l)=celldz(j)
+        zarea(j,k,l)=celldz(l)
       ENDDO
     ENDDO
   ENDDO
