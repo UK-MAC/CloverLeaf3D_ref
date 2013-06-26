@@ -21,6 +21,9 @@
 !>  smooth out shock front and prevent oscillations around discontinuities.
 !>  Only cells in compression will have a non-zero value.
 
+! NOTES
+! The gradients needs checking for 3d
+
 MODULE viscosity_kernel_module
 
 CONTAINS
@@ -55,14 +58,17 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
-        ugrad=(xvel0(j+1,k  ,l)+xvel0(j+1,k+1,l))-(xvel0(j  ,k  ,l)+xvel0(j  ,k+1,l))
+        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  ))-(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  ))
 
-        vgrad=(yvel0(j  ,k+1,l)+yvel0(j+1,k+1,l))-(yvel0(j  ,k  ,l)+yvel0(j+1,k  ,l))
+        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  ))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))
 
-        div = (celldx(j)*(ugrad)+  celldy(k)*(vgrad))
+        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l  ))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))
 
-        strain2 = 0.5_8*(xvel0(j,  k+1,l) + xvel0(j+1,k+1,l)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l))/celldy(k) &
-                + 0.5_8*(yvel0(j+1,k  ,l) + yvel0(j+1,k+1,l)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l))/celldx(j)
+        div = (celldx(j)*(ugrad)+  celldy(k)*(vgrad))+ celldz(l)*(wgrad)
+
+        strain2 = 0.5_8*(xvel0(j,  k+1,l  ) + xvel0(j+1,k+1,l+1)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l  ))/celldy(k) &
+                + 0.5_8*(yvel0(j+1,k  ,l  ) + yvel0(j+1,k+1,l+1)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l  ))/celldx(j) &
+                + 0.5_8*(zvel0(j  ,k  ,l+1) + zvel0(j+1,k+1,l+1)-zvel0(j  ,k  ,l)-yvel0(j  ,k  ,l+1))/celldx(j)   ! wrong
 
         pgradx=(pressure(j+1,k,l)-pressure(j-1,k,l))/(celldx(j)+celldx(j+1))
         pgrady=(pressure(j,k+1,l)-pressure(j,k-1,l))/(celldy(k)+celldy(k+1))
@@ -72,8 +78,8 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
         pgrady2 = pgrady*pgrady
         pgradz2 = pgradz*pgradz
 
-        limiter = ((0.5_8*(ugrad)/celldx(j))*pgradx2+(0.5_8*(vgrad)/celldy(k))*pgrady2+strain2*pgradx*pgrady)  &
-                /MAX(pgradx2+pgrady2,1.0e-16_8)
+        limiter = ((0.5_8*(ugrad)/celldx(j))*pgradx2+(0.5_8*(vgrad)/celldy(k))*pgrady2+(0.5_8*(wgrad)/celldz(l))*pgradz2+strain2*pgradx*pgrady*pgradz)  &
+                /MAX(pgradx2+pgrady2+pgradz2,1.0e-16_8)
 
         IF ((limiter.GT.0.0).OR.(div.GE.0.0))THEN
           viscosity(j,k,l) = 0.0
@@ -81,7 +87,7 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
           pgradx = SIGN(MAX(1.0e-16_8,ABS(pgradx)),pgradx)
           pgrady = SIGN(MAX(1.0e-16_8,ABS(pgrady)),pgrady)
           pgradz = SIGN(MAX(1.0e-16_8,ABS(pgradz)),pgradz)
-          pgrad = SQRT(pgradx*pgradx+pgrady*pgrady)
+          pgrad = SQRT(pgradx*pgradx+pgrady*pgrady+pgradz*pgradz)
           xgrad = ABS(celldx(j)*pgrad/pgradx)
           ygrad = ABS(celldy(k)*pgrad/pgrady)
           zgrad = ABS(celldz(l)*pgrad/pgradz)

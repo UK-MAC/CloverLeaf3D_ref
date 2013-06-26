@@ -22,12 +22,14 @@
 !>  level of the velocity data depends on whether it is invoked as the
 !>  predictor or corrector.
 
+! Notes
+! Again, fluxes need updating for 3d
+
 MODULE PdV_kernel_module
 
 CONTAINS
 
-SUBROUTINE PdV_kernel(THREE_D,                                          &
-                      predict,                                          &
+SUBROUTINE PdV_kernel(predict,                                          &
                       x_min,x_max,y_min,y_max,z_min,z_max,dt,           &
                       xarea,yarea,zarea,volume,                         &
                       density0,                                         &
@@ -46,7 +48,7 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
 
   IMPLICIT NONE
 
-  LOGICAL :: THREE_D,predict
+  LOGICAL :: predict
 
   INTEGER :: x_min,x_max,y_min,y_max,z_min,z_max
   REAL(KIND=8)  :: dt
@@ -65,21 +67,19 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
   INTEGER :: j,k,l
 
   REAL(KIND=8)  :: recip_volume,energy_change,min_cell_volume
-  REAL(KIND=8)  :: right_flux,left_flux,top_flux,bottom_flux,total_flux,back_flux,front_flux
+  REAL(KIND=8)  :: right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux
 
 !$OMP PARALLEL
 
   IF(predict)THEN
 
-! How do I prevent unneccarry terms being calculated in 2d runs?
-! Logic in the loop may prevent optimisation. Perhaps an extra loop?
-
-!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,total_flux,min_cell_volume, &
+!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
 !$OMP            energy_change,recip_volume)
     DO l=z_min,z_max
       DO k=y_min,y_max
         DO j=x_min,x_max
 
+          ! These aren't correct yet
           left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )                     &
                                          +xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )))*0.25_8*dt*0.5
           right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )                     &
@@ -88,12 +88,17 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
                                          +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
           top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
                                          +yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
-          total_flux=right_flux-left_flux+top_flux-bottom_flux
+          back_flux=  (zarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
+                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
+          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)                     &
+                                         +zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)))*0.25_8*dt*0.5
+          total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
           volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
 
-          min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux &
-                             ,volume(j,k,l)+right_flux-left_flux                      &
+          min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux  &
+                             ,volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux                       &
+                             ,volume(j,k,l)+right_flux-left_flux                                            &
                              ,volume(j,k,l)+top_flux-bottom_flux)
  
           recip_volume=1.0/volume(j,k,l) 
@@ -111,7 +116,7 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
 
   ELSE
 
-!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,total_flux,min_cell_volume, &
+!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
 !$OMP            energy_change,recip_volume)
     DO l=z_min,z_max
       DO k=y_min,y_max
@@ -125,13 +130,18 @@ SUBROUTINE PdV_kernel(THREE_D,                                          &
                                           +yvel1(j  ,k  ,l  )+yvel1(j+1,k  ,l  )))*0.25_8*dt
           top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
                                           +yvel1(j  ,k+1,l  )+yvel1(j+1,k+1,l  )))*0.25_8*dt
-          total_flux=right_flux-left_flux+top_flux-bottom_flux
+          back_flux=  (zarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
+                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
+          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)                     &
+                                         +zvel1(j  ,k  ,l+1)+zvel1(j+1,k+1,l+1)))*0.25_8*dt
+          total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
           volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
 
-          min_cell_volume=MIN(volume(j,k,l  )+right_flux-left_flux+top_flux-bottom_flux &
-                             ,volume(j,k,l  )+right_flux-left_flux                      &
-                             ,volume(j,k,l  )+top_flux-bottom_flux)
+          min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux  &
+                             ,volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux                       &
+                             ,volume(j,k,l)+right_flux-left_flux                                            &
+                             ,volume(j,k,l)+top_flux-bottom_flux)
  
           recip_volume=1.0/volume(j,k,l) 
 

@@ -51,7 +51,7 @@ SUBROUTINE PdV(predict)
     IF(chunks(c)%task.EQ.parallel%task) THEN
 
       IF(use_fortran_kernels)THEN
-        CALL PdV_kernel(THREE_D,predict,          &
+        CALL PdV_kernel(predict,                  &
                       chunks(c)%field%x_min,      &
                       chunks(c)%field%x_max,      &
                       chunks(c)%field%y_min,      &

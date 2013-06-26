@@ -24,8 +24,7 @@ MODULE accelerate_kernel_module
 
 CONTAINS
 
-SUBROUTINE accelerate_kernel(THREE_D,                                    &
-                             x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
+SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
                              xarea,yarea,zarea,                          &
                              volume,                                     &
                              density0,                                   &
@@ -41,9 +40,8 @@ SUBROUTINE accelerate_kernel(THREE_D,                                    &
 
   IMPLICIT NONE
 
-  LOGICAL               :: THREE_D
   INTEGER               :: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8)          :: dt,dim_factor
+  REAL(KIND=8)          :: dt
 
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2 ,z_min-2:z_max+2) :: density0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2 ,z_min-2:z_max+2) :: volume
@@ -59,26 +57,22 @@ SUBROUTINE accelerate_kernel(THREE_D,                                    &
   INTEGER               :: j,k,l
   REAL(KIND=8)          :: nodal_mass
 
-  IF(THREE_D) THEN
-    dim_factor=0.125_8
-  ELSE
-    dim_factor=0.25_8
-  ENDIF
-
-
 !$OMP PARALLEL
 
-!This is not correct for 3d yet
 !$OMP DO PRIVATE(nodal_mass)
   DO l=z_min,z_max+1
     DO k=y_min,y_max+1
       DO j=x_min,x_max+1
 
-        nodal_mass=(density0(j-1,k-1,l)*volume(j-1,k-1,l)  &
-                   +density0(j  ,k-1,l)*volume(j  ,k-1,l)  &
-                   +density0(j  ,k  ,l)*volume(j  ,k  ,l)  &
-                   +density0(j-1,k  ,l)*volume(j-1,k  ,l)) &
-                   *dim_factor
+        nodal_mass=(density0(j-1,k-1,l  )*volume(j-1,k-1,l  )  &
+                   +density0(j  ,k-1,l  )*volume(j  ,k-1,l  )  &
+                   +density0(j  ,k  ,l  )*volume(j  ,k  ,l  )  &
+                   +density0(j-1,k  ,l  )*volume(j-1,k  ,l  )  &
+                   +density0(j-1,k-1,l+1)*volume(j-1,k-1,l+1)  &
+                   +density0(j  ,k-1,l+1)*volume(j  ,k-1,l+1)  &
+                   +density0(j  ,k  ,l+1)*volume(j  ,k  ,l+1)  &
+                   +density0(j-1,k  ,l+1)*volume(j-1,k  ,l+1)) &
+                   *0.125_8
 
         stepbymass(j,k,l)=0.5_8*dt/nodal_mass
 
@@ -86,6 +80,8 @@ SUBROUTINE accelerate_kernel(THREE_D,                                    &
     ENDDO
   ENDDO
 !$OMP END DO
+
+! These graidents need checking as well
 
 !$OMP DO
   DO l=z_min,z_max+1

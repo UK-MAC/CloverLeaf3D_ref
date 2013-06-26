@@ -21,6 +21,9 @@
 !>  condition, the velocity gradient and the velocity divergence. A safety
 !>  factor is used to ensure numerical stability.
 
+! NOTES
+! Need to check the divergence calc for each velocity component
+
 MODULE calc_dt_kernel_module
 
 CONTAINS
@@ -110,32 +113,32 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         cc=cc+2.0_8*viscosity(j,k,l)/density0(j,k,l)
         cc=MAX(SQRT(cc),g_small)
 
-        dtct=dtc_safe*MIN(dsx,dsy)/cc
+        dtct=dtc_safe*MIN(dsx,dsy,dsz)/cc
 
         div=0.0
 
-        dv1=(xvel0(j  ,k,l  )+xvel0(j  ,k+1,l  ))*xarea(j  ,k,l  )
-        dv2=(xvel0(j+1,k,l  )+xvel0(j+1,k+1,l  ))*xarea(j+1,k,l  )
+        dv1=(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  ))*xarea(j  ,k  ,l  )
+        dv2=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  ))*xarea(j+1,k  ,l  )
 
         div=div+dv2-dv1
 
-        dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
+        dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
-        dv1=(yvel0(j,k  ,l  )+yvel0(j+1,k  ,l  ))*yarea(j,k  ,l  )
-        dv2=(yvel0(j,k+1,l  )+yvel0(j+1,k+1,l  ))*yarea(j,k+1,l  )
-
-        div=div+dv2-dv1
-
-        dtvt=dtv_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
-
-        div=div/(2.0_8*volume(j,k,l  ))
-
-        dv1=(zvel0(j,k  ,l  )+zvel0(j+1,k  ,l  ))*zarea(j,k  ,l  )
-        dv2=(zvel0(j,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j,k+1,l  )
+        dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))*yarea(j  ,k  ,l  )
+        dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  ))*yarea(j  ,k+1,l  )
 
         div=div+dv2-dv1
 
-        dtwt=dtw_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l  ))
+        dtvt=dtv_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+
+        dv1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  ))*zarea(j  ,k  ,l  )
+        dv2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l+1)
+
+        div=div+dv2-dv1
+
+        dtwt=dtw_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+
+        div=div/(2.0_8*volume(j,k,l))
 
         IF(div.LT.-g_small)THEN
           dtdivt=dtdiv_safe*(-1.0_8/div)
@@ -180,10 +183,14 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     WRITE(0,*) 'x, y                 : ',cellx(jldt),celly(kldt)
     WRITE(0,*) 'timestep : ',dt_min_val
     WRITE(0,*) 'Cell velocities;'
-    WRITE(0,*) xvel0(jldt  ,kldt  ,lldt),yvel0(jldt  ,kldt  ,lldt)
-    WRITE(0,*) xvel0(jldt+1,kldt  ,lldt),yvel0(jldt+1,kldt  ,lldt)
-    WRITE(0,*) xvel0(jldt+1,kldt+1,lldt),yvel0(jldt+1,kldt+1,lldt)
-    WRITE(0,*) xvel0(jldt  ,kldt+1,lldt),yvel0(jldt  ,kldt+1,lldt)
+    WRITE(0,*) xvel0(jldt  ,kldt  ,lldt  ),yvel0(jldt  ,kldt  ,lldt  ),zvel0(jldt  ,kldt  ,lldt  )
+    WRITE(0,*) xvel0(jldt+1,kldt  ,lldt  ),yvel0(jldt+1,kldt  ,lldt  ),zvel0(jldt  ,kldt  ,lldt  )
+    WRITE(0,*) xvel0(jldt+1,kldt+1,lldt  ),yvel0(jldt+1,kldt+1,lldt  ),zvel0(jldt  ,kldt  ,lldt  )
+    WRITE(0,*) xvel0(jldt  ,kldt+1,lldt  ),yvel0(jldt  ,kldt+1,lldt  ),zvel0(jldt  ,kldt  ,lldt  )
+    WRITE(0,*) xvel0(jldt  ,kldt  ,lldt+1),yvel0(jldt  ,kldt  ,lldt+1),zvel0(jldt  ,kldt  ,lldt+1)
+    WRITE(0,*) xvel0(jldt+1,kldt  ,lldt+1),yvel0(jldt+1,kldt  ,lldt+1),zvel0(jldt  ,kldt  ,lldt+1)
+    WRITE(0,*) xvel0(jldt+1,kldt+1,lldt+1),yvel0(jldt+1,kldt+1,lldt+1),zvel0(jldt  ,kldt  ,lldt+1)
+    WRITE(0,*) xvel0(jldt  ,kldt+1,lldt+1),yvel0(jldt  ,kldt+1,lldt+1),zvel0(jldt  ,kldt  ,lldt+1)
     WRITE(0,*) 'density, energy, pressure, soundspeed '
     WRITE(0,*) density0(jldt,kldt,lldt),energy0(jldt,kldt,lldt),pressure(jldt,kldt,lldt),soundspeed(jldt,kldt,lldt)
   ENDIF

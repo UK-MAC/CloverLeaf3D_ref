@@ -40,8 +40,7 @@ SUBROUTINE accelerate()
     IF(chunks(c)%task.EQ.parallel%task) THEN
 
       IF(use_fortran_kernels) THEN
-        CALL accelerate_kernel(THREE_D,                              &
-                             chunks(c)%field%x_min,                  &
+        CALL accelerate_kernel( chunks(c)%field%x_min,               &
                              chunks(c)%field%x_max,                  &
                              chunks(c)%field%y_min,                  &
                              chunks(c)%field%y_max,                  &

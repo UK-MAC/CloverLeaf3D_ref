@@ -22,6 +22,9 @@
 !>  of data governs how this is carried out. External boundaries are always
 !>  reflective.
 
+! Notes
+! More fields to add and corrections to be made
+
 MODULE update_halo_kernel_module
 
 CONTAINS
@@ -633,7 +636,7 @@ CONTAINS
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
           DO l=1,depth
-            xvel0(j,k,1-l)=-xvel0(j,k,1+l)
+            xvel0(j,k,1-l)=xvel0(j,k,1+l)
           ENDDO
         ENDDO
       ENDDO
@@ -644,7 +647,7 @@ CONTAINS
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
           DO l=1,depth
-            xvel0(j,k,z_max+1+l)=-xvel0(j,k,z_max+1-l)
+            xvel0(j,k,z_max+1+l)=xvel0(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO
@@ -697,6 +700,28 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            xvel1(j,k,1-l)=xvel1(j,k,1+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            xvel1(j,k,z_max+1+l)=xvel1(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
   ENDIF
 
   IF(fields(FIELD_YVEL0).EQ.1) THEN
@@ -744,6 +769,28 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            yvel0(j,k,1-l)=yvel0(j,k,1+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            yvel0(j,k,z_max+1+l)=yvel0(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
   ENDIF
 
   IF(fields(FIELD_YVEL1).EQ.1) THEN
@@ -786,6 +833,97 @@ CONTAINS
         DO k=y_min-depth,y_max+1+depth
           DO j=1,depth
             yvel1(x_max+1+j,k,l)=yvel1(x_max+1-j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            yvel1(j,k,1-l)=yvel1(j,k,1+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            yvel1(j,k,z_max+1+l)=yvel1(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+  ENDIF
+
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=x_min-depth,x_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            zvel0(j,1-k,l)=zvel0(j,k,1+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=x_min-depth,x_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            zvel0(j,k,z_max+1+l)=zvel0(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+1+depth
+        DO k=y_min-depth,y_max+1+depth
+          DO j=1,depth
+            zvel0(1-j,k,l)=zvel0(1+j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+1+depth
+        DO k=y_min-depth,y_max+1+depth
+          DO j=1,depth
+            zvel0(x_max+1+j,k,l)=zvel0(x_max+1-j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            zvel0(j,k,1-l)=zvel0(j,k,1+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+1+depth
+        DO j=x_min-depth,x_max+1+depth
+          DO l=1,depth
+            zvel0(j,k,z_max+1+l)=zvel0(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO
@@ -979,6 +1117,11 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
+  ENDIF
+
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
   ENDIF
 
 !$OMP END PARALLEL

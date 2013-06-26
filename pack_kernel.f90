@@ -19,14 +19,17 @@
 !>  @author Wayne Gaudin
 !>  @details Packs/unpacks mpi send and receive buffers
 
+! Notes
+! Loads left to do
+
 MODULE pack_kernel_module
 
 CONTAINS
 
-SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,field,                &
-                                    left_snd_buffer,                              &
-                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                    depth,field_type,                             &
+SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                    left_snd_buffer,                                           &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                    depth,field_type,                                          &
                                     buffer_offset)
 
   IMPLICIT NONE
@@ -34,9 +37,9 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,field,              
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_snd_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Pack 
 
@@ -44,25 +47,36 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,field,              
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
 !$OMP PARALLEL DO PRIVATE(index)
-  DO k=y_min-depth,y_max+y_inc+depth
-    DO j=1,depth
-      index=buffer_offset + j+(k+depth-1)*depth
-      left_snd_buffer(index)=field(x_min+x_inc-1+j,k,l)
+  DO l=z_min-depth,z_max+z_inc+depth
+    DO k=y_min-depth,y_max+y_inc+depth
+      DO j=1,depth
+        index=buffer_offset + j+(k+depth-1)*depth
+        left_snd_buffer(index)=field(x_min+x_inc-1+j,k,l)
+      ENDDO
     ENDDO
   ENDDO
 !$OMP END PARALLEL DO

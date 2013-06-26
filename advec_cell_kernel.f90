@@ -20,6 +20,9 @@
 !>  @details Performs a second order advective remap using van-Leer limiting
 !>  with directional splitting.
 
+! Notes
+! All the sweep numbers need to be update and intermediate volumes correctly calculated
+
 MODULE advec_cell_kernel_module
 
 CONTAINS
@@ -63,7 +66,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy1
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: vol_flux_x
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: vol_flux_y
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: vol_flux_z
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: vol_flux_z
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: mass_flux_x
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: mass_flux_y
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: mass_flux_z
@@ -100,7 +103,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO 
 !$OMP END DO
-    ELSE
+    ELSEIF(sweep_number.EQ.2) THEN
 !$OMP DO
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
@@ -111,6 +114,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO 
 !$OMP END DO
+    ELSEIF(sweep_number.EQ.3) THEN
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
@@ -180,20 +184,20 @@ SUBROUTINE advec_cell_kernel(x_min,       &
     ENDDO
 !$OMP END DO
 
-  ELSEIF(dir.EQ.g_ydir) THEN
+  ELSEIF(dir.EQ.g_ydir) THEN ! But y might always be sweep 2, but x and z have alternated
 
     IF(sweep_number.EQ.1)THEN
 !$OMP DO
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
           DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)+vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l))
+            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)+vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l)) ! z fluxes need to be included in all loops
             post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l))
           ENDDO
         ENDDO
       ENDDO
 !$OMP END DO
-    ELSE
+    ELSEIF(sweep_number.EQ.2) THEN
 !$OMP DO
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
@@ -204,6 +208,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
 !$OMP END DO
+    ELSEIF(sweep_number.EQ.3) THEN
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
@@ -265,6 +270,100 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           post_mass(j,k,l)=pre_mass(j,k,l)+mass_flux_y(j,k,l)-mass_flux_y(j,k+1,l)
           post_ener(j,k,l)=(energy1(j,k,l)*pre_mass(j,k,l)+ener_flux(j,k,l)-ener_flux(j,k+1,l))/post_mass(j,k,l)
           advec_vol(j,k,l)=pre_vol(j,k,l)+vol_flux_y(j,k,l)-vol_flux_y(j,k+1,l)
+          density1(j,k,l)=post_mass(j,k,l)/advec_vol(j,k,l)
+          energy1(j,k,l)=post_ener(j,k,l)
+        ENDDO
+      ENDDO
+    ENDDO
+!$OMP END DO
+
+
+  ELSEIF(dir.EQ.g_zdir) THEN
+
+    IF(sweep_number.EQ.1)THEN
+!$OMP DO
+      DO l=z_min-2,z_max+2
+        DO k=y_min-2,y_max+2
+          DO j=x_min-2,x_max+2
+            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)+vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l))
+            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l))
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ELSEIF(sweep_number.EQ.2) THEN
+!$OMP DO
+      DO l=z_min-2,z_max+2
+        DO k=y_min-2,y_max+2
+          DO j=x_min-2,x_max+2
+            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+            post_vol(j,k,l)=volume(j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ELSEIF(sweep_number.EQ.3) THEN
+    ENDIF
+
+!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
+!$OMP            diffuw,diffdw,limiter)
+    DO l=z_min,z_max
+      DO k=y_min,y_max+2
+        DO j=x_min,x_max
+
+          IF(vol_flux_z(j,k,l).GT.0.0)THEN
+            upwind   =l-2
+            donor    =l-1
+            downwind =l
+            dif      =donor
+          ELSE
+            upwind   =MIN(l+1,z_max+2)
+            donor    =l
+            downwind =l-1
+            dif      =upwind
+          ENDIF
+
+          sigmat=ABS(vol_flux_z(j,k,l))/pre_vol(j,k,donor)
+          sigma3=(1.0_8+sigmat)*(vertexdz(l)/vertexdz(dif))
+          sigma4=2.0_8-sigmat
+
+          sigma=sigmat
+          sigmav=sigmat
+
+          diffuw=density1(j,k,donor)-density1(j,k,upwind)
+          diffdw=density1(j,k,downwind)-density1(j,k,donor)
+          IF(diffuw*diffdw.GT.0.0)THEN
+            limiter=(1.0_8-sigmav)*SIGN(1.0_8,diffdw)*MIN(ABS(diffuw),ABS(diffdw)&
+                ,one_by_six*(sigma3*ABS(diffuw)+sigma4*ABS(diffdw)))
+          ELSE
+            limiter=0.0
+          ENDIF
+          mass_flux_z(j,k,l)=vol_flux_z(j,k,l)*(density1(j,k,donor)+limiter)
+
+          sigmam=ABS(mass_flux_z(j,k,l))/(density1(j,k,donor)*pre_vol(j,k,donor))
+          diffuw=energy1(j,k,donor)-energy1(j,k,upwind)
+          diffdw=energy1(j,k,downwind)-energy1(j,k,donor)
+          IF(diffuw*diffdw.GT.0.0)THEN
+            limiter=(1.0_8-sigmam)*SIGN(1.0_8,diffdw)*MIN(ABS(diffuw),ABS(diffdw)&
+                ,one_by_six*(sigma3*ABS(diffuw)+sigma4*ABS(diffdw)))
+          ELSE
+            limiter=0.0
+          ENDIF
+          ener_flux(j,k,l)=mass_flux_z(j,k,l)*(energy1(j,k,donor)+limiter)
+
+        ENDDO
+      ENDDO
+    ENDDO
+!$OMP END DO
+
+!$OMP DO
+    DO l=z_min,z_max
+      DO k=y_min,y_max
+        DO j=x_min,x_max
+          pre_mass(j,k,l)=density1(j,k,l)*pre_vol(j,k,l)
+          post_mass(j,k,l)=pre_mass(j,k,l)+mass_flux_z(j,k,l)-mass_flux_z(j,k,l+1)
+          post_ener(j,k,l)=(energy1(j,k,l)*pre_mass(j,k,l)+ener_flux(j,k,l)-ener_flux(j,k,l+1))/post_mass(j,k,l)
+          advec_vol(j,k,l)=pre_vol(j,k,l)+vol_flux_z(j,k,l)-vol_flux_z(j,k,l+1)
           density1(j,k,l)=post_mass(j,k,l)/advec_vol(j,k,l)
           energy1(j,k,l)=post_ener(j,k,l)
         ENDDO

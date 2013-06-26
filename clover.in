@@ -16,4 +16,5 @@
  end_time=3.0
  test_problem 1
  visit_frequency 1
+ summary_frequency 1
 *endclover

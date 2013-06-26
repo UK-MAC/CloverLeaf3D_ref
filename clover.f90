@@ -379,9 +379,11 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                     chunks(chunk)%field%x_max,                    &
                                     chunks(chunk)%field%y_min,                    &
                                     chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
                                     chunks(chunk)%field%density0,                 &
                                     chunks(chunk)%left_snd_buffer,                &
-                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                     depth, CELL_DATA,                             &
                                     left_right_offset(FIELD_DENSITY0))
     ELSE
@@ -402,9 +404,11 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                     chunks(chunk)%field%x_max,                    &
                                     chunks(chunk)%field%y_min,                    &
                                     chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
                                     chunks(chunk)%field%density1,                 &
                                     chunks(chunk)%left_snd_buffer,                &
-                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                     depth, CELL_DATA,                             &
                                     left_right_offset(FIELD_DENSITY1))
     ELSE

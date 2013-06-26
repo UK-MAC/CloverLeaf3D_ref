@@ -24,18 +24,18 @@ MODULE flux_calc_kernel_module
 CONTAINS
 
 SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
-                            xarea,                           &
-                            yarea,                           &
-                            zarea,                           &
-                            xvel0,                           &
-                            yvel0,                           &
-                            zvel0,                           &
-                            xvel1,                           &
-                            yvel1,                           &
-                            zvel1,                           &
-                            vol_flux_x,                      &
-                            vol_flux_y,                      &
-                            vol_flux_z                       )
+                            xarea,                                  &
+                            yarea,                                  &
+                            zarea,                                  &
+                            xvel0,                                  &
+                            yvel0,                                  &
+                            zvel0,                                  &
+                            xvel1,                                  &
+                            yvel1,                                  &
+                            zvel1,                                  &
+                            vol_flux_x,                             &
+                            vol_flux_y,                             &
+                            vol_flux_z                              )
 
   IMPLICIT NONE
 
@@ -54,12 +54,14 @@ SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
 
 !$OMP PARALLEL
 
+! These are no correct for 3d yet
+
 !$OMP DO
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max+1 
         vol_flux_x(j,k,l)=0.25_8*dt*xarea(j,k,l)                  &
-                         *(xvel0(j,k,l)+xvel0(j,k+1,l)+xvel1(j,k,l)+xvel1(j,k+1,l))
+                         *(xvel0(j,k,l)+xvel0(j,k+1,l)+xvel1(j,k,l)+xvel1(j,k+1,l)) ! Cell edge average needs to be made a face centre average
       ENDDO
     ENDDO
   ENDDO
