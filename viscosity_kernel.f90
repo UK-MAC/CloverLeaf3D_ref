@@ -39,7 +39,7 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   INTEGER     :: x_min,x_max,y_min,y_max,z_min,z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2)                     :: celldx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2)                     :: celldy
-  REAL(KIND=8), DIMENSION(y_min-2:y_max+2)                     :: celldz
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2)                     :: celldz
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: density0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: pressure
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: viscosity
