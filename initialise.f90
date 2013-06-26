@@ -121,9 +121,9 @@ SUBROUTINE initialise
   IF(parallel%boss)THEN
      REWIND(uin)
      DO 
-        READ(UNIT=uin,IOSTAT=ios,FMT='(a100)') ltmp ! Read in next line.
+        READ(UNIT=uin,IOSTAT=ios,FMT='(a150)') ltmp ! Read in next line.
         IF(ios.NE.0)EXIT
-        WRITE(g_out,FMT='(a100)') ltmp
+        WRITE(g_out,FMT='(a150)') ltmp
      ENDDO
   ENDIF
 

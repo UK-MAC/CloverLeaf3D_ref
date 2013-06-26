@@ -170,7 +170,7 @@ SUBROUTINE generate_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
               ENDIF
             ENDIF
           ELSEIF(state_geometry(state).EQ.g_circ ) THEN
-            radius=SQRT((cellx(j)-x_cent)*(cellx(j)-x_cent)+(celly(k)-y_cent)*(celly(k)-y_cent))
+            radius=SQRT((cellx(j)-x_cent)*(cellx(j)-x_cent)+(celly(k)-y_cent)*(celly(k)-y_cent)+(cellz(l)-z_cent)*(cellz(l)-z_cent))
             IF(radius.LE.state_radius(state))THEN
               energy0(j,k,l)=state_energy(state)
               density0(j,k,l)=state_density(state)

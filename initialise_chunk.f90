@@ -38,7 +38,7 @@ SUBROUTINE initialise_chunk(chunk)
 
   ymin=grid%ymin+dy*float(chunks(chunk)%field%bottom-1)
 
-  zmin=grid%zmin+dy*float(chunks(chunk)%field%back-1)
+  zmin=grid%zmin+dz*float(chunks(chunk)%field%back-1)
 
   IF(use_fortran_kernels) THEN
     CALL initialise_chunk_kernel(chunks(chunk)%field%x_min,    &

@@ -46,18 +46,19 @@ SUBROUTINE visit
   REAL(KIND=8) :: kernel_time,timer
 
   name = 'clover'
+  IF ( parallel%boss ) THEN
+    IF(first_call) THEN
 
-  IF(first_call) THEN
+      nblocks=number_of_chunks
+      filename = "clover2.visit"
+      u=get_unit(dummy)
+      OPEN(UNIT=u,FILE=filename,STATUS='UNKNOWN',IOSTAT=err)
+      WRITE(u,'(a,i5)')'!NBLOCKS ',nblocks
+      CLOSE(u)
 
-    nblocks=number_of_chunks
-    filename = "clover.visit"
-    u=get_unit(dummy)
-    OPEN(UNIT=u,FILE=filename,STATUS='UNKNOWN',IOSTAT=err)
-    WRITE(u,'(a,i5)')'!NBLOCKS ',nblocks
-    CLOSE(u)
+      first_call=.FALSE.
 
-    first_call=.FALSE.
-
+    ENDIF
   ENDIF
 
   IF(profiler_on) kernel_time=timer()
@@ -70,6 +71,7 @@ SUBROUTINE visit
   fields(FIELD_PRESSURE)=1
   fields(FIELD_XVEL0)=1
   fields(FIELD_YVEL0)=1
+  fields(FIELD_ZVEL0)=1
   IF(profiler_on) kernel_time=timer()
   CALL update_halo(fields,1)
   IF(profiler_on) profiler%halo_exchange=profiler%halo_exchange+(timer()-kernel_time)
@@ -77,7 +79,6 @@ SUBROUTINE visit
   IF(profiler_on) kernel_time=timer()
   CALL viscosity()
   IF(profiler_on) profiler%viscosity=profiler%viscosity+(timer()-kernel_time)
-
   IF ( parallel%boss ) THEN
 
     filename = "clover.visit"
@@ -127,12 +128,11 @@ SUBROUTINE visit
       ENDDO
       WRITE(u,'(a,i5,a)')'Z_COORDINATES ',nzv,' double'
       DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
-        WRITE(u,'(e12.4)')chunks(c)%field%vertexy(l)
+        WRITE(u,'(e12.4)')chunks(c)%field%vertexz(l)
       ENDDO
-      WRITE(u,'(a)')'0'
       WRITE(u,'(a,i20)')'CELL_DATA ',nxc*nyc*nzc
       WRITE(u,'(a)')'FIELD FieldData 4'
-      WRITE(u,'(a,i20,a)')'density 1 ',nxc*nyc,' double'
+      WRITE(u,'(a,i20,a)')'density 1 ',nxc*nyc*nzc,' double'
       DO l=chunks(c)%field%z_min,chunks(c)%field%z_max
         DO k=chunks(c)%field%y_min,chunks(c)%field%y_max
           WRITE(u,'(e12.4)')(chunks(c)%field%density0(j,k,l),j=chunks(c)%field%x_min,chunks(c)%field%x_max)
@@ -161,7 +161,7 @@ SUBROUTINE visit
         ENDDO
       ENDDO
       WRITE(u,'(a,i20)')'POINT_DATA ',nxv*nyv*nzv
-      WRITE(u,'(a)')'FIELD FieldData 2'
+      WRITE(u,'(a)')'FIELD FieldData 3'
       WRITE(u,'(a,i20,a)')'x_vel 1 ',nxv*nyv*nzv,' double'
       DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
         DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1

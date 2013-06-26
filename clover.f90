@@ -163,6 +163,8 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
   ! Set up chunk mesh ranges and chunk connectivity
 
+  back(1)=1
+  front(1)=z_cells
   add_x_prev=0
   add_y_prev=0
   chunk=1

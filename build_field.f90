@@ -38,7 +38,7 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
 
    chunks(chunk)%field%x_max=x_cells
    chunks(chunk)%field%y_max=y_cells
-   chunks(chunk)%field%y_max=z_cells
+   chunks(chunk)%field%z_max=z_cells
 
    ALLOCATE(chunks(chunk)%field%density0  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
                    chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &

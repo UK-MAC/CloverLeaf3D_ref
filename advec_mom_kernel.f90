@@ -95,7 +95,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
     vel1=>xvel1
   ELSEIF(which_vel.EQ.2)THEN
     vel1=>yvel1
-  ELSEIF(which_vel.EQ.2)THEN
+  ELSEIF(which_vel.EQ.3)THEN
     vel1=>zvel1
   ENDIF
 

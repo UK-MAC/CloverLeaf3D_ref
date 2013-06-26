@@ -28,7 +28,7 @@ CONTAINS
 FUNCTION tolower(string) RESULT (tolower_result)
 
   IMPLICIT NONE
-  CHARACTER (LEN=*), INTENt(IN) :: string
+  CHARACTER (LEN=*), INTENT(IN) :: string
   CHARACTER (LEN=LEN(string)) :: tolower_result
   INTEGER         :: i,ii
 
@@ -151,7 +151,7 @@ FUNCTION parse_getline(dummy)
   CHARACTER(LEN=len_max) :: l,nugget,string_temp1,string_temp2
 
   DO 
-    READ(UNIT=iu,IOSTAT=ios,FMT='(a100)') l ! Read in next line.
+    READ(UNIT=iu,IOSTAT=ios,FMT='(a150)') l ! Read in next line.
 
     parse_getline=ios
 

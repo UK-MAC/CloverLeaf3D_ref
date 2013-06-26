@@ -44,7 +44,7 @@ SUBROUTINE read_input()
   grid%zmin=  0.0
   grid%xmax=100.0
   grid%ymax=100.0
-  grid%zmax=  0.0
+  grid%zmax=  1.0
 
   grid%x_cells=10
   grid%y_cells=10
@@ -160,7 +160,7 @@ SUBROUTINE read_input()
         IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'zmin',grid%zmin
       CASE('zmax')
         grid%zmax=parse_getrval(parse_getword(.TRUE.))
-        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'ymax',grid%zmax
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'zmax',grid%zmax
       CASE('x_cells')
         grid%x_cells=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'x_cells',grid%x_cells
@@ -236,7 +236,7 @@ SUBROUTINE read_input()
             states(state)%ymax=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state ymax ',states(state)%ymax
           CASE('zmax')
-            states(state)%ymax=parse_getrval(parse_getword(.TRUE.))
+            states(state)%zmax=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state zmax ',states(state)%zmax
           CASE('radius')
             states(state)%radius=parse_getrval(parse_getword(.TRUE.))
@@ -252,10 +252,10 @@ SUBROUTINE read_input()
             SELECT CASE(word)
             CASE("cuboid")
               states(state)%geometry=g_rect
-              IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry rectangular'
+              IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry cuboid'
             CASE("sphere")
               states(state)%geometry=g_circ
-              IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry circular'
+              IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry sphere'
             CASE("point")
               states(state)%geometry=g_point
               IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry point'

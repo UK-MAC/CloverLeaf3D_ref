@@ -38,13 +38,13 @@ SUBROUTINE generate_chunk(chunk)
    state_energy(state)=states(state)%energy
    state_xvel(state)=states(state)%xvel
    state_yvel(state)=states(state)%yvel
-   state_yvel(state)=states(state)%zvel
+   state_zvel(state)=states(state)%zvel
    state_xmin(state)=states(state)%xmin
    state_xmax(state)=states(state)%xmax
    state_ymin(state)=states(state)%ymin
    state_ymax(state)=states(state)%ymax
-   state_ymin(state)=states(state)%zmin
-   state_ymax(state)=states(state)%zmax
+   state_zmin(state)=states(state)%zmin
+   state_zmax(state)=states(state)%zmax
    state_radius(state)=states(state)%radius
    state_geometry(state)=states(state)%geometry
   ENDDO
