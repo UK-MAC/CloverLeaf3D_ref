@@ -21,9 +21,6 @@
 !>  condition, the velocity gradient and the velocity divergence. A safety
 !>  factor is used to ensure numerical stability.
 
-! NOTES
-! Need to check the divergence calc for each velocity component
-
 MODULE calc_dt_kernel_module
 
 CONTAINS
@@ -117,22 +114,22 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
         div=0.0
 
-        dv1=(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  ))*xarea(j  ,k  ,l  )
-        dv2=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  ))*xarea(j+1,k  ,l  )
+        dv1=(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))*xarea(j  ,k  ,l  )
+        dv2=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1))*xarea(j+1,k  ,l  )
 
         div=div+dv2-dv1
 
         dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
-        dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))*yarea(j  ,k  ,l  )
-        dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  ))*yarea(j  ,k+1,l  )
+        dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))*yarea(j  ,k  ,l  )
+        dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))*yarea(j  ,k+1,l  )
 
         div=div+dv2-dv1
 
         dtvt=dtv_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
-        dv1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  ))*zarea(j  ,k  ,l  )
-        dv2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l+1)
+        dv1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l  )
+        dv2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1))*zarea(j  ,k  ,l+1)
 
         div=div+dv2-dv1
 
