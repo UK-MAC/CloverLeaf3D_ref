@@ -83,10 +83,10 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,  
 
 END SUBROUTINE clover_pack_message_left
 
-SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,                &
-                                      left_rcv_buffer,                              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                      depth,field_type,                             &
+SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                      left_rcv_buffer,                                           &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth,field_type,                                          &
                                       buffer_offset)
 
   IMPLICIT NONE
@@ -94,9 +94,9 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,            
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: left_rcv_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -104,18 +104,27 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,            
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
 !$OMP PARALLEL DO PRIVATE(index)
@@ -129,10 +138,10 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,field,            
 
 END SUBROUTINE clover_unpack_message_left
 
-SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,                &
-                                     right_snd_buffer,                             &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                     depth,field_type,                             &
+SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                     right_snd_buffer,                                          &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                     depth,field_type,                                          &
                                      buffer_offset)
 
   IMPLICIT NONE
@@ -140,9 +149,9 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,             
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: right_snd_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Pack 
 
@@ -150,18 +159,27 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,             
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
 !$OMP PARALLEL DO PRIVATE(index)
@@ -175,10 +193,10 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,field,             
 
 END SUBROUTINE clover_pack_message_right
 
-SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,                &
-                                       right_rcv_buffer,                             &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                       depth,field_type,                             &
+SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                       right_rcv_buffer,                                          &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth,field_type,                                          &
                                        buffer_offset)
 
   IMPLICIT NONE
@@ -186,9 +204,9 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,           
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: right_rcv_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -196,18 +214,27 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,           
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
 !$OMP PARALLEL DO PRIVATE(index)
@@ -221,10 +248,10 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,field,           
 
 END SUBROUTINE clover_unpack_message_right
 
-SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,                &
-                                   top_snd_buffer,                               &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                   depth,field_type,                             &
+SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                   top_snd_buffer,                                            &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                   depth,field_type,                                          &
                                    buffer_offset)
 
   IMPLICIT NONE
@@ -232,9 +259,9 @@ SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,               
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: top_snd_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Pack 
 
@@ -242,18 +269,27 @@ SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,               
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
   DO k=1,depth
@@ -267,10 +303,10 @@ SUBROUTINE clover_pack_message_top(x_min,x_max,y_min,y_max,field,               
 
 END SUBROUTINE clover_pack_message_top
 
-SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,                &
-                                     top_rcv_buffer,                               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                     depth,field_type,                             &
+SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                     top_rcv_buffer,                                            &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                     depth,field_type,                                          &
                                      buffer_offset)
 
   IMPLICIT NONE
@@ -278,9 +314,9 @@ SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,             
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: top_rcv_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -288,18 +324,27 @@ SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,             
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
   DO k=1,depth
@@ -313,10 +358,10 @@ SUBROUTINE clover_unpack_message_top(x_min,x_max,y_min,y_max,field,             
 
 END SUBROUTINE clover_unpack_message_top
 
-SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,                &
-                                      bottom_snd_buffer,                            &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                      depth,field_type,                             &
+SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                      bottom_snd_buffer,                                         &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth,field_type,                                          &
                                       buffer_offset)
 
   IMPLICIT NONE
@@ -324,9 +369,9 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,            
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_snd_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Pack 
 
@@ -334,18 +379,27 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,            
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
 !$OMP PARALLEL DO PRIVATE(index)
@@ -359,10 +413,10 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,field,            
 
 END SUBROUTINE clover_pack_message_bottom
 
-SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,                &
-                                        bottom_rcv_buffer,                            &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                        depth,field_type,                             &
+SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                        bottom_rcv_buffer,                                         &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                        depth,field_type,                                          &
                                         buffer_offset)
 
   IMPLICIT NONE
@@ -370,9 +424,9 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,          
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: bottom_rcv_buffer(:)
 
-  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA
-  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max
-  INTEGER      :: j,k,l,x_inc,y_inc,index,buffer_offset
+  INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
+  INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
+  INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Unpack 
 
@@ -380,18 +434,27 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,          
   IF(field_type.EQ.CELL_DATA) THEN
     x_inc=0
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.VERTEX_DATA) THEN
     x_inc=1
     y_inc=1
+    z_inc=1
   ENDIF
   IF(field_type.EQ.X_FACE_DATA) THEN
     x_inc=1
     y_inc=0
+    z_inc=0
   ENDIF
   IF(field_type.EQ.Y_FACE_DATA) THEN
     x_inc=0
     y_inc=1
+    z_inc=0
+  ENDIF
+  IF(field_type.EQ.Z_FACE_DATA) THEN
+    x_inc=0
+    y_inc=0
+    z_inc=1
   ENDIF
 
   DO k=1,depth
@@ -405,10 +468,10 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,field,          
 
 END SUBROUTINE clover_unpack_message_bottom
 
-SUBROUTINE clover_pack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,                &
-                                    back_snd_buffer,                                          &
-                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
-                                    depth,field_type,                                         &
+SUBROUTINE clover_pack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                    back_snd_buffer,                                           &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                    depth,field_type,                                          &
                                     buffer_offset)
 
   IMPLICIT NONE
@@ -462,10 +525,10 @@ SUBROUTINE clover_pack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,  
 
 END SUBROUTINE clover_pack_message_back
 
-SUBROUTINE clover_unpack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,                &
-                                      back_rcv_buffer,                                          &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
-                                      depth,field_type,                                         &
+SUBROUTINE clover_unpack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                      back_rcv_buffer,                                           &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth,field_type,                                          &
                                       buffer_offset)
 
   IMPLICIT NONE
@@ -519,10 +582,10 @@ SUBROUTINE clover_unpack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,
 
 END SUBROUTINE clover_unpack_message_back
 
-SUBROUTINE clover_pack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field,                &
-                                     front_snd_buffer,                                         &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
-                                     depth,field_type,                                         &
+SUBROUTINE clover_pack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field,                 &
+                                     front_snd_buffer,                                          &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                     depth,field_type,                                          &
                                      buffer_offset)
 
   IMPLICIT NONE
@@ -576,10 +639,10 @@ SUBROUTINE clover_pack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field, 
 
 END SUBROUTINE clover_pack_message_front
 
-SUBROUTINE clover_unpack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field,               &
-                                      front_rcv_buffer,                                         &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
-                                      depth,field_type,                                         &
+SUBROUTINE clover_unpack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field,                &
+                                      front_rcv_buffer,                                          &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth,field_type,                                          &
                                       buffer_offset)
 
   IMPLICIT NONE

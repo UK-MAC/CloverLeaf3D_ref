@@ -248,11 +248,11 @@ SUBROUTINE clover_exchange(fields,depth)
     IMPLICIT NONE
 
     INTEGER      :: fields(:),depth, chunk
-    INTEGER      :: left_right_offset(15),bottom_top_offset(15)
+    INTEGER      :: left_right_offset(19),bottom_top_offset(19),back_front_offset(19)
     INTEGER      :: request(4)
     INTEGER      :: message_count,err
     INTEGER      :: status(MPI_STATUS_SIZE,4)
-    INTEGER      :: end_pack_index_left_right, end_pack_index_bottom_top,field
+    INTEGER      :: end_pack_index_left_right, end_pack_index_bottom_top,end_pack_index_back_front,field
 
     ! Assuming 1 patch per task, this will be changed
 
@@ -263,12 +263,15 @@ SUBROUTINE clover_exchange(fields,depth)
 
     end_pack_index_left_right=0
     end_pack_index_bottom_top=0
+    end_pack_index_back_front=0
     DO field=1,15
       IF(fields(field).EQ.1) THEN
         left_right_offset(field)=end_pack_index_left_right
         bottom_top_offset(field)=end_pack_index_bottom_top
+        back_front_offset(field)=end_pack_index_back_front
         end_pack_index_left_right=end_pack_index_left_right+depth*(chunks(chunk)%field%y_max+5)
         end_pack_index_bottom_top=end_pack_index_bottom_top+depth*(chunks(chunk)%field%x_max+5)
+        end_pack_index_back_front=end_pack_index_back_front+depth*(chunks(chunk)%field%x_max+5)
       ENDIF
     ENDDO
 
@@ -361,6 +364,52 @@ SUBROUTINE clover_exchange(fields,depth)
                                chunks(chunk)%bottom_rcv_buffer,         &
                                bottom_top_offset)
     ENDIF
+
+!    message_count = 0
+!    request = 0
+!
+!    IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
+!      ! do back exchanges
+!      CALL clover_pack_back(chunk, fields, depth, back_front_offset)
+!
+!      !send message downwards
+!      CALL clover_send_recv_message_back(chunks(chunk)%back_snd_buffer,                     &
+!                                           chunks(chunk)%back_rcv_buffer,                     &
+!                                           chunk,end_pack_index_back_front,                     &
+!                                           5, 6,                                                &
+!                                           request(message_count+1), request(message_count+2))
+!      message_count = message_count + 2
+!    ENDIF
+!
+!    IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
+!      ! do top exchanges
+!      CALL clover_pack_front(chunk, fields, depth, bottom_top_offset)
+!
+!      !send message upwards
+!      CALL clover_send_recv_message_front(chunks(chunk)%front_snd_buffer,                           &
+!                                        chunks(chunk)%front_rcv_buffer,                           &
+!                                        chunk,end_pack_index_back_front,                        &
+!                                        6, 5,                                                   &
+!                                        request(message_count+1), request(message_count+2))
+!      message_count = message_count + 2
+!    ENDIF
+!
+!    !need to make a call to wait / sync
+!    CALL MPI_WAITALL(message_count,request,status,err)
+!
+!    !unpack in front direction
+!    IF( chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face ) THEN
+!      CALL clover_unpack_front(fields, chunk, depth,                       &
+!                             chunks(chunk)%front_rcv_buffer,               &
+!                             back_front_offset)
+!    ENDIF
+!
+!    !unpack in back direction
+!    IF(chunks(chunk)%chunk_neighbours(chunk_bottom).NE.external_face) THEN
+!      CALL clover_unpack_back(fields, chunk, depth,                   &
+!                               chunks(chunk)%back_rcv_buffer,         &
+!                               back_front_offset)
+!    ENDIF
 
 END SUBROUTINE clover_exchange
 
@@ -891,9 +940,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%density0,                 &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_DENSITY0))
     ELSE
@@ -914,9 +965,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%density1,                 &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_DENSITY1))
     ELSE
@@ -937,9 +990,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%energy0,                  &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_ENERGY0))
     ELSE
@@ -960,9 +1015,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%energy1,                  &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_ENERGY1))
     ELSE
@@ -983,9 +1040,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%pressure,                 &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_PRESSURE))
     ELSE
@@ -1006,9 +1065,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%viscosity,                &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_VISCOSITY))
     ELSE
@@ -1029,9 +1090,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%soundspeed,               &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -1052,9 +1115,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%xvel0,                    &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_XVEL0))
     ELSE
@@ -1075,9 +1140,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%xvel1,                    &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_XVEL1))
     ELSE
@@ -1098,9 +1165,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%yvel0,                    &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_YVEL0))
     ELSE
@@ -1121,9 +1190,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%yvel1,                    &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_YVEL1))
     ELSE
@@ -1138,15 +1209,67 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         left_right_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%zvel0,                    &
+                                      chunks(chunk)%left_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth, VERTEX_DATA,                           &
+                                      left_right_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_left_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel0,                    &
+                                        chunks(chunk)%left_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        left_right_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%zvel1,                    &
+                                      chunks(chunk)%left_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth, VERTEX_DATA,                           &
+                                      left_right_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_left_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel1,                    &
+                                        chunks(chunk)%left_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        left_right_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%vol_flux_x,               &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       left_right_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -1167,9 +1290,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%vol_flux_y,               &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       left_right_offset(FIELD_VOL_FLUX_Y))
     ELSE
@@ -1184,15 +1309,42 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
   ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%vol_flux_z,               &
+                                      chunks(chunk)%left_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth, Z_FACE_DATA,                           &
+                                      left_right_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_left_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%vol_flux_z,               &
+                                        chunks(chunk)%left_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        left_right_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%mass_flux_x,              &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       left_right_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -1213,9 +1365,11 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%mass_flux_y,              &
                                       chunks(chunk)%left_rcv_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       left_right_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -1228,6 +1382,31 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
                                         depth, Y_FACE_DATA,                           &
                                         left_right_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_left(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%mass_flux_z,              &
+                                      chunks(chunk)%left_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth, Z_FACE_DATA,                           &
+                                      left_right_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_left_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%mass_flux_z,              &
+                                        chunks(chunk)%left_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
   ENDIF
 
@@ -1247,9 +1426,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%density0,                 &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_DENSITY0))
     ELSE
@@ -1270,9 +1451,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%density1,                 &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_DENSITY1))
     ELSE
@@ -1293,9 +1476,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%energy0,                  &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_ENERGY0))
     ELSE
@@ -1316,9 +1501,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%energy1,                  &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_ENERGY1))
     ELSE
@@ -1339,9 +1526,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%pressure,                 &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_PRESSURE))
     ELSE
@@ -1362,9 +1551,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%viscosity,                &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_VISCOSITY))
     ELSE
@@ -1385,9 +1576,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%soundspeed,               &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      left_right_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -1408,9 +1601,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%xvel0,                    &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      left_right_offset(FIELD_XVEL0))
     ELSE
@@ -1431,9 +1626,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%xvel1,                    &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      left_right_offset(FIELD_XVEL1))
     ELSE
@@ -1454,9 +1651,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%yvel0,                    &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      left_right_offset(FIELD_YVEL0))
     ELSE
@@ -1477,9 +1676,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%yvel1,                    &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      left_right_offset(FIELD_YVEL1))
     ELSE
@@ -1500,9 +1701,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%vol_flux_x,               &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, X_FACE_DATA,                           &
                                      left_right_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -1523,9 +1726,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%vol_flux_y,               &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, Y_FACE_DATA,                           &
                                      left_right_offset(FIELD_VOL_FLUX_Y))
     ELSE
@@ -1540,15 +1745,42 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
   ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_right(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%vol_flux_z,               &
+                                     chunks(chunk)%right_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     left_right_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%vol_flux_z,               &
+                                       chunks(chunk)%right_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       left_right_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_pack_message_right(chunks(chunk)%field%x_min,                    &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%mass_flux_x,              &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, X_FACE_DATA,                           &
                                      left_right_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -1569,9 +1801,11 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%mass_flux_y,              &
                                      chunks(chunk)%right_snd_buffer,               &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, Y_FACE_DATA,                           &
                                      left_right_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -1584,6 +1818,31 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
                                        depth, Y_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_right(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%mass_flux_z,              &
+                                     chunks(chunk)%right_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     left_right_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%mass_flux_z,              &
+                                       chunks(chunk)%right_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
   ENDIF
 
@@ -1629,9 +1888,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%density0,                 &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_DENSITY0))
     ELSE
@@ -1652,9 +1913,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%density1,                 &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_DENSITY1))
     ELSE
@@ -1675,9 +1938,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%energy0,                  &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_ENERGY0))
     ELSE
@@ -1698,9 +1963,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%energy1,                  &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_ENERGY1))
     ELSE
@@ -1721,9 +1988,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%pressure,                 &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_PRESSURE))
     ELSE
@@ -1744,9 +2013,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%viscosity,                &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_VISCOSITY))
     ELSE
@@ -1767,9 +2038,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%soundspeed,               &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -1790,9 +2063,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%xvel0,                    &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_XVEL0))
     ELSE
@@ -1813,9 +2088,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%xvel1,                    &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_XVEL1))
     ELSE
@@ -1836,9 +2113,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%yvel0,                    &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_YVEL0))
     ELSE
@@ -1859,9 +2138,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%yvel1,                    &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_YVEL1))
     ELSE
@@ -1876,15 +2157,67 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          left_right_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%zvel0,                    &
+                                       chunks(chunk)%right_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       left_right_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%zvel0,                    &
+                                         chunks(chunk)%right_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         left_right_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%zvel1,                    &
+                                       chunks(chunk)%right_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       left_right_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%zvel1,                    &
+                                         chunks(chunk)%right_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         left_right_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%vol_flux_x,               &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, X_FACE_DATA,                           &
                                        left_right_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -1905,9 +2238,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%vol_flux_y,               &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, Y_FACE_DATA,                           &
                                        left_right_offset(FIELD_VOL_FLUX_Y))
     ELSE
@@ -1922,15 +2257,42 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
   ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%vol_flux_z,               &
+                                       chunks(chunk)%right_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       left_right_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%vol_flux_z,               &
+                                         chunks(chunk)%right_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Z_FACE_DATA,                           &
+                                         left_right_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%mass_flux_x,              &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, X_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -1951,9 +2313,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
                                        chunks(chunk)%field%mass_flux_y,              &
                                        chunks(chunk)%right_rcv_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, Y_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -1968,7 +2332,31 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          left_right_offset(FIELD_MASS_FLUX_Y))
     ENDIF
   ENDIF
-
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_right(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%mass_flux_z,              &
+                                       chunks(chunk)%right_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       left_right_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%mass_flux_y,              &
+                                         chunks(chunk)%right_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Y_FACE_DATA,                           &
+                                         left_right_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
 END SUBROUTINE clover_unpack_right
 
 SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
@@ -1985,9 +2373,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%density0,                 &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_DENSITY0))
     ELSE
@@ -2008,9 +2398,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%density1,                 &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_DENSITY1))
     ELSE
@@ -2031,9 +2423,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%energy0,                  &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_ENERGY0))
     ELSE
@@ -2054,9 +2448,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%energy1,                  &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_ENERGY1))
     ELSE
@@ -2077,9 +2473,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%pressure,                 &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_PRESSURE))
     ELSE
@@ -2100,9 +2498,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%viscosity,                &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_VISCOSITY))
     ELSE
@@ -2123,9 +2523,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%soundspeed,               &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
                                    bottom_top_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -2146,9 +2548,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%xvel0,                    &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, VERTEX_DATA,                           &
                                    bottom_top_offset(FIELD_XVEL0))
     ELSE
@@ -2169,9 +2573,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%xvel1,                    &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, VERTEX_DATA,                           &
                                    bottom_top_offset(FIELD_XVEL1))
     ELSE
@@ -2192,9 +2598,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%yvel0,                    &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, VERTEX_DATA,                           &
                                    bottom_top_offset(FIELD_YVEL0))
     ELSE
@@ -2215,9 +2623,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%yvel1,                    &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, VERTEX_DATA,                           &
                                    bottom_top_offset(FIELD_YVEL1))
     ELSE
@@ -2232,15 +2642,67 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      bottom_top_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_top(chunks(chunk)%field%x_min,                    &
+                                   chunks(chunk)%field%x_max,                    &
+                                   chunks(chunk)%field%y_min,                    &
+                                   chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
+                                   chunks(chunk)%field%zvel0,                    &
+                                   chunks(chunk)%top_snd_buffer,                 &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                   depth, VERTEX_DATA,                           &
+                                   bottom_top_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_pack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%zvel0,                    &
+                                     chunks(chunk)%top_snd_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     bottom_top_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_top(chunks(chunk)%field%x_min,                    &
+                                   chunks(chunk)%field%x_max,                    &
+                                   chunks(chunk)%field%y_min,                    &
+                                   chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
+                                   chunks(chunk)%field%zvel1,                    &
+                                   chunks(chunk)%top_snd_buffer,                 &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                   depth, VERTEX_DATA,                           &
+                                   bottom_top_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_pack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%zvel1,                    &
+                                     chunks(chunk)%top_snd_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     bottom_top_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_pack_message_top(chunks(chunk)%field%x_min,                    &
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%vol_flux_x,               &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, X_FACE_DATA,                           &
                                    bottom_top_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -2261,11 +2723,38 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%vol_flux_y,               &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, Y_FACE_DATA,                           &
                                    bottom_top_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%vol_flux_y,               &
+                                     chunks(chunk)%top_snd_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     depth, Y_FACE_DATA,                           &
+                                     bottom_top_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_top(chunks(chunk)%field%x_min,                    &
+                                   chunks(chunk)%field%x_max,                    &
+                                   chunks(chunk)%field%y_min,                    &
+                                   chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
+                                   chunks(chunk)%field%vol_flux_z,               &
+                                   chunks(chunk)%top_snd_buffer,                 &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                   depth, Z_FACE_DATA,                           &
+                                   bottom_top_offset(FIELD_VOL_FLUX_Z))
     ELSE
       CALL clover_pack_message_top_c(chunks(chunk)%field%x_min,                    &
                                      chunks(chunk)%field%x_max,                    &
@@ -2284,9 +2773,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%mass_flux_x,              &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, X_FACE_DATA,                           &
                                    bottom_top_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -2307,9 +2798,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%x_max,                    &
                                    chunks(chunk)%field%y_min,                    &
                                    chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
                                    chunks(chunk)%field%mass_flux_y,              &
                                    chunks(chunk)%top_snd_buffer,                 &
-                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, Y_FACE_DATA,                           &
                                    bottom_top_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -2324,7 +2817,31 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
   ENDIF
-
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_top(chunks(chunk)%field%x_min,                    &
+                                   chunks(chunk)%field%x_max,                    &
+                                   chunks(chunk)%field%y_min,                    &
+                                   chunks(chunk)%field%y_max,                    &
+                                   chunks(chunk)%field%z_min,                    &
+                                   chunks(chunk)%field%z_max,                    &
+                                   chunks(chunk)%field%mass_flux_z,              &
+                                   chunks(chunk)%top_snd_buffer,                 &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                   depth, Z_FACE_DATA,                           &
+                                   bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%mass_flux_z,              &
+                                     chunks(chunk)%top_snd_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
 END SUBROUTINE clover_pack_top
 
 SUBROUTINE clover_send_recv_message_top(top_snd_buffer, top_rcv_buffer,     &
@@ -2367,9 +2884,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%density0,                 &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_DENSITY0))
     ELSE
@@ -2390,9 +2909,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%density1,                 &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_DENSITY1))
     ELSE
@@ -2413,9 +2934,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%energy0,                  &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_ENERGY0))
     ELSE
@@ -2436,9 +2959,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%energy1,                  &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_ENERGY1))
     ELSE
@@ -2459,9 +2984,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%pressure,                 &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_PRESSURE))
     ELSE
@@ -2482,9 +3009,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%viscosity,                &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_VISCOSITY))
     ELSE
@@ -2505,9 +3034,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%soundspeed,               &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -2528,9 +3059,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%xvel0,                    &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_XVEL0))
     ELSE
@@ -2551,9 +3084,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%xvel1,                    &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_XVEL1))
     ELSE
@@ -2574,9 +3109,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%yvel0,                    &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_YVEL0))
     ELSE
@@ -2597,9 +3134,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%yvel1,                    &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_YVEL1))
     ELSE
@@ -2614,15 +3153,67 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        bottom_top_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%zvel0,                    &
+                                     chunks(chunk)%top_rcv_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     bottom_top_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel0,                    &
+                                       chunks(chunk)%top_rcv_buffer,                 &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       bottom_top_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%zvel1,                    &
+                                     chunks(chunk)%top_rcv_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     bottom_top_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel1,                    &
+                                       chunks(chunk)%top_rcv_buffer,                 &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       bottom_top_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%vol_flux_x,               &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, X_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -2643,9 +3234,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%vol_flux_y,               &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, Y_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_VOL_FLUX_Y))
     ELSE
@@ -2660,15 +3253,42 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
   ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%vol_flux_z,               &
+                                     chunks(chunk)%top_rcv_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     bottom_top_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%vol_flux_z,               &
+                                       chunks(chunk)%top_rcv_buffer,                 &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       bottom_top_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%mass_flux_x,              &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, X_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -2689,9 +3309,11 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
                                      chunks(chunk)%field%mass_flux_y,              &
                                      chunks(chunk)%top_rcv_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, Y_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -2706,7 +3328,31 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
   ENDIF
-
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_top(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%mass_flux_z,              &
+                                     chunks(chunk)%top_rcv_buffer,                 &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_top_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%mass_flux_z,              &
+                                       chunks(chunk)%top_rcv_buffer,                 &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
 END SUBROUTINE clover_unpack_top
 
 SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
@@ -2723,9 +3369,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%density0,                 &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_DENSITY0))
     ELSE
@@ -2746,9 +3394,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%density1,                 &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_DENSITY1))
     ELSE
@@ -2769,9 +3419,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%energy0,                  &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_ENERGY0))
     ELSE
@@ -2792,9 +3444,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%energy1,                  &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_ENERGY1))
     ELSE
@@ -2815,9 +3469,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%pressure,                 &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_PRESSURE))
     ELSE
@@ -2838,9 +3494,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%viscosity,                &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_VISCOSITY))
     ELSE
@@ -2861,9 +3519,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%soundspeed,               &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
                                       bottom_top_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -2884,9 +3544,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%xvel0,                    &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, VERTEX_DATA,                           &
                                       bottom_top_offset(FIELD_XVEL0))
     ELSE
@@ -2907,9 +3569,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%xvel1,                    &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, VERTEX_DATA,                           &
                                       bottom_top_offset(FIELD_XVEL1))
     ELSE
@@ -2930,9 +3594,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%yvel0,                    &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, VERTEX_DATA,                           &
                                       bottom_top_offset(FIELD_YVEL0))
     ELSE
@@ -2953,9 +3619,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%yvel1,                    &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, VERTEX_DATA,                           &
                                       bottom_top_offset(FIELD_YVEL1))
     ELSE
@@ -2970,15 +3638,67 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         bottom_top_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%zvel0,                    &
+                                      chunks(chunk)%bottom_snd_buffer,              &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      bottom_top_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_pack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel0,                    &
+                                        chunks(chunk)%bottom_snd_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        bottom_top_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%yvel1,                    &
+                                      chunks(chunk)%bottom_snd_buffer,              &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      bottom_top_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_pack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel1,                    &
+                                        chunks(chunk)%bottom_snd_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        bottom_top_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_pack_message_bottom(chunks(chunk)%field%x_min,                    &
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%vol_flux_x,               &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, X_FACE_DATA,                           &
                                       bottom_top_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -2999,11 +3719,38 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%vol_flux_y,               &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, Y_FACE_DATA,                           &
                                       bottom_top_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%vol_flux_y,               &
+                                        chunks(chunk)%bottom_snd_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Y_FACE_DATA,                           &
+                                        bottom_top_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%vol_flux_z,               &
+                                      chunks(chunk)%bottom_snd_buffer,              &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Z_FACE_DATA,                           &
+                                      bottom_top_offset(FIELD_VOL_FLUX_Z))
     ELSE
       CALL clover_pack_message_bottom_c(chunks(chunk)%field%x_min,                    &
                                         chunks(chunk)%field%x_max,                    &
@@ -3022,9 +3769,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%mass_flux_x,              &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, X_FACE_DATA,                           &
                                       bottom_top_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -3045,9 +3794,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
                                       chunks(chunk)%field%mass_flux_y,              &
                                       chunks(chunk)%bottom_snd_buffer,              &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, Y_FACE_DATA,                           &
                                       bottom_top_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -3062,7 +3813,31 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
   ENDIF
-
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%mass_flux_z,              &
+                                      chunks(chunk)%bottom_snd_buffer,              &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Z_FACE_DATA,                           &
+                                      bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%mass_flux_z,              &
+                                        chunks(chunk)%bottom_snd_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
 END SUBROUTINE clover_pack_bottom
 
 SUBROUTINE clover_send_recv_message_bottom(bottom_snd_buffer, bottom_rcv_buffer,        &
@@ -3105,9 +3880,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%density0,                 &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_DENSITY0))
     ELSE
@@ -3128,9 +3905,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%density1,                 &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_DENSITY1))
     ELSE
@@ -3151,9 +3930,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%energy0,                  &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_ENERGY0))
     ELSE
@@ -3174,9 +3955,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%energy1,                  &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_ENERGY1))
     ELSE
@@ -3197,9 +3980,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%pressure,                 &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_PRESSURE))
     ELSE
@@ -3220,9 +4005,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%viscosity,                &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_VISCOSITY))
     ELSE
@@ -3243,9 +4030,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%soundspeed,               &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_SOUNDSPEED))
     ELSE
@@ -3266,9 +4055,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%xvel0,                    &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_XVEL0))
     ELSE
@@ -3289,9 +4080,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%xvel1,                    &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_XVEL1))
     ELSE
@@ -3312,9 +4105,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%yvel0,                    &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_YVEL0))
     ELSE
@@ -3335,9 +4130,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%yvel1,                    &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_YVEL1))
     ELSE
@@ -3352,15 +4149,67 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           bottom_top_offset(FIELD_YVEL1))
     ENDIF
   ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
+                                        chunks(chunk)%field%zvel0,                    &
+                                        chunks(chunk)%bottom_rcv_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                        depth, VERTEX_DATA,                           &
+                                        bottom_top_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                          chunks(chunk)%field%x_max,                    &
+                                          chunks(chunk)%field%y_min,                    &
+                                          chunks(chunk)%field%y_max,                    &
+                                          chunks(chunk)%field%zvel0,                    &
+                                          chunks(chunk)%bottom_rcv_buffer,              &
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          depth, VERTEX_DATA,                           &
+                                          bottom_top_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
+                                        chunks(chunk)%field%zvel1,                    &
+                                        chunks(chunk)%bottom_rcv_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                        depth, VERTEX_DATA,                           &
+                                        bottom_top_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                          chunks(chunk)%field%x_max,                    &
+                                          chunks(chunk)%field%y_min,                    &
+                                          chunks(chunk)%field%y_max,                    &
+                                          chunks(chunk)%field%zvel1,                    &
+                                          chunks(chunk)%bottom_rcv_buffer,              &
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          depth, VERTEX_DATA,                           &
+                                          bottom_top_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%vol_flux_x,               &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, X_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_VOL_FLUX_X))
     ELSE
@@ -3381,9 +4230,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%vol_flux_y,               &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, Y_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_VOL_FLUX_Y))
     ELSE
@@ -3398,15 +4249,42 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
   ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
+                                        chunks(chunk)%field%vol_flux_z,               &
+                                        chunks(chunk)%bottom_rcv_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        bottom_top_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                          chunks(chunk)%field%x_max,                    &
+                                          chunks(chunk)%field%y_min,                    &
+                                          chunks(chunk)%field%y_max,                    &
+                                          chunks(chunk)%field%vol_flux_z,               &
+                                          chunks(chunk)%bottom_rcv_buffer,              &
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          depth, Z_FACE_DATA,                           &
+                                          bottom_top_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
     IF(use_fortran_kernels) THEN
       CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%mass_flux_x,              &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, X_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_MASS_FLUX_X))
     ELSE
@@ -3427,9 +4305,11 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
                                         chunks(chunk)%field%mass_flux_y,              &
                                         chunks(chunk)%bottom_rcv_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, Y_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_MASS_FLUX_Y))
     ELSE
@@ -3444,8 +4324,2025 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
   ENDIF
-
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_bottom(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%z_min,                    &
+                                        chunks(chunk)%field%z_max,                    &
+                                        chunks(chunk)%field%mass_flux_z,              &
+                                        chunks(chunk)%bottom_rcv_buffer,              &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_bottom_c(chunks(chunk)%field%x_min,                    &
+                                          chunks(chunk)%field%x_max,                    &
+                                          chunks(chunk)%field%y_min,                    &
+                                          chunks(chunk)%field%y_max,                    &
+                                          chunks(chunk)%field%mass_flux_z,              &
+                                          chunks(chunk)%bottom_rcv_buffer,              &
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          depth, Z_FACE_DATA,                           &
+                                          bottom_top_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
 END SUBROUTINE clover_unpack_bottom
+
+SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
+
+  USE pack_kernel_module
+
+  IMPLICIT NONE
+
+  INTEGER        :: chunk, fields(:), depth, back_front_offset(:)
+
+  IF(fields(FIELD_DENSITY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%density0,                 &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_DENSITY0))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%density0,                 &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_DENSITY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_DENSITY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%density1,                 &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_DENSITY1))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%density1,                 &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_DENSITY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%energy0,                  &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_ENERGY0))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%energy0,                  &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_ENERGY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%energy1,                  &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_ENERGY1))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%energy1,                  &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_ENERGY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_PRESSURE).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%pressure,                 &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_PRESSURE))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%pressure,                 &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_PRESSURE))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VISCOSITY).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%viscosity,                &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                   CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_VISCOSITY))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%viscosity,                &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_VISCOSITY))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_SOUNDSPEED).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%soundspeed,               &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, CELL_DATA,                             &
+                                    back_front_offset(FIELD_SOUNDSPEED))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%soundspeed,               &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_SOUNDSPEED))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%xvel0,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_XVEL0))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%xvel0,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_XVEL0))
+    ENDIF 
+  ENDIF
+  IF(fields(FIELD_XVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%xvel1,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_XVEL1))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%xvel1,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_XVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%yvel0,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_YVEL0))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%yvel0,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_YVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%yvel1,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_YVEL1))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%yvel1,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_YVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%zvel0,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%zvel0,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%zvel1,                    &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, VERTEX_DATA,                           &
+                                    back_front_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%zvel1,                    &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%vol_flux_x,               &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, X_FACE_DATA,                           &
+                                    back_front_offset(FIELD_VOL_FLUX_X))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%vol_flux_x,               &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, X_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%vol_flux_y,               &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, Y_FACE_DATA,                           &
+                                    back_front_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%vol_flux_y,               &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, Y_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%vol_flux_z,               &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, Z_FACE_DATA,                           &
+                                    back_front_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%vol_flux_y,               &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, Y_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%mass_flux_x,              &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, X_FACE_DATA,                           &
+                                    back_front_offset(FIELD_MASS_FLUX_X))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%mass_flux_x,              &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, X_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%mass_flux_y,              &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, Y_FACE_DATA,                           &
+                                    back_front_offset(FIELD_MASS_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%mass_flux_y,              &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, Y_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_back(chunks(chunk)%field%x_min,                    &
+                                    chunks(chunk)%field%x_max,                    &
+                                    chunks(chunk)%field%y_min,                    &
+                                    chunks(chunk)%field%y_max,                    &
+                                    chunks(chunk)%field%z_min,                    &
+                                    chunks(chunk)%field%z_max,                    &
+                                    chunks(chunk)%field%mass_flux_z,              &
+                                    chunks(chunk)%back_snd_buffer,                &
+                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                    depth, Z_FACE_DATA,                           &
+                                    back_front_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%mass_flux_z,              &
+                                      chunks(chunk)%back_snd_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      depth, Z_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
+END SUBROUTINE clover_pack_back
+
+SUBROUTINE clover_send_recv_message_back(back_snd_buffer, back_rcv_buffer,     &
+                                         chunk, total_size,                  &
+                                         tag_send, tag_recv,                 &
+                                         req_send, req_recv)
+
+  IMPLICIT NONE
+
+  REAL(KIND=8) :: back_snd_buffer(:), back_rcv_buffer(:)
+  INTEGER      :: back_task
+  INTEGER      :: chunk
+  INTEGER      :: total_size, tag_send, tag_recv, err
+  INTEGER      :: req_send, req_recv
+
+  back_task=chunks(chunks(chunk)%chunk_neighbours(chunk_back))%task
+
+  CALL MPI_ISEND(back_snd_buffer,total_size,MPI_DOUBLE_PRECISION,back_task,tag_send, &
+                 MPI_COMM_WORLD,req_send,err)
+
+  CALL MPI_IRECV(back_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,back_task,tag_recv, &
+                 MPI_COMM_WORLD,req_recv,err)
+
+END SUBROUTINE clover_send_recv_message_back
+
+SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
+                              back_rcv_buffer,                             &
+                              back_front_offset)
+
+  USE pack_kernel_module
+
+  IMPLICIT NONE
+
+  INTEGER         :: fields(:), chunk, depth, back_front_offset(:)
+  REAL(KIND=8)    :: back_rcv_buffer(:)
+
+  IF(fields(FIELD_DENSITY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%density0,                 &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_DENSITY0))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%density0,                 &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_DENSITY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_DENSITY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%density1,                 &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_DENSITY1))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%density1,                 &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_DENSITY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%energy0,                  &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_ENERGY0))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%energy0,                  &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_ENERGY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%energy1,                  &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_ENERGY1))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%energy1,                  &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_ENERGY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_PRESSURE).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%pressure,                 &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_PRESSURE))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%pressure,                 &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_PRESSURE))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VISCOSITY).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%viscosity,                &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_VISCOSITY))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%viscosity,                &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_VISCOSITY))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_SOUNDSPEED).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%soundspeed,               &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, CELL_DATA,                             &
+                                      back_front_offset(FIELD_SOUNDSPEED))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%soundspeed,               &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, CELL_DATA,                             &
+                                        back_front_offset(FIELD_SOUNDSPEED))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%xvel0,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_XVEL0))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%xvel0,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_XVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%xvel1,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_XVEL1))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%xvel1,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_XVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%yvel0,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_YVEL0))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%yvel0,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_YVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%yvel1,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_YVEL1))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%yvel1,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_YVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%zvel0,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel0,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%zvel1,                    &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, VERTEX_DATA,                           &
+                                      back_front_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%zvel1,                    &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, VERTEX_DATA,                           &
+                                        back_front_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%vol_flux_x,               &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, X_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_X))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%vol_flux_x,               &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, X_FACE_DATA,                           &
+                                        back_front_offset(FIELD_VOL_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%vol_flux_y,               &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Y_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%vol_flux_y,               &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Y_FACE_DATA,                           &
+                                        back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%vol_flux_z,               &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Z_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%vol_flux_z,               &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        back_front_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%mass_flux_x,              &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, X_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_X))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%mass_flux_x,              &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, X_FACE_DATA,                           &
+                                        back_front_offset(FIELD_MASS_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%mass_flux_y,              &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Y_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_Y))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%mass_flux_y,              &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Y_FACE_DATA,                           &
+                                        back_front_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_back(chunks(chunk)%field%x_min,                    &
+                                      chunks(chunk)%field%x_max,                    &
+                                      chunks(chunk)%field%y_min,                    &
+                                      chunks(chunk)%field%y_max,                    &
+                                      chunks(chunk)%field%z_min,                    &
+                                      chunks(chunk)%field%z_max,                    &
+                                      chunks(chunk)%field%mass_flux_z,              &
+                                      chunks(chunk)%back_rcv_buffer,                &
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                      depth, Z_FACE_DATA,                           &
+                                      back_front_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_back_c(chunks(chunk)%field%x_min,                    &
+                                        chunks(chunk)%field%x_max,                    &
+                                        chunks(chunk)%field%y_min,                    &
+                                        chunks(chunk)%field%y_max,                    &
+                                        chunks(chunk)%field%mass_flux_z,              &
+                                        chunks(chunk)%back_rcv_buffer,                &
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        depth, Z_FACE_DATA,                           &
+                                        back_front_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
+END SUBROUTINE clover_unpack_back
+
+SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
+
+  USE pack_kernel_module
+
+  IMPLICIT NONE
+
+  INTEGER        :: chunk, fields(:), depth, tot_packb, back_front_offset(:)
+
+  IF(fields(FIELD_DENSITY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%density0,                 &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_DENSITY0))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%density0,                 &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_DENSITY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_DENSITY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%density1,                 &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_DENSITY1))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%density1,                 &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_DENSITY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%energy0,                  &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_ENERGY0))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%energy0,                  &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_ENERGY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%energy1,                  &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_ENERGY1))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%energy1,                  &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_ENERGY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_PRESSURE).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%pressure,                 &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_PRESSURE))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%pressure,                 &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_PRESSURE))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VISCOSITY).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%viscosity,                &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_VISCOSITY))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%viscosity,                &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_VISCOSITY))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_SOUNDSPEED).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%soundspeed,               &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, CELL_DATA,                             &
+                                     back_front_offset(FIELD_SOUNDSPEED))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%soundspeed,               &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_SOUNDSPEED))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%xvel0,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_XVEL0))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%xvel0     ,               &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_XVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%xvel1,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_XVEL1))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%xvel1,                    &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_XVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%yvel0,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_YVEL0))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%yvel0,                    &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_YVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%yvel1,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_YVEL1))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%yvel1,                    &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_YVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%zvel0,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel0,                    &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%yvel1,                    &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     back_front_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel1,                    &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%vol_flux_x,               &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, X_FACE_DATA,                           &
+                                     back_front_offset(FIELD_VOL_FLUX_X))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%vol_flux_x,               &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, X_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%vol_flux_y,               &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Y_FACE_DATA,                           &
+                                     back_front_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%vol_flux_y,               &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Y_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%vol_flux_z,               &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     back_front_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%vol_flux_y,               &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Y_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%mass_flux_x,              &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, X_FACE_DATA,                           &
+                                     back_front_offset(FIELD_MASS_FLUX_X))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%mass_flux_x,              &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, X_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%mass_flux_y,              &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Y_FACE_DATA,                           &
+                                     back_front_offset(FIELD_MASS_FLUX_Y))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%mass_flux_y,              &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Y_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_front(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%mass_flux_z,              &
+                                     chunks(chunk)%front_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, Z_FACE_DATA,                           &
+                                     back_front_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_pack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%mass_flux_z,              &
+                                       chunks(chunk)%front_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
+END SUBROUTINE clover_pack_front
+
+SUBROUTINE clover_send_recv_message_front(front_snd_buffer, front_rcv_buffer,        &
+                                          chunk, total_size,                         &   
+                                          tag_send, tag_recv,                        &
+                                          req_send, req_recv)
+
+  IMPLICIT NONE
+
+  REAL(KIND=8) :: front_snd_buffer(:), front_rcv_buffer(:)
+  INTEGER      :: front_task
+  INTEGER      :: chunk
+  INTEGER      :: total_size, tag_send, tag_recv, err
+  INTEGER      :: req_send, req_recv
+
+  front_task=chunks(chunks(chunk)%chunk_neighbours(chunk_front))%task
+
+  CALL MPI_ISEND(front_snd_buffer,total_size,MPI_DOUBLE_PRECISION,front_task,tag_send &
+                ,MPI_COMM_WORLD,req_send,err)
+
+  CALL MPI_IRECV(front_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,front_task,tag_recv &
+                ,MPI_COMM_WORLD,req_recv,err)
+
+END SUBROUTINE clover_send_recv_message_front
+
+SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
+                               front_rcv_buffer,                            &
+                               back_front_offset)
+
+  USE pack_kernel_module
+
+  IMPLICIT NONE
+
+  INTEGER         :: fields(:), chunk, depth, back_front_offset(:)
+  REAL(KIND=8)    :: front_rcv_buffer(:)
+
+  IF(fields(FIELD_DENSITY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%density0,                 &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_DENSITY0))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%density0,                 &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_DENSITY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_DENSITY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%density1,                 &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_DENSITY1))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%density1,                 &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_DENSITY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%energy0,                  &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_ENERGY0))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%energy0,                  &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_ENERGY0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ENERGY1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%energy1,                  &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_ENERGY1))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%energy1,                  &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_ENERGY1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_PRESSURE).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%pressure,                 &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_PRESSURE))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%pressure,                 &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_PRESSURE))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VISCOSITY).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%viscosity,                &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_VISCOSITY))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%viscosity,                &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_VISCOSITY))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_SOUNDSPEED).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%soundspeed,               &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, CELL_DATA,                             &
+                                       back_front_offset(FIELD_SOUNDSPEED))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%soundspeed,               &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, CELL_DATA,                             &
+                                         back_front_offset(FIELD_SOUNDSPEED))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%xvel0,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_XVEL0))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%xvel0,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_XVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_XVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%xvel1,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_XVEL1))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%xvel1,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_XVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%yvel0,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_YVEL0))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%yvel0,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_YVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_YVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%yvel1,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_YVEL1))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%yvel1,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_YVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%zvel0,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%zvel0,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%zvel1,                    &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth, VERTEX_DATA,                           &
+                                       back_front_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%zvel1,                    &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, VERTEX_DATA,                           &
+                                         back_front_offset(FIELD_ZVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%vol_flux_x,               &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, X_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_X))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%vol_flux_x,               &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, X_FACE_DATA,                           &
+                                         back_front_offset(FIELD_VOL_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%vol_flux_y,               &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Y_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_Y))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%vol_flux_y,               &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Y_FACE_DATA,                           &
+                                         back_front_offset(FIELD_VOL_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%vol_flux_z,               &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%vol_flux_z,               &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Z_FACE_DATA,                           &
+                                         back_front_offset(FIELD_VOL_FLUX_Z))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%mass_flux_x,              &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, X_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_X))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%mass_flux_x,              &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, X_FACE_DATA,                           &
+                                         back_front_offset(FIELD_MASS_FLUX_X))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Y).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%mass_flux_y,              &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Y_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_Y))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%mass_flux_y,              &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Y_FACE_DATA,                           &
+                                         back_front_offset(FIELD_MASS_FLUX_Y))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_unpack_message_front(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%z_min,                    &
+                                       chunks(chunk)%field%z_max,                    &
+                                       chunks(chunk)%field%mass_flux_z,              &
+                                       chunks(chunk)%front_rcv_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                       depth, Z_FACE_DATA,                           &
+                                       back_front_offset(FIELD_MASS_FLUX_Z))
+    ELSE
+      CALL clover_unpack_message_front_c(chunks(chunk)%field%x_min,                    &
+                                         chunks(chunk)%field%x_max,                    &
+                                         chunks(chunk)%field%y_min,                    &
+                                         chunks(chunk)%field%y_max,                    &
+                                         chunks(chunk)%field%mass_flux_z,              &
+                                         chunks(chunk)%front_rcv_buffer,               &
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         depth, Z_FACE_DATA,                           &
+                                         back_front_offset(FIELD_MASS_FLUX_Z))
+    ENDIF
+  ENDIF
+
+END SUBROUTINE clover_unpack_front
 
 SUBROUTINE clover_sum(value)
 
