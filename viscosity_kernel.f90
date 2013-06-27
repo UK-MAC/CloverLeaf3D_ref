@@ -23,6 +23,7 @@
 
 ! NOTES
 ! The gradients needs checking for 3d
+! Strain needs checking
 
 MODULE viscosity_kernel_module
 
@@ -58,17 +59,17 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
-        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  ))-(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  ))
+        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1))-(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))
 
-        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  ))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))
+        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))
 
-        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l  ))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  ))
+        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1))-(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))
 
         div = (celldx(j)*(ugrad)+  celldy(k)*(vgrad))+ celldz(l)*(wgrad)
 
         strain2 = 0.5_8*(xvel0(j,  k+1,l  ) + xvel0(j+1,k+1,l+1)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l  ))/celldy(k) &
                 + 0.5_8*(yvel0(j+1,k  ,l  ) + yvel0(j+1,k+1,l+1)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l  ))/celldx(j) &
-                + 0.5_8*(zvel0(j  ,k  ,l+1) + zvel0(j+1,k+1,l+1)-zvel0(j  ,k  ,l)-yvel0(j  ,k  ,l+1))/celldx(j)   ! wrong
+                + 0.5_8*(zvel0(j  ,k  ,l+1) + zvel0(j+1,k+1,l+1)-zvel0(j  ,k  ,l)-yvel0(j  ,k  ,l+1))/celldx(j) ! wrong
 
         pgradx=(pressure(j+1,k,l)-pressure(j-1,k,l))/(celldx(j)+celldx(j+1))
         pgrady=(pressure(j,k+1,l)-pressure(j,k-1,l))/(celldy(k)+celldy(k+1))

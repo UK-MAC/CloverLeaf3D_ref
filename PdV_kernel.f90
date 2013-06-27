@@ -79,19 +79,18 @@ SUBROUTINE PdV_kernel(predict,                                          &
       DO k=y_min,y_max
         DO j=x_min,x_max
 
-          ! These aren't correct yet
-          left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )                     &
-                                         +xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )))*0.25_8*dt*0.5
-          right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )                     &
-                                         +xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
-          bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
-                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
-          top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
-                                         +yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )))*0.25_8*dt*0.5
-          back_flux=  (zarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
-                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
-          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)                     &
-                                         +zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)))*0.25_8*dt*0.5
+          left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1) &
+                                          +xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1)))*0.125_8*dt*0.5
+          right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1) &
+                                          +xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1)))*0.125_8*dt*0.5
+          bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1) &
+                                          +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1)))*0.125_8*dt*0.5
+          top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1) &
+                                          +yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1)))*0.125_8*dt*0.5
+          back_flux=  (zarea(j  ,k  ,l  )*(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ) &
+                                          +zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  )))*0.125_8*dt*0.5
+          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1) &
+                                          +zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1)))*0.125_8*dt*0.5
           total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
           volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
@@ -122,18 +121,18 @@ SUBROUTINE PdV_kernel(predict,                                          &
       DO k=y_min,y_max
         DO j=x_min,x_max
 
-          left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )                     &
-                                          +xvel1(j  ,k  ,l  )+xvel1(j  ,k+1,l  )))*0.25_8*dt
-          right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )                     &
-                                          +xvel1(j+1,k  ,l  )+xvel1(j+1,k+1,l  )))*0.25_8*dt
-          bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
-                                          +yvel1(j  ,k  ,l  )+yvel1(j+1,k  ,l  )))*0.25_8*dt
-          top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )                     &
-                                          +yvel1(j  ,k+1,l  )+yvel1(j+1,k+1,l  )))*0.25_8*dt
-          back_flux=  (zarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )                     &
-                                         +yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )))*0.25_8*dt*0.5
-          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)                     &
-                                         +zvel1(j  ,k  ,l+1)+zvel1(j+1,k+1,l+1)))*0.25_8*dt
+          left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1) &
+                                          +xvel1(j  ,k  ,l  )+xvel1(j  ,k+1,l  )+xvel1(j  ,k  ,l+1)+xvel1(j  ,k+1,l+1)))*0.125_8*dt
+          right_flux= (xarea(j+1,k  ,l  )*(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1) &
+                                          +xvel1(j+1,k  ,l  )+xvel1(j+1,k+1,l  )+xvel1(j+1,k  ,l+1)+xvel1(j+1,k+1,l+1)))*0.125_8*dt
+          bottom_flux=(yarea(j  ,k  ,l  )*(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1) &
+                                          +yvel1(j  ,k  ,l  )+yvel1(j+1,k  ,l  )+yvel1(j  ,k  ,l+1)+yvel1(j+1,k  ,l+1)))*0.125_8*dt
+          top_flux=   (yarea(j  ,k+1,l  )*(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1) &
+                                          +yvel1(j  ,k+1,l  )+yvel1(j+1,k+1,l  )+yvel1(j  ,k+1,l+1)+yvel1(j+1,k+1,l+1)))*0.125_8*dt
+          back_flux=  (zarea(j  ,k  ,l  )*(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ) &
+                                          +zvel1(j  ,k  ,l  )+zvel1(j+1,k  ,l  )+zvel1(j  ,k+1,l  )+zvel1(j+1,k+1,l  )))*0.125_8*dt
+          front_flux= (zarea(j  ,k  ,l+1)*(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1) &
+                                          +zvel1(j  ,k  ,l+1)+zvel1(j+1,k  ,l+1)+zvel1(j  ,k+1,l+1)+zvel1(j+1,k+1,l+1)))*0.125_8*dt
           total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
           volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
