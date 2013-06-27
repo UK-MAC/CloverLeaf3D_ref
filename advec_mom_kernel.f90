@@ -50,14 +50,12 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
                             celldz,                              &
                             which_vel,                           &
                             sweep_number,                        &
-                            direction,                           &
-                            vector                               )
+                            direction                            )
 
   IMPLICIT NONE
   
   INTEGER :: x_min,x_max,y_min,y_max,z_min,z_max
   INTEGER :: which_vel,sweep_number,direction
-  LOGICAL :: vector
 
   REAL(KIND=8), TARGET,DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel1,yvel1,zvel1
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: mass_flux_x
@@ -158,10 +156,10 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       DO k=y_min,y_max+1
         DO j=x_min-2,x_max+2
           ! Find staggered mesh mass fluxes, nodal masses and volumes.
-          node_flux(j,k,l)=0.25_8*(mass_flux_x(j  ,k-1,l  )+mass_flux_x(j  ,k,l  )  &
-                                  +mass_flux_x(j+1,k-1,l  )+mass_flux_x(j+1,k,l  )  &
-                                  +mass_flux_x(j  ,k-1,l-1)+mass_flux_x(j  ,k,l-1)  &
-                                  +mass_flux_x(j+1,k-1,l-1)+mass_flux_x(j+1,k,l-1))
+          node_flux(j,k,l)=0.125_8*(mass_flux_x(j  ,k-1,l  )+mass_flux_x(j  ,k,l  )  &
+                                   +mass_flux_x(j+1,k-1,l  )+mass_flux_x(j+1,k,l  )  &
+                                   +mass_flux_x(j  ,k-1,l-1)+mass_flux_x(j  ,k,l-1)  &
+                                   +mass_flux_x(j+1,k-1,l-1)+mass_flux_x(j+1,k,l-1))
         ENDDO
       ENDDO
     ENDDO
@@ -243,8 +241,10 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       DO k=y_min-2,y_max+2
         DO j=x_min,x_max+1
           ! Find staggered mesh mass fluxes and nodal masses and volumes.
-          node_flux(j,k,l)=0.25_8*(mass_flux_y(j-1,k  ,l)+mass_flux_y(j  ,k  ,l) &
-                                +mass_flux_y(j-1,k+1,l)+mass_flux_y(j  ,k+1,l))
+          node_flux(j,k,l)=0.125_8*(mass_flux_y(j-1,k  ,l  )+mass_flux_y(j  ,k  ,l  ) &
+                                   +mass_flux_y(j-1,k+1,l  )+mass_flux_y(j  ,k+1,l  ) &
+                                   +mass_flux_y(j-1,k  ,l-1)+mass_flux_y(j  ,k  ,l-1) &
+                                   +mass_flux_y(j-1,k+1,l-1)+mass_flux_y(j  ,k+1,l-1))
         ENDDO
       ENDDO
     ENDDO
@@ -253,10 +253,14 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     DO l=z_min,z_max+1
       DO k=y_min-1,y_max+2
         DO j=x_min,x_max+1
-          node_mass_post(j,k,l)=0.25_8*(density1(j  ,k-1,l)*post_vol(j  ,k-1,l)                     &
-                                     +density1(j  ,k  ,l)*post_vol(j  ,k  ,l)                     &
-                                     +density1(j-1,k-1,l)*post_vol(j-1,k-1,l)                     &
-                                     +density1(j-1,k  ,l)*post_vol(j-1,k  ,l))
+          node_mass_post(j,k,l)=0.125_8*(density1(j  ,k-1,l  )*post_vol(j  ,k-1,l  )                     &
+                                        +density1(j  ,k  ,l  )*post_vol(j  ,k  ,l  )                     &
+                                        +density1(j-1,k-1,l  )*post_vol(j-1,k-1,l  )                     &
+                                        +density1(j-1,k  ,l  )*post_vol(j-1,k  ,l  )                     &
+                                        +density1(j  ,k-1,l-1)*post_vol(j  ,k-1,l-1)                     &
+                                        +density1(j  ,k  ,l-1)*post_vol(j  ,k  ,l-1)                     &
+                                        +density1(j-1,k-1,l-1)*post_vol(j-1,k-1,l-1)                     &
+                                        +density1(j-1,k  ,l-1)*post_vol(j-1,k  ,l-1))
         ENDDO
       ENDDO
     ENDDO
@@ -320,8 +324,10 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       DO k=y_min,y_max+1
         DO j=x_min,x_max+1
           ! Find staggered mesh mass fluxes and nodal masses and volumes.
-          node_flux(j,k,l)=0.25_8*(mass_flux_z(j-1,k  ,l)+mass_flux_z(j  ,k  ,l) &
-                                +mass_flux_z(j-1,k+1,l)+mass_flux_z(j  ,k+1,l))
+          node_flux(j,k,l)=0.125_8*(mass_flux_z(j-1,k  ,l  )+mass_flux_z(j  ,k  ,l  ) &
+                                   +mass_flux_z(j-1,k  ,l+1)+mass_flux_z(j  ,k-1,l+1) &
+                                   +mass_flux_z(j-1,k-1,l  )+mass_flux_z(j  ,k  ,l  ) &
+                                   +mass_flux_z(j-1,k-1,l+1)+mass_flux_z(j  ,k-1,l+1))
         ENDDO
       ENDDO
     ENDDO
@@ -330,10 +336,14 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     DO l=z_min-1,z_max+2
       DO k=y_min,y_max+1
         DO j=x_min,x_max+1
-          node_mass_post(j,k,l)=0.25_8*(density1(j  ,k-1,l)*post_vol(j  ,k-1,l)                     &
-                                     +density1(j  ,k  ,l)*post_vol(j  ,k  ,l)                     &
-                                     +density1(j-1,k-1,l)*post_vol(j-1,k-1,l)                     &
-                                     +density1(j-1,k  ,l)*post_vol(j-1,k  ,l))
+          node_mass_post(j,k,l)=0.125_8*(density1(j  ,k-1,l  )*post_vol(j  ,k-1,l  )                     &
+                                        +density1(j  ,k  ,l  )*post_vol(j  ,k  ,l  )                     &
+                                        +density1(j-1,k-1,l  )*post_vol(j-1,k-1,l  )                     &
+                                        +density1(j-1,k  ,l  )*post_vol(j-1,k  ,l  )                     &
+                                        +density1(j  ,k-1,l-1)*post_vol(j  ,k-1,l-1)                     &
+                                        +density1(j  ,k  ,l-1)*post_vol(j  ,k  ,l-1)                     &
+                                        +density1(j-1,k-1,l-1)*post_vol(j-1,k-1,l-1)                     &
+                                        +density1(j-1,k  ,l-1)*post_vol(j-1,k  ,l-1))
         ENDDO
       ENDDO
     ENDDO
