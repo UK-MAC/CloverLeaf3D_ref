@@ -132,7 +132,6 @@ SUBROUTINE advection()
   ENDDO
   IF(profiler_on) profiler%mom_advection=profiler%mom_advection+(timer()-kernel_time)
 
-
   sweep_number=3
   IF(advect_x)      direction=g_zdir
   IF(.not.advect_x) direction=g_xdir

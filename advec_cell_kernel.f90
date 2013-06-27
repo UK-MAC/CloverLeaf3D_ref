@@ -115,6 +115,16 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       ENDDO 
 !$OMP END DO
     ELSEIF(sweep_number.EQ.3) THEN
+!$OMP DO
+      DO l=z_min-2,z_max+2
+        DO k=y_min-2,y_max+2
+          DO j=x_min-2,x_max+2
+            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_x(j+1,k,l)-vol_flux_x(j,k,l)
+            post_vol(j,k,l)=volume(j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO 
+!$OMP END DO
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
@@ -209,6 +219,16 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       ENDDO
 !$OMP END DO
     ELSEIF(sweep_number.EQ.3) THEN
+!$OMP DO
+      DO l=z_min-2,z_max+2
+        DO k=y_min-2,y_max+2
+          DO j=x_min-2,x_max+2
+            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+            post_vol(j,k,l)=volume(j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
@@ -303,6 +323,16 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       ENDDO
 !$OMP END DO
     ELSEIF(sweep_number.EQ.3) THEN
+!$OMP DO
+      DO l=z_min-2,z_max+2
+        DO k=y_min-2,y_max+2
+          DO j=x_min-2,x_max+2
+            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+            post_vol(j,k,l)=volume(j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
