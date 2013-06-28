@@ -4,4 +4,7 @@
 *.cub
 *.ptx
 *genmod*
+*.vtk
+clover.out
+clover.in.tmp
 clover_leaf
