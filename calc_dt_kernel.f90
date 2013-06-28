@@ -97,7 +97,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
 !$OMP PARALLEL
 
-!$OMP DO PRIVATE(dsx,dsy,cc,dv1,dv2,div,dtct,dtut,dtvt,dtdivt)
+!$OMP DO PRIVATE(dsx,dsy,dsz,cc,dv1,dv2,div,dtct,dtut,dtvt,dtwt,dtdivt)
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max

@@ -1268,7 +1268,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            mass_flux_y(j,k,z_max+l)=mass_flux_y(j,k,y_max-l)
+            mass_flux_y(j,k,z_max+l)=mass_flux_y(j,k,z_max-l)
           ENDDO
         ENDDO
       ENDDO

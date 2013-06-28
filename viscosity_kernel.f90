@@ -30,20 +30,20 @@ MODULE viscosity_kernel_module
 CONTAINS
 
 SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
-                            celldx,celldy,celldz,       &
-                            density0,                   &
-                            pressure,                   &
-                            viscosity,                  &
-                            xvel0,                      &
-                            yvel0,                      &
-                            zvel0                       )
+                            celldx,celldy,celldz,                   &
+                            density0,                               &
+                            pressure,                               &
+                            viscosity,                              &
+                            xvel0,                                  &
+                            yvel0,                                  &
+                            zvel0                                   )
 
   IMPLICIT NONE
 
   INTEGER     :: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2)                     :: celldx
-  REAL(KIND=8), DIMENSION(y_min-2:y_max+2)                     :: celldy
-  REAL(KIND=8), DIMENSION(z_min-2:z_max+2)                     :: celldz
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2)                                     :: celldx
+  REAL(KIND=8), DIMENSION(y_min-2:y_max+2)                                     :: celldy
+  REAL(KIND=8), DIMENSION(z_min-2:z_max+2)                                     :: celldz
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: density0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: pressure
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2)     :: viscosity
@@ -55,7 +55,7 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
 
 !$OMP PARALLEL
 
-!$OMP DO PRIVATE(ugrad,vgrad,div,strain2,pgradx,pgrady,pgradx2,pgrady2,limiter,pgrad,xgrad,ygrad,grad,grad2)
+!$OMP DO PRIVATE(ugrad,vgrad,wgrad,div,strain2,pgradx,pgrady,pgradz,pgradx2,pgrady2,pgradz2,limiter,pgrad,xgrad,ygrad,zgrad,grad,grad2)
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max

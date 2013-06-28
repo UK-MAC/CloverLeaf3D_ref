@@ -337,8 +337,8 @@ SUBROUTINE advec_cell_kernel(x_min,       &
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
 !$OMP            diffuw,diffdw,limiter)
-    DO l=z_min,z_max
-      DO k=y_min,y_max+2
+    DO l=z_min,z_max+2
+      DO k=y_min,y_max
         DO j=x_min,x_max
 
           IF(vol_flux_z(j,k,l).GT.0.0)THEN

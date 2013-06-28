@@ -103,6 +103,9 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
 !$OMP PARALLEL
 
+! I think these only have to be done once per cell advection sweep. So put in some logic so they are just done the first time
+! And there should be more sweep numbers.
+
   IF(mom_sweep.EQ.1)THEN ! x 1
 !$OMP DO
     DO l=z_min-2,z_max+2
@@ -164,6 +167,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       ENDDO
     ENDDO
 !$OMP END DO
+!And do I need to calc the node mass for all 3 directions, or just once?
 !$OMP DO
     DO l=z_min,z_max+1
       DO k=y_min,y_max+1
