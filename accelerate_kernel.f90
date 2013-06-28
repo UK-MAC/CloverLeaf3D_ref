@@ -117,8 +117,8 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
 
         zvel1(j,k,l)=zvel0(j,k,l)-stepbymass(j,k,l)*(zarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j  ,k  ,l-1))    &
                                                     +zarea(j  ,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j  ,k-1,l-1))    &
-                                                    +zarea(j-1,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j-1,k  ,l-1))    &
-                                                    +zarea(j-1,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j-1,k-1,l-1)))
+                                                    +zarea(j-1,k  ,l  )*(pressure(j-1,k  ,l  )-pressure(j-1,k  ,l-1))    &
+                                                    +zarea(j-1,k-1,l  )*(pressure(j-1,k-1,l  )-pressure(j-1,k-1,l-1)))
 
       ENDDO
     ENDDO
@@ -161,8 +161,8 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
 
         zvel1(j,k,l)=zvel1(j,k,l)-stepbymass(j,k,l)*(zarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j  ,k  ,l-1))    &
                                                     +zarea(j  ,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j  ,k-1,l-1))    &
-                                                    +zarea(j-1,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j-1,k  ,l-1))    &
-                                                    +zarea(j-1,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j-1,k-1,l-1)))
+                                                    +zarea(j-1,k  ,l  )*(viscosity(j-1,k  ,l  )-viscosity(j-1,k  ,l-1))    &
+                                                    +zarea(j-1,k-1,l  )*(viscosity(j-1,k-1,l  )-viscosity(j-1,k-1,l-1)))
 
       ENDDO
     ENDDO
