@@ -50,7 +50,7 @@ SUBROUTINE visit
     IF(first_call) THEN
 
       nblocks=number_of_chunks
-      filename = "clover2.visit"
+      filename = "clover.visit"
       u=get_unit(dummy)
       OPEN(UNIT=u,FILE=filename,STATUS='UNKNOWN',IOSTAT=err)
       WRITE(u,'(a,i5)')'!NBLOCKS ',nblocks

@@ -216,28 +216,28 @@ SUBROUTINE clover_allocate_buffers(chunk)
   !  all allocated
   IF(parallel%task.EQ.chunks(chunk)%task)THEN
     !IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%left_snd_buffer(10*2*(chunks(chunk)%field%y_max+5)))
-      ALLOCATE(chunks(chunk)%left_rcv_buffer(10*2*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%left_snd_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%left_rcv_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
     !ENDIF
     !IF(chunks(chunk)%chunk_neighbours(chunk_right).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%right_snd_buffer(10*2*(chunks(chunk)%field%y_max+5)))
-      ALLOCATE(chunks(chunk)%right_rcv_buffer(10*2*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%right_snd_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%right_rcv_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
     !ENDIF
     !IF(chunks(chunk)%chunk_neighbours(chunk_bottom).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%bottom_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
-      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
     !ENDIF
     !IF(chunks(chunk)%chunk_neighbours(chunk_top).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%top_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
-      ALLOCATE(chunks(chunk)%top_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%top_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%top_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
     !ENDIF
     !IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%back_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
-      ALLOCATE(chunks(chunk)%back_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%back_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%back_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
     !ENDIF
     !IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%front_snd_buffer(10*2*(chunks(chunk)%field%x_max+5)))
-      ALLOCATE(chunks(chunk)%front_rcv_buffer(10*2*(chunks(chunk)%field%x_max+5)))
+      ALLOCATE(chunks(chunk)%front_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%front_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
     !ENDIF
   ENDIF
 
@@ -264,7 +264,7 @@ SUBROUTINE clover_exchange(fields,depth)
     end_pack_index_left_right=0
     end_pack_index_bottom_top=0
     end_pack_index_back_front=0
-    DO field=1,15
+    DO field=1,19
       IF(fields(field).EQ.1) THEN
         left_right_offset(field)=end_pack_index_left_right
         bottom_top_offset(field)=end_pack_index_bottom_top
