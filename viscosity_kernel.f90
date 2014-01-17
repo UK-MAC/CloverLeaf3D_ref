@@ -59,13 +59,16 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
-        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1))-(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))
+        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1)) &
+             -(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))
 
-        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))-(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))
+        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1)) &
+             -(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))
 
-        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1))-(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))
+        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)) &
+             -(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))
 
-        div = (celldx(j)*(ugrad)+  celldy(k)*(vgrad))+ celldz(l)*(wgrad)
+        div = (xarea(j)*(ugrad)+  yarea(k)*(vgrad))+ zarea(l)*(wgrad)
 
         strain2 = 0.5_8*(xvel0(j,  k+1,l  ) + xvel0(j+1,k+1,l+1)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l  ))/celldy(k) &
                 + 0.5_8*(yvel0(j+1,k  ,l  ) + yvel0(j+1,k+1,l+1)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l  ))/celldx(j) &
@@ -79,7 +82,8 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
         pgrady2 = pgrady*pgrady
         pgradz2 = pgradz*pgradz
 
-        limiter = ((0.5_8*(ugrad)/celldx(j))*pgradx2+(0.5_8*(vgrad)/celldy(k))*pgrady2+(0.5_8*(wgrad)/celldz(l))*pgradz2+strain2*pgradx*pgrady*pgradz)  &
+        limiter = ((0.5_8*(ugrad)/celldx(j))*pgradx2+(0.5_8*(vgrad)/celldy(k))*pgrady2 &
+                +(0.5_8*(wgrad)/celldz(l))*pgradz2+strain2*pgradx*pgrady*pgradz)  &
                 /MAX(pgradx2+pgrady2+pgradz2,1.0e-16_8)
 
         IF ((limiter.GT.0.0).OR.(div.GE.0.0))THEN

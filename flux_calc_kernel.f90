@@ -59,7 +59,8 @@ SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
     DO k=y_min,y_max
       DO j=x_min,x_max+1 
         vol_flux_x(j,k,l)=0.125_8*dt*xarea(j,k,l)                  &
-                         *(xvel0(j,k,l)+xvel0(j,k+1,l)+xvel0(j,k,l+1)+xvel0(j,k+1,l+1)+xvel1(j,k,l)+xvel1(j,k+1,l)+xvel1(j,k,l+1)+xvel1(j,k+1,l+1))
+                         *(xvel0(j,k,l)+xvel0(j,k+1,l)+xvel0(j,k,l+1)+xvel0(j,k+1,l+1) &
+                          +xvel1(j,k,l)+xvel1(j,k+1,l)+xvel1(j,k,l+1)+xvel1(j,k+1,l+1))
       ENDDO
     ENDDO
   ENDDO
@@ -70,7 +71,8 @@ SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
     DO k=y_min,y_max+1
       DO j=x_min,x_max
         vol_flux_y(j,k,l)=0.125_8*dt*yarea(j,k,l)                  &
-                         *(yvel0(j,k,l)+yvel0(j+1,k,l)+yvel0(j,k,l+1)+yvel0(j+1,k,l+1)+yvel1(j,k,l)+yvel1(j+1,k,l)+yvel1(j,k,l+1)+yvel1(j+1,k,l+1))
+                         *(yvel0(j,k,l)+yvel0(j+1,k,l)+yvel0(j,k,l+1)+yvel0(j+1,k,l+1) &
+                          +yvel1(j,k,l)+yvel1(j+1,k,l)+yvel1(j,k,l+1)+yvel1(j+1,k,l+1))
       ENDDO
     ENDDO
   ENDDO
@@ -81,7 +83,8 @@ SUBROUTINE flux_calc_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt, &
     DO k=y_min,y_max
       DO j=x_min,x_max
         vol_flux_z(j,k,l)=0.125_8*dt*zarea(j,k,l)                  &
-                         *(zvel0(j,k,l)+zvel0(j+1,k,l)+zvel0(j+1,k,l)+zvel0(j+1,k+1,l)+zvel1(j,k,l)+zvel1(j+1,k,l)+zvel1(j,k+1,l)+zvel1(j+1,k+1,l))
+                         *(zvel0(j,k,l)+zvel0(j+1,k,l)+zvel0(j+1,k,l)+zvel0(j+1,k+1,l) &
+                          +zvel1(j,k,l)+zvel1(j+1,k,l)+zvel1(j,k+1,l)+zvel1(j+1,k+1,l))
       ENDDO
     ENDDO
   ENDDO
