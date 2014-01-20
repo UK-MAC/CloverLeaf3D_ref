@@ -74,7 +74,7 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
                    +density0(j-1,k  ,l+1)*volume(j-1,k  ,l+1)) &
                    *0.125_8
 
-        stepbymass(j,k,l)=0.5_8*dt/nodal_mass
+        stepbymass(j,k,l)=0.25_8*dt/nodal_mass
 
       ENDDO
     ENDDO

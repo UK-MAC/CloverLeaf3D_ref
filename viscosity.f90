@@ -47,6 +47,9 @@ SUBROUTINE viscosity()
                             chunks(c)%field%celldx,                    &
                             chunks(c)%field%celldy,                    &
                             chunks(c)%field%celldz,                    &
+                            chunks(c)%field%xarea,                     &
+                            chunks(c)%field%yarea,                     &
+                            chunks(c)%field%zarea,                     &
                             chunks(c)%field%density0,                  &
                             chunks(c)%field%pressure,                  &
                             chunks(c)%field%viscosity,                 &
