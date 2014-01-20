@@ -74,9 +74,9 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
 
         div = (xarea(j,k,l)*(ugrad)+  yarea(j,k,l)*(vgrad))+ zarea(j,k,l)*(wgrad)
 
-        strain2 = 0.5_8*(xvel0(j,  k+1,l  ) + xvel0(j+1,k+1,l+1)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l  ))/celldy(k) &
-                + 0.5_8*(yvel0(j+1,k  ,l  ) + yvel0(j+1,k+1,l+1)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l  ))/celldx(j) &
-                + 0.5_8*(zvel0(j  ,k  ,l+1) + zvel0(j+1,k+1,l+1)-zvel0(j  ,k  ,l)-zvel0(j  ,k  ,l+1))/celldx(j) ! wrong
+        strain2 = 0.5_8*(xvel0(j,  k+1,l  ) + xvel0(j+1,k+1,l+1)-xvel0(j  ,k  ,l)-xvel0(j+1,k  ,l  ))/xarea(j,k,l) &
+                + 0.5_8*(yvel0(j+1,k  ,l  ) + yvel0(j+1,k+1,l+1)-yvel0(j  ,k  ,l)-yvel0(j  ,k+1,l  ))/yarea(j,k,l) &
+                + 0.5_8*(zvel0(j  ,k  ,l+1) + zvel0(j+1,k+1,l+1)-zvel0(j  ,k  ,l)-zvel0(j  ,k  ,l+1))/zarea(j,k,l)
 
         pgradx=(pressure(j+1,k,l)-pressure(j-1,k,l))/(celldx(j)+celldx(j+1))
         pgrady=(pressure(j,k+1,l)-pressure(j,k-1,l))/(celldy(k)+celldy(k+1))
