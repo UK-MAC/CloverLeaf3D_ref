@@ -62,6 +62,7 @@ SUBROUTINE advec_mom_driver(chunk,which_vel,direction,sweep_number)
                           chunks(chunk)%field%celldx,             &
                           chunks(chunk)%field%celldy,             &
                           chunks(chunk)%field%celldz,             &
+                          advect_x,                               &
                           which_vel,                              &
                           sweep_number,                           &
                           direction                               )

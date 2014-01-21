@@ -63,14 +63,14 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
-        ugrad=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1)) &
-             -(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))
+        ugrad=0.5_8*((xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1)) &
+                    -(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1)))
 
-        vgrad=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1)) &
-             -(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))
+        vgrad=0.5_8*((yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1)) &
+                    -(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1)))
 
-        wgrad=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)) &
-             -(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))
+        wgrad=0.5_8*((zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)) &
+                   -(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  )))
 
         div = (xarea(j,k,l)*(ugrad)+  yarea(j,k,l)*(vgrad))+ zarea(j,k,l)*(wgrad)
 

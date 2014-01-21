@@ -33,6 +33,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
                              y_max,       &
                              z_min,       &
                              z_max,       &
+                             advect_x,    &
                              dir,         &
                              sweep_number,&
                              vertexdx,    &
@@ -59,6 +60,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
 
   INTEGER :: x_min,x_max,y_min,y_max,z_min,z_max
   INTEGER :: sweep_number,dir
+  LOGICAL :: advect_x
   INTEGER :: g_xdir=1,g_ydir=2,g_zdir=3
 
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: volume
@@ -97,20 +99,10 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
           DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l)+vol_flux_y(j  ,k+1,l) &
-                          -vol_flux_y(j,k,l)+vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l))
-            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l))
-          ENDDO
-        ENDDO
-      ENDDO 
-!$OMP END DO
-    ELSEIF(sweep_number.EQ.2) THEN ! xdir will never be sweep 2
-!$OMP DO
-      DO l=z_min-2,z_max+2
-        DO k=y_min-2,y_max+2
-          DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_x(j+1,k,l)-vol_flux_x(j,k,l)
-            post_vol(j,k,l)=volume(j,k,l)
+            pre_vol(j,k,l)=  volume(j,k,l)+(vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
+                                           +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
+                                           +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l))
+            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l))
           ENDDO
         ENDDO
       ENDDO 
@@ -120,7 +112,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
           DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_x(j+1,k,l)-vol_flux_x(j,k,l)
+            pre_vol(j,k,l)= volume(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
             post_vol(j,k,l)=volume(j,k,l)
           ENDDO
         ENDDO
@@ -195,40 +187,30 @@ SUBROUTINE advec_cell_kernel(x_min,       &
     ENDDO
 !$OMP END DO
 
-  ELSEIF(dir.EQ.g_ydir) THEN ! But y might always be sweep 2, but x and z have alternated
-
-    IF(sweep_number.EQ.1)THEN
+  ELSEIF(dir.EQ.g_ydir) THEN
+    IF(sweep_number.EQ.2) THEN
+      IF(advect_x) THEN
 !$OMP DO
-      DO l=z_min-2,z_max+2
-        DO k=y_min-2,y_max+2
-          DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)+vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l)) ! z fluxes need to be included in all loops
-            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l))
+        DO l=z_min-2,z_max+2
+          DO k=y_min-2,y_max+2
+            DO j=x_min-2,x_max+2
+              pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+              post_vol(j,k,l)=volume(j,k,l)
+            ENDDO
           ENDDO
         ENDDO
-      ENDDO
 !$OMP END DO
-    ELSEIF(sweep_number.EQ.2) THEN
+      ELSE
 !$OMP DO
-      DO l=z_min-2,z_max+2
-        DO k=y_min-2,y_max+2
-          DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
-            post_vol(j,k,l)=volume(j,k,l)
+        DO l=z_min-2,z_max+2
+          DO k=y_min-2,y_max+2
+            DO j=x_min-2,x_max+2
+              pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+              post_vol(j,k,l)=volume(j,k,l)
+            ENDDO
           ENDDO
         ENDDO
-      ENDDO
-!$OMP END DO
-    ELSEIF(sweep_number.EQ.3) THEN
-!$OMP DO
-      DO l=z_min-2,z_max+2
-        DO k=y_min-2,y_max+2
-          DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
-            post_vol(j,k,l)=volume(j,k,l)
-          ENDDO
-        ENDDO
-      ENDDO
+      ENDIF
 !$OMP END DO
     ENDIF
 
@@ -306,20 +288,10 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
           DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+(vol_flux_x(j+1,k  ,l)-vol_flux_x(j,k,l)+vol_flux_y(j  ,k+1,l) &
-                                        -vol_flux_y(j,k,l)+vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l))
-            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_z(j  ,k,l+1)-vol_flux_z(j,k,l))
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ELSEIF(sweep_number.EQ.2) THEN
-!$OMP DO
-      DO l=z_min-2,z_max+2
-        DO k=y_min-2,y_max+2
-          DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
-            post_vol(j,k,l)=volume(j,k,l)
+            pre_vol(j,k,l)=  volume(j,k,l)+(vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
+                                           +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
+                                           +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l))
+            post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l))
           ENDDO
         ENDDO
       ENDDO
@@ -329,7 +301,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
       DO l=z_min-2,z_max+2
         DO k=y_min-2,y_max+2
           DO j=x_min-2,x_max+2
-            pre_vol(j,k,l)=volume(j,k,l)+vol_flux_z(j  ,k,l+1)-vol_flux_z(j,k,l)
+            pre_vol(j,k,l)= volume(j,k,l)+vol_flux_z(j  ,k,l+1)-vol_flux_z(j,k,l)
             post_vol(j,k,l)=volume(j,k,l)
           ENDDO
         ENDDO

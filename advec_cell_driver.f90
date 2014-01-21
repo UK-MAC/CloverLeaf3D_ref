@@ -41,6 +41,7 @@ SUBROUTINE advec_cell_driver(chunk,sweep_number,dir)
 			   chunks(chunk)%field%y_max,                 &
 			   chunks(chunk)%field%z_min,                 &
                            chunks(chunk)%field%z_max,                 &
+                           advect_x,                                  &
                            dir,                                       &
                            sweep_number,                              &
                            chunks(chunk)%field%vertexdx,              &
