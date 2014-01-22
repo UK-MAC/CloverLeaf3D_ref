@@ -42,9 +42,9 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   IMPLICIT NONE
 
   INTEGER     :: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+2 ,z_min-2:z_max+2)   :: xarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+3 ,z_min-2:z_max+2)   :: yarea
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2 ,z_min-2:z_max+3)   :: zarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2 ,z_min-2:z_max+2)    :: xarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3 ,z_min-2:z_max+2)    :: yarea
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2 ,z_min-2:z_max+3)    :: zarea
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2)                                     :: celldx
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2)                                     :: celldy
   REAL(KIND=8), DIMENSION(z_min-2:z_max+2)                                     :: celldz
@@ -70,7 +70,7 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
                     -(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1)))
 
         wgrad=0.5_8*((zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)+zvel0(j  ,k  ,l+1)+zvel0(j+1,k+1,l+1)) &
-                   -(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  )))
+                    -(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  )))
 
         div = (xarea(j,k,l)*(ugrad)+  yarea(j,k,l)*(vgrad))+ zarea(j,k,l)*(wgrad)
 

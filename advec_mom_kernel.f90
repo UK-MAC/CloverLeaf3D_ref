@@ -80,7 +80,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   REAL(KIND=8), DIMENSION(y_min-2:y_max+2) :: celldy
   REAL(KIND=8), DIMENSION(z_min-2:z_max+2) :: celldz
  
-  INTEGER :: j,k,l,mom_sweep
+  INTEGER :: j,k,l
   INTEGER :: upwind,donor,downwind,dif
   REAL(KIND=8) :: sigma,wind,width
   REAL(KIND=8) :: sigma2,wind2
@@ -99,12 +99,9 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     vel1=>zvel1
   ENDIF
 
-  mom_sweep=direction+2*(sweep_number-1)
-
 !$OMP PARALLEL
 
 ! I think these only have to be done once per cell advection sweep. So put in some logic so they are just done the first time
-! And there should be more sweep numbers.
 
   IF(sweep_number.EQ.1.AND.direction.EQ.1)THEN ! x first
 !$OMP DO
@@ -118,43 +115,64 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       ENDDO
     ENDDO
 !$OMP END DO
+  ELSEIF(sweep_number.EQ.1.AND.direction.EQ.3)THEN ! z first
+!$OMP DO
+    DO l=z_min-2,z_max+2
+      DO k=y_min-2,y_max+2
+        DO j=x_min-2,x_max+2
+          post_vol(j,k,l)= volume(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
+                                        +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
+          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
+        ENDDO
+      ENDDO
+    ENDDO
+!$OMP END DO
+  ELSEIF(sweep_number.EQ.2.AND.advect_x)THEN ! x first
+!$OMP DO
+    DO l=z_min-2,z_max+2
+      DO k=y_min-2,y_max+2
+        DO j=x_min-2,x_max+2
+          post_vol(j,k,l)=volume(j,k,l) +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
+          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
+        ENDDO
+      ENDDO
+    ENDDO
+!$OMP END DO
+  ELSEIF(sweep_number.EQ.2.AND..NOT.advect_x)THEN ! Z first
+!$OMP DO
+    DO l=z_min-2,z_max+2
+      DO k=y_min-2,y_max+2
+        DO j=x_min-2,x_max+2
+          post_vol(j,k,l)=volume(j,k,l) +vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
+          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
+        ENDDO
+      ENDDO
+    ENDDO
+!$OMP END DO
   ELSEIF(sweep_number.EQ.3.AND.direction.EQ.1)THEN ! z first
 !$OMP DO
     DO l=z_min-2,z_max+2
       DO k=y_min-2,y_max+2
         DO j=x_min-2,x_max+2
-          post_vol(j,k,l)= volume(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l  ) &
-                                        +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l  )
-          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_z(j  ,k  ,l  )-vol_flux_z(j,k,l+1)
+          post_vol(j,k,l)=volume(j,k,l)
+          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
         ENDDO
       ENDDO
     ENDDO
 !$OMP END DO
-  ELSEIF(sweep_number.EQ.2.AND.advect_x)THEN !
+  ELSEIF(sweep_number.EQ.3.AND.direction.EQ.3)THEN ! x first
 !$OMP DO
     DO l=z_min-2,z_max+2
       DO k=y_min-2,y_max+2
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)=volume(j,k,l)
-          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
-        ENDDO
-      ENDDO
-    ENDDO
-!$OMP END DO
-  ELSEIF(sweep_number.EQ.2.AND..NOT.advect_x)THEN !
-!$OMP DO
-    DO l=z_min-2,z_max+2
-      DO k=y_min-2,y_max+2
-        DO j=x_min-2,x_max+2
-          post_vol(j,k,l)=volume(j,k,l)
-          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l)-vol_flux_y(j,k,l)
+          pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
         ENDDO
       ENDDO
     ENDDO
 !$OMP END DO
   ENDIF
 
-! All these fluxes need updating as well
   IF(direction.EQ.1)THEN
 !$OMP DO
     DO l=z_min,z_max+1

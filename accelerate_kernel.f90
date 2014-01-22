@@ -171,11 +171,6 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
 
 !$OMP END PARALLEL
 
-write(0,*) xvel1(:,4,4)
-write(0,*) pressure(:,4,4)
-write(0,*) viscosity(:,4,4)
-stop
-
 END SUBROUTINE accelerate_kernel
 
 END MODULE accelerate_kernel_module

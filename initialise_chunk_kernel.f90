@@ -162,7 +162,7 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
   DO l=z_min-2,z_max+2
     DO k=y_min-2,y_max+2
       DO j=x_min-2,x_max+2
-        yarea(j,k,l)=celldx(j)*celldy(k)
+        yarea(j,k,l)=celldx(j)*celldz(l)
       ENDDO
     ENDDO
   ENDDO
@@ -172,7 +172,7 @@ SUBROUTINE initialise_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
   DO l=z_min-2,z_max+2
     DO k=y_min-2,y_max+2
       DO j=x_min-2,x_max+2
-        zarea(j,k,l)=celldx(j)*celldz(l)
+        zarea(j,k,l)=celldx(j)*celldy(k)
       ENDDO
     ENDDO
   ENDDO
