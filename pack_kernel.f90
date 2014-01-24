@@ -416,7 +416,7 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,z_min,z_max,field,
   DO l=1,depth
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=x_min-depth,x_max+x_inc+depth
-        index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
+        index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth)) ! This is wrong
         bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k,l)
       ENDDO
     ENDDO

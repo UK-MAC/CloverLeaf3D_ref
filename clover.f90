@@ -163,8 +163,8 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
   ! Set up chunk mesh ranges and chunk connectivity
 
-  back(1)=1
-  front(1)=z_cells
+  back(:)=1            ! Forces 2D decomp to work
+  front(:)=z_cells
   add_x_prev=0
   add_y_prev=0
   chunk=1
@@ -269,9 +269,9 @@ SUBROUTINE clover_exchange(fields,depth)
         left_right_offset(field)=end_pack_index_left_right
         bottom_top_offset(field)=end_pack_index_bottom_top
         back_front_offset(field)=end_pack_index_back_front
-        end_pack_index_left_right=end_pack_index_left_right+depth*(chunks(chunk)%field%y_max+5)
-        end_pack_index_bottom_top=end_pack_index_bottom_top+depth*(chunks(chunk)%field%x_max+5)
-        end_pack_index_back_front=end_pack_index_back_front+depth*(chunks(chunk)%field%x_max+5)
+        end_pack_index_left_right=end_pack_index_left_right+depth*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)
+        end_pack_index_bottom_top=end_pack_index_bottom_top+depth*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)
+        end_pack_index_back_front=end_pack_index_back_front+depth*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)
       ENDIF
     ENDDO
 

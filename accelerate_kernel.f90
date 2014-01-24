@@ -68,10 +68,10 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
                    +density0(j  ,k-1,l  )*volume(j  ,k-1,l  )  &
                    +density0(j  ,k  ,l  )*volume(j  ,k  ,l  )  &
                    +density0(j-1,k  ,l  )*volume(j-1,k  ,l  )  &
-                   +density0(j-1,k-1,l+1)*volume(j-1,k-1,l+1)  &
-                   +density0(j  ,k-1,l+1)*volume(j  ,k-1,l+1)  &
-                   +density0(j  ,k  ,l+1)*volume(j  ,k  ,l+1)  &
-                   +density0(j-1,k  ,l+1)*volume(j-1,k  ,l+1)) &
+                   +density0(j-1,k-1,l-1)*volume(j-1,k-1,l-1)  &
+                   +density0(j  ,k-1,l-1)*volume(j  ,k-1,l-1)  &
+                   +density0(j  ,k  ,l-1)*volume(j  ,k  ,l-1)  &
+                   +density0(j-1,k  ,l-1)*volume(j-1,k  ,l-1)) &
                    *0.125_8
 
         stepbymass(j,k,l)=0.25_8*dt/nodal_mass
