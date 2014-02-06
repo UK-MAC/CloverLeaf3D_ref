@@ -212,8 +212,8 @@ SUBROUTINE advec_cell_kernel(x_min,       &
             ENDDO
           ENDDO
         ENDDO
-      ENDIF
 !$OMP END DO
+      ENDIF
     ENDIF
 
 !$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
