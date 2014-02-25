@@ -215,30 +215,18 @@ SUBROUTINE clover_allocate_buffers(chunk)
   ! Unallocated buffers for external boundaries caused issues on some systems so they are now
   !  all allocated
   IF(parallel%task.EQ.chunks(chunk)%task)THEN
-    !IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%left_snd_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
-      ALLOCATE(chunks(chunk)%left_rcv_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
-    !ENDIF
-    !IF(chunks(chunk)%chunk_neighbours(chunk_right).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%right_snd_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
-      ALLOCATE(chunks(chunk)%right_rcv_buffer(15*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
-    !ENDIF
-    !IF(chunks(chunk)%chunk_neighbours(chunk_bottom).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%bottom_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
-      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
-    !ENDIF
-    !IF(chunks(chunk)%chunk_neighbours(chunk_top).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%top_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%left_snd_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%left_rcv_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%right_snd_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%right_rcv_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%top_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
       ALLOCATE(chunks(chunk)%top_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
-    !ENDIF
-    !IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%back_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
-      ALLOCATE(chunks(chunk)%back_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
-    !ENDIF
-    !IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
-      ALLOCATE(chunks(chunk)%front_snd_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
-      ALLOCATE(chunks(chunk)%front_rcv_buffer(15*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
-    !ENDIF
+      ALLOCATE(chunks(chunk)%back_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%back_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%front_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%front_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
   ENDIF
 
 END SUBROUTINE clover_allocate_buffers
