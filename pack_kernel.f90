@@ -74,7 +74,7 @@ SUBROUTINE clover_pack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,  
   DO l=z_min-depth,z_max+z_inc+depth
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
-        index=buffer_offset + j+(k+depth-1)*depth + ((1+depth-1)*(y_max+y_inc+2*depth)*depth)
+        index=buffer_offset + (j+(k+depth-1)*depth) + ((l+depth-1)*(y_max+y_inc+2*depth)*depth)
         left_snd_buffer(index)=field(x_min+x_inc-1+j,k,l)
       ENDDO
     ENDDO
@@ -99,8 +99,6 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,
   INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
 
   ! Unpack 
-
-  write(1,*)"left_rcv_buffer ",buffer_offset
 
   ! These array modifications still need to be added on, plus the donor data location changes as in update_halo
   IF(field_type.EQ.CELL_DATA) THEN
@@ -133,7 +131,7 @@ SUBROUTINE clover_unpack_message_left(x_min,x_max,y_min,y_max,z_min,z_max,field,
   DO l=z_min-depth,z_max+z_inc+depth
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
-        index=buffer_offset + j+(k+depth-1)*depth + ((1+depth-1)*(y_max+y_inc+2*depth)*depth)
+        index=buffer_offset + (j+(k+depth-1)*depth) + ((l+depth-1)*(y_max+y_inc+2*depth)*depth)
         field(x_min-j,k,l)=left_rcv_buffer(index)
       ENDDO
     ENDDO
@@ -190,7 +188,7 @@ SUBROUTINE clover_pack_message_right(x_min,x_max,y_min,y_max,z_min,z_max,field, 
   DO l=z_min-depth,z_max+z_inc+depth
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
-        index=buffer_offset + j+(k+depth-1)*depth + ((1+depth-1)*(y_max+y_inc+2*depth)*depth)
+        index=buffer_offset + (j+(k+depth-1)*depth) + ((l+depth-1)*(y_max+y_inc+2*depth)*depth)
         right_snd_buffer(index)=field(x_max+1-j,k,l)
       ENDDO
     ENDDO
@@ -247,7 +245,7 @@ SUBROUTINE clover_unpack_message_right(x_min,x_max,y_min,y_max,z_min,z_max,field
   DO l=z_min-depth,z_max+z_inc+depth
     DO k=y_min-depth,y_max+y_inc+depth
       DO j=1,depth
-        index=buffer_offset + j+(k+depth-1)*depth + ((1+depth-1)*(y_max+y_inc+2*depth)*depth)
+        index=buffer_offset + (j+(k+depth-1)*depth) + ((l+depth-1)*(y_max+y_inc+2*depth)*depth)
         field(x_max+x_inc+j,k,l)=right_rcv_buffer(index)
       ENDDO
     ENDDO
@@ -414,11 +412,11 @@ SUBROUTINE clover_pack_message_bottom(x_min,x_max,y_min,y_max,z_min,z_max,field,
     z_inc=1
   ENDIF
 
+  DO k=1,depth
 !$OMP PARALLEL DO PRIVATE(index)
-  DO l=1,depth
-    DO k=y_min-depth,y_max+y_inc+depth
+    DO l=z_min-depth,z_max+z_inc+depth
       DO j=x_min-depth,x_max+x_inc+depth
-        index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth)) ! This is wrong
+        index= buffer_offset + j+depth+(k-1)*(y_max+y_inc+(2*depth))
         bottom_snd_buffer(index)=field(j,y_min+y_inc-1+k,l)
       ENDDO
     ENDDO
@@ -471,11 +469,11 @@ SUBROUTINE clover_unpack_message_bottom(x_min,x_max,y_min,y_max,z_min,z_max,fiel
     z_inc=1
   ENDIF
 
-  DO l=1,depth
+  DO k=1,depth
 !$OMP PARALLEL DO PRIVATE(index)
-    DO k=y_min-depth,y_max+y_inc+depth
+    DO l=z_min-depth,z_max+z_inc+depth
       DO j=x_min-depth,x_max+x_inc+depth
-        index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
+        index= buffer_offset + j+depth+(k-1)*(y_max+y_inc+(2*depth))
         field(j,y_min-k,l)=bottom_rcv_buffer(index)
       ENDDO
     ENDDO
@@ -528,16 +526,16 @@ SUBROUTINE clover_pack_message_back(x_min,x_max,y_min,y_max,z_min,z_max,field,  
     z_inc=1
   ENDIF
 
+    DO l=1,depth
 !$OMP PARALLEL DO PRIVATE(index)
-  DO k=y_min-depth,y_max+y_inc+depth
-    DO j=x_min-depth,x_max+x_inc+depth
-      DO l=1,depth
-        index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
+    DO k=y_min-depth,y_max+y_inc+depth
+      DO j=x_min-depth,x_max+x_inc+depth
+        index= buffer_offset + j+depth+(k-1)*(z_max+x_inc+(2*depth))
         back_snd_buffer(index)=field(j,y_min+z_inc-1+k,l)
       ENDDO
     ENDDO
-  ENDDO
 !$OMP END PARALLEL DO
+  ENDDO
 
 END SUBROUTINE clover_pack_message_back
 
@@ -642,10 +640,10 @@ SUBROUTINE clover_pack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field, 
     z_inc=1
   ENDIF
 
+  DO l=1,depth
 !$OMP PARALLEL DO PRIVATE(index)
-  DO k=y_min-depth,y_max+y_inc+depth
-    DO j=x_min-depth,x_max+x_inc+depth
-      DO l=1,depth
+    DO k=y_min-depth,y_max+y_inc+depth
+      DO j=x_min-depth,x_max+x_inc+depth
         index= buffer_offset + j+depth+(k-1)*(x_max+x_inc+(2*depth))
         front_snd_buffer(index)=field(j,y_min+z_inc-1+k,l)
       ENDDO
