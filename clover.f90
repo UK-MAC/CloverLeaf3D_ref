@@ -16,7 +16,7 @@
 ! CloverLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Communication Utilities
-!>  @author Wayne Gaudin
+!>  @author Wayne Gaudin, Ollie Perks
 !>  @details Contains all utilities required to run CloverLeaf in a distributed
 !>  environment, including initialisation, mesh decompostion, reductions and
 !>  halo exchange using explicit buffers.
@@ -109,84 +109,110 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
   ! This decomposes the mesh into a number of chunks.
   ! The number of chunks may be a multiple of the number of mpi tasks
-  ! Doesn't always return the best split if there are few factors
-  ! All factors need to be stored and the best picked. But its ok for now
+  ! Picks split with minimal surface area
 
   IMPLICIT NONE
 
   INTEGER :: x_cells,y_cells,z_cells,left(:),right(:),top(:),bottom(:),back(:),front(:)
   INTEGER :: c,delta_x,delta_y,delta_z
 
-  REAL(KIND=8) :: mesh_ratio,factor_x,factor_y,factor_z
-  INTEGER  :: chunk_x,chunk_y,chunk_z,mod_x,mod_y,split_found
+  REAL(KIND=8) :: surface,volume,best_metric,current_metric
+  INTEGER  :: chunk_x,chunk_y,chunk_z,mod_x,mod_y,mod_z
 
-  INTEGER  :: cx,cy,cz,chunk,add_x,add_y,add_x_prev,add_y_prev
+  INTEGER  :: cx,cy,cz,chunk,add_x,add_y,add_z,add_x_prev,add_y_prev,add_z_prev
+  INTEGER  :: div1,j,current_x,current_y,current_z
 
-  ! 2D Decomposition of the mesh
+  ! 3D Decomposition of the mesh
 
-  mesh_ratio=real(x_cells)/real(y_cells)
+  current_x = 1
+  current_y = 1
+  current_y = number_of_chunks
 
-  chunk_x=number_of_chunks
-  chunk_y=1
+  ! Initialise metric
+  surface = (((1.0*x_cells)/current_x)*((1.0*y_cells)/current_y)*2) &
+          + (((1.0*x_cells)/current_x)*((1.0*z_cells)/current_z)*2) &
+          + (((1.0*y_cells)/current_y)*((1.0*z_cells)/current_z)*2)
+  volume  = ((1.0*x_cells)/current_x)*((1.0*y_cells)/current_y)*((1.0*z_cells)/current_z)
+  best_metric = surface/volume
+  chunk_x=current_x
+  chunk_y=current_y
+  chunk_z=current_y
 
-  split_found=0 ! Used to detect 1D decomposition
   DO c=1,number_of_chunks
-    IF (MOD(number_of_chunks,c).EQ.0) THEN
-      factor_x=number_of_chunks/real(c)
-      factor_y=c
-      !Compare the factor ratio with the mesh ratio
-      IF(factor_x/factor_y.LE.mesh_ratio) THEN
-        chunk_y=c
-        chunk_x=number_of_chunks/c
-        split_found=1
-        EXIT
+
+    ! If doesn't evenly divide loop
+    IF(MOD(number_of_chunks,c).NE.0) CYCLE
+
+    current_x=c
+
+    div1 = number_of_chunks
+
+    DO j=1,div1
+      IF(MOD(div1,j).NE.0) CYCLE
+      current_y = j
+
+      IF(MOD(number_of_chunks,(c*j)).NE.0) CYCLE
+
+      current_z = number_of_chunks/(c*j)
+
+      surface = (((1.0*x_cells)/current_x)*((1.0*y_cells)/current_y)*2) &
+              + (((1.0*x_cells)/current_x)*((1.0*z_cells)/current_z)*2) &
+              + (((1.0*y_cells)/current_y)*((1.0*z_cells)/current_z)*2)
+      volume  = ((1.0*x_cells)/current_x)*((1.0*y_cells)/current_y)*((1.0*z_cells)/current_z)
+
+      current_metric = surface/volume
+
+      IF(current_metric < best_metric) THEN
+        chunk_x=current_x
+        chunk_y=current_y
+        chunk_z=current_y
+        best_metric=current_metric
       ENDIF
-    ENDIF
+
+    ENDDO
+
   ENDDO
-
-  IF(split_found.EQ.0.OR.chunk_y.EQ.number_of_chunks) THEN ! Prime number or 1D decomp detected
-    IF(mesh_ratio.GE.1.0) THEN
-      chunk_x=number_of_chunks
-      chunk_y=1
-    ELSE
-      chunk_x=1
-      chunk_y=number_of_chunks
-    ENDIF
-  ENDIF
-
-  chunk_z=1
-
-  delta_x=x_cells/chunk_x
-  delta_y=y_cells/chunk_y
-  mod_x=MOD(x_cells,chunk_x)
-  mod_y=MOD(y_cells,chunk_y)
 
   ! Set up chunk mesh ranges and chunk connectivity
 
-  back(:)=1            ! Forces 2D decomp to work
-  front(:)=z_cells
+  delta_x=x_cells/chunk_x
+  delta_y=y_cells/chunk_y
+  delta_z=z_cells/chunk_z
+  mod_x=MOD(x_cells,chunk_x)
+  mod_y=MOD(y_cells,chunk_y)
+  mod_z=MOD(y_cells,chunk_z)
   add_x_prev=0
   add_y_prev=0
+  add_z_prev=0
   chunk=1
   DO cz=1,chunk_z
     DO cy=1,chunk_y
       DO cx=1,chunk_x
         add_x=0
         add_y=0
+        add_z=0
         IF(cx.LE.mod_x)add_x=1
         IF(cy.LE.mod_y)add_y=1
+        ! Mesh chunks
         left(chunk)=(cx-1)*delta_x+1+add_x_prev
         right(chunk)=left(chunk)+delta_x-1+add_x
         bottom(chunk)=(cy-1)*delta_y+1+add_y_prev
         top(chunk)=bottom(chunk)+delta_y-1+add_y
-        chunks(chunk)%chunk_neighbours(chunk_left)=chunk_x*(cy-1)+cx-1
-        chunks(chunk)%chunk_neighbours(chunk_right)=chunk_x*(cy-1)+cx+1
-        chunks(chunk)%chunk_neighbours(chunk_bottom)=chunk_x*(cy-2)+cx
-        chunks(chunk)%chunk_neighbours(chunk_top)=chunk_x*(cy)+cx
+        back(chunk)=(cz-1)*delta_z+1+add_z_prev
+        front(chunk)=back(chunk)+delta_z-1+add_z
+        ! Chunk connectivity
+        chunks(chunk)%chunk_neighbours(chunk_left)=  chunk-1
+        chunks(chunk)%chunk_neighbours(chunk_right)= chunk+1
+        chunks(chunk)%chunk_neighbours(chunk_bottom)=chunk-chunk_x
+        chunks(chunk)%chunk_neighbours(chunk_top)=   chunk+chunk_x
+        chunks(chunk)%chunk_neighbours(chunk_back)=  chunk-chunk_x*chunk_y
+        chunks(chunk)%chunk_neighbours(chunk_front)= chunk+chunk_x*chunk_y
         IF(cx.EQ.1)chunks(chunk)%chunk_neighbours(chunk_left)=external_face
         IF(cx.EQ.chunk_x)chunks(chunk)%chunk_neighbours(chunk_right)=external_face
         IF(cy.EQ.1)chunks(chunk)%chunk_neighbours(chunk_bottom)=external_face
         IF(cy.EQ.chunk_y)chunks(chunk)%chunk_neighbours(chunk_top)=external_face
+        IF(cz.EQ.1)chunks(chunk)%chunk_neighbours(chunk_back)=external_face
+        IF(cz.EQ.chunk_z)chunks(chunk)%chunk_neighbours(chunk_front)=external_face
         IF(cx.LE.mod_x)add_x_prev=add_x_prev+1
         chunks(chunk)%chunk_neighbours(chunk_back)=external_face
         chunks(chunk)%chunk_neighbours(chunk_front)=external_face
@@ -195,11 +221,13 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
       add_x_prev=0
       IF(cy.LE.mod_y)add_y_prev=add_y_prev+1
     ENDDO
+    add_x_prev=0
+    add_y_prev=0
+    IF(cz.LE.mod_z)add_z_prev=add_z_prev+1
   ENDDO
 
   IF(parallel%boss)THEN
     WRITE(g_out,*)
-    WRITE(g_out,*)"Mesh ratio of ",mesh_ratio
     WRITE(g_out,*)"Decomposing the mesh into ",chunk_x," by ",chunk_y," by ",chunk_z," chunks"
     WRITE(g_out,*)
   ENDIF

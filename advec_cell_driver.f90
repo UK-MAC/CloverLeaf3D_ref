@@ -38,8 +38,8 @@ SUBROUTINE advec_cell_driver(chunk,sweep_number,dir)
       CALL advec_cell_kernel(chunks(chunk)%field%x_min,               &
                            chunks(chunk)%field%x_max,                 &
                            chunks(chunk)%field%y_min,                 &
-			   chunks(chunk)%field%y_max,                 &
-			   chunks(chunk)%field%z_min,                 &
+                           chunks(chunk)%field%y_max,                 &
+                           chunks(chunk)%field%z_min,                 &
                            chunks(chunk)%field%z_max,                 &
                            advect_x,                                  &
                            dir,                                       &
