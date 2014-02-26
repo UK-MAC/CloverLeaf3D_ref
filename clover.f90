@@ -145,7 +145,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
     current_x=c
 
-    div1 = number_of_chunks
+    div1 = number_of_chunks/c
 
     DO j=1,div1
       IF(MOD(div1,j).NE.0) CYCLE
@@ -193,6 +193,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
         add_z=0
         IF(cx.LE.mod_x)add_x=1
         IF(cy.LE.mod_y)add_y=1
+        IF(cz.LE.mod_z)add_z=1
         ! Mesh chunks
         left(chunk)=(cx-1)*delta_x+1+add_x_prev
         right(chunk)=left(chunk)+delta_x-1+add_x
