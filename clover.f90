@@ -109,7 +109,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
   ! This decomposes the mesh into a number of chunks.
   ! The number of chunks may be a multiple of the number of mpi tasks
-  ! Picks split with minimal surface area
+  ! Picks split with minimal surface area to volume ratio
 
   IMPLICIT NONE
 
@@ -126,7 +126,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
 
   current_x = 1
   current_y = 1
-  current_y = number_of_chunks
+  current_z = number_of_chunks
 
   ! Initialise metric
   surface = (((1.0*x_cells)/current_x)*((1.0*y_cells)/current_y)*2) &
@@ -136,7 +136,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
   best_metric = surface/volume
   chunk_x=current_x
   chunk_y=current_y
-  chunk_z=current_y
+  chunk_z=current_z
 
   DO c=1,number_of_chunks
 
@@ -165,7 +165,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
       IF(current_metric < best_metric) THEN
         chunk_x=current_x
         chunk_y=current_y
-        chunk_z=current_y
+        chunk_z=current_z
         best_metric=current_metric
       ENDIF
 
@@ -180,7 +180,7 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
   delta_z=z_cells/chunk_z
   mod_x=MOD(x_cells,chunk_x)
   mod_y=MOD(y_cells,chunk_y)
-  mod_z=MOD(y_cells,chunk_z)
+  mod_z=MOD(z_cells,chunk_z)
   add_x_prev=0
   add_y_prev=0
   add_z_prev=0
@@ -214,8 +214,6 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
         IF(cz.EQ.1)chunks(chunk)%chunk_neighbours(chunk_back)=external_face
         IF(cz.EQ.chunk_z)chunks(chunk)%chunk_neighbours(chunk_front)=external_face
         IF(cx.LE.mod_x)add_x_prev=add_x_prev+1
-        chunks(chunk)%chunk_neighbours(chunk_back)=external_face
-        chunks(chunk)%chunk_neighbours(chunk_front)=external_face
         chunk=chunk+1
       ENDDO
       add_x_prev=0
