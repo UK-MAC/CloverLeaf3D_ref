@@ -380,51 +380,51 @@ SUBROUTINE clover_exchange(fields,depth)
                                bottom_top_offset)
     ENDIF
 
-!    message_count = 0
-!    request = 0
-!
-!    IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
-!      ! do back exchanges
-!      CALL clover_pack_back(chunk, fields, depth, back_front_offset)
-!
-!      !send message downwards
-!      CALL clover_send_recv_message_back(chunks(chunk)%back_snd_buffer,                     &
-!                                           chunks(chunk)%back_rcv_buffer,                     &
-!                                           chunk,end_pack_index_back_front,                     &
-!                                           5, 6,                                                &
-!                                           request(message_count+1), request(message_count+2))
-!      message_count = message_count + 2
-!    ENDIF
-!
-!    IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
-!      ! do top exchanges
-!      CALL clover_pack_front(chunk, fields, depth, bottom_top_offset)
-!
-!      !send message upwards
-!      CALL clover_send_recv_message_front(chunks(chunk)%front_snd_buffer,                           &
-!                                        chunks(chunk)%front_rcv_buffer,                           &
-!                                        chunk,end_pack_index_back_front,                        &
-!                                        6, 5,                                                   &
-!                                        request(message_count+1), request(message_count+2))
-!      message_count = message_count + 2
-!    ENDIF
-!
-!    !need to make a call to wait / sync
-!    CALL MPI_WAITALL(message_count,request,status,err)
-!
-!    !unpack in front direction
-!    IF( chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face ) THEN
-!      CALL clover_unpack_front(fields, chunk, depth,                       &
-!                             chunks(chunk)%front_rcv_buffer,               &
-!                             back_front_offset)
-!    ENDIF
-!
-!    !unpack in back direction
-!    IF(chunks(chunk)%chunk_neighbours(chunk_bottom).NE.external_face) THEN
-!      CALL clover_unpack_back(fields, chunk, depth,                   &
-!                               chunks(chunk)%back_rcv_buffer,         &
-!                               back_front_offset)
-!    ENDIF
+    message_count = 0
+    request = 0
+
+    IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
+      ! do back exchanges
+      CALL clover_pack_back(chunk, fields, depth, back_front_offset)
+
+      !send message downwards
+      CALL clover_send_recv_message_back(chunks(chunk)%back_snd_buffer,                     &
+                                           chunks(chunk)%back_rcv_buffer,                     &
+                                           chunk,end_pack_index_back_front,                     &
+                                           5, 6,                                                &
+                                           request(message_count+1), request(message_count+2))
+      message_count = message_count + 2
+    ENDIF
+
+    IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
+      ! do top exchanges
+      CALL clover_pack_front(chunk, fields, depth, bottom_top_offset)
+
+      !send message upwards
+      CALL clover_send_recv_message_front(chunks(chunk)%front_snd_buffer,                           &
+                                        chunks(chunk)%front_rcv_buffer,                           &
+                                        chunk,end_pack_index_back_front,                        &
+                                        6, 5,                                                   &
+                                        request(message_count+1), request(message_count+2))
+      message_count = message_count + 2
+    ENDIF
+
+    !need to make a call to wait / sync
+    CALL MPI_WAITALL(message_count,request,status,err)
+
+    !unpack in front direction
+    IF( chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face ) THEN
+      CALL clover_unpack_front(fields, chunk, depth,                       &
+                             chunks(chunk)%front_rcv_buffer,               &
+                             back_front_offset)
+    ENDIF
+
+    !unpack in back direction
+    IF(chunks(chunk)%chunk_neighbours(chunk_back).NE.external_face) THEN
+      CALL clover_unpack_back(fields, chunk, depth,                   &
+                               chunks(chunk)%back_rcv_buffer,         &
+                               back_front_offset)
+    ENDIF
 
 END SUBROUTINE clover_exchange
 
