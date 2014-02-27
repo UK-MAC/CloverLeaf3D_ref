@@ -164,7 +164,6 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           ELSE
             limiter=0.0
           ENDIF
-
           ener_flux(j,k,l)=mass_flux_x(j,k,l)*(energy1(donor,k,l)+limiter)
 
         ENDDO

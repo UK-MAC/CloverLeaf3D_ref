@@ -1337,7 +1337,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            vol_flux_z(j,k,z_max+l)=-vol_flux_z(j,k,z_max-l)
+            vol_flux_z(j,k,z_max+l+1)=-vol_flux_z(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO
@@ -1383,7 +1383,7 @@ CONTAINS
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            mass_flux_z(x_max+j,k,l)=mass_flux_z(x_max-j,k,l)
+            mass_flux_z(x_max+j,k,l)=mass_flux_z(x_max+1-j,k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -1405,7 +1405,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            mass_flux_z(j,k,z_max+l)=-mass_flux_z(j,k,z_max-l)
+            mass_flux_z(j,k,z_max+1+l)=-mass_flux_z(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO

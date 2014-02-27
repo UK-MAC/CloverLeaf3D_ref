@@ -209,7 +209,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     DO l=z_min,z_max+1
       DO k=y_min,y_max+1
         DO j=x_min-1,x_max+2
-          ! Stagered cell mass pre advection
+          ! Staggered cell mass pre advection
           node_mass_pre(j,k,l)=node_mass_post(j,k,l)-node_flux(j-1,k,l)+node_flux(j,k,l)
         ENDDO
       ENDDO
@@ -376,6 +376,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     DO l=z_min-1,z_max+2
       DO k=y_min,y_max+1
         DO j=x_min,x_max+1
+          ! Staggered cell mass pre advection
           node_mass_pre(j,k,l)=node_mass_post(j,k,l)-node_flux(j,k,l-1)+node_flux(j,k,l)
         ENDDO
       ENDDO
