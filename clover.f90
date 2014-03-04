@@ -388,21 +388,21 @@ SUBROUTINE clover_exchange(fields,depth)
       CALL clover_pack_back(chunk, fields, depth, back_front_offset)
 
       !send message downwards
-      CALL clover_send_recv_message_back(chunks(chunk)%back_snd_buffer,                     &
-                                           chunks(chunk)%back_rcv_buffer,                     &
-                                           chunk,end_pack_index_back_front,                     &
-                                           5, 6,                                                &
+      CALL clover_send_recv_message_back(chunks(chunk)%back_snd_buffer,                        &
+                                           chunks(chunk)%back_rcv_buffer,                      &
+                                           chunk,end_pack_index_back_front,                    &
+                                           5, 6,                                               &
                                            request(message_count+1), request(message_count+2))
       message_count = message_count + 2
     ENDIF
 
     IF(chunks(chunk)%chunk_neighbours(chunk_front).NE.external_face) THEN
       ! do top exchanges
-      CALL clover_pack_front(chunk, fields, depth, bottom_top_offset)
+      CALL clover_pack_front(chunk, fields, depth, back_front_offset)
 
       !send message upwards
-      CALL clover_send_recv_message_front(chunks(chunk)%front_snd_buffer,                           &
-                                        chunks(chunk)%front_rcv_buffer,                           &
+      CALL clover_send_recv_message_front(chunks(chunk)%front_snd_buffer,                       &
+                                        chunks(chunk)%front_rcv_buffer,                         &
                                         chunk,end_pack_index_back_front,                        &
                                         6, 5,                                                   &
                                         request(message_count+1), request(message_count+2))
@@ -457,7 +457,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%density0,                 &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_DENSITY0))
     ENDIF
@@ -482,7 +482,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%density1,                 &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_DENSITY1))
     ENDIF
@@ -507,7 +507,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%energy0,                  &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_ENERGY0))
     ENDIF
@@ -532,7 +532,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%energy1,                  &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_ENERGY1))
     ENDIF
@@ -557,7 +557,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%pressure,                 &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_PRESSURE))
     ENDIF
@@ -582,7 +582,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%viscosity,                &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                     left_right_offset(FIELD_VISCOSITY))
     ENDIF
@@ -607,7 +607,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%soundspeed,               &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       left_right_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -632,7 +632,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%xvel0,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_XVEL0))
     ENDIF
@@ -657,7 +657,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%xvel1,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_XVEL1))
     ENDIF
@@ -682,7 +682,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%yvel0,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_YVEL0))
     ENDIF
@@ -707,7 +707,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%yvel1,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_YVEL1))
     ENDIF
@@ -732,7 +732,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%zvel0,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_ZVEL0))
     ENDIF
@@ -757,7 +757,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%zvel1,                    &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       left_right_offset(FIELD_ZVEL1))
     ENDIF
@@ -782,7 +782,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%vol_flux_x,               &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       left_right_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -807,7 +807,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%vol_flux_y,               &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -832,7 +832,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%vol_flux_z,               &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Z_FACE_DATA,                           &
                                       left_right_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -857,7 +857,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_x,              &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       left_right_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -882,7 +882,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_y,              &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       left_right_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -907,7 +907,7 @@ SUBROUTINE clover_pack_left(chunk, fields, depth, left_right_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_z,              &
                                       chunks(chunk)%left_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Z_FACE_DATA,                           &
                                       left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -969,7 +969,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density0,                 &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_DENSITY0))
     ENDIF
@@ -994,7 +994,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density1,                 &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_DENSITY1))
     ENDIF
@@ -1019,7 +1019,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy0,                  &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_ENERGY0))
     ENDIF
@@ -1044,7 +1044,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy1,                  &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_ENERGY1))
     ENDIF
@@ -1069,7 +1069,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%pressure,                 &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_PRESSURE))
     ENDIF
@@ -1094,7 +1094,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%viscosity,                &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_VISCOSITY))
     ENDIF
@@ -1119,7 +1119,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%soundspeed,               &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         left_right_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -1144,7 +1144,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel0,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_XVEL0))
     ENDIF
@@ -1169,7 +1169,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel1,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_XVEL1))
     ENDIF
@@ -1194,7 +1194,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel0,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_YVEL0))
     ENDIF
@@ -1219,7 +1219,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel1,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_YVEL1))
     ENDIF
@@ -1244,7 +1244,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel0,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_ZVEL0))
     ENDIF
@@ -1269,7 +1269,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel1,                    &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         left_right_offset(FIELD_ZVEL1))
     ENDIF
@@ -1294,7 +1294,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_x,               &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         left_right_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -1319,7 +1319,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_y,               &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -1344,7 +1344,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_z,               &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Z_FACE_DATA,                           &
                                         left_right_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -1369,7 +1369,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_x,              &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         left_right_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -1394,7 +1394,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_y,              &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         left_right_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -1419,7 +1419,7 @@ SUBROUTINE clover_unpack_left(fields, chunk, depth,                         &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_z,              &
                                         chunks(chunk)%left_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Z_FACE_DATA,                           &
                                         left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -1455,7 +1455,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density0,                 &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_DENSITY0))
     ENDIF
@@ -1480,7 +1480,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density1,                 &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_DENSITY1))
     ENDIF
@@ -1505,7 +1505,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy0,                  &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_ENERGY0))
     ENDIF
@@ -1530,7 +1530,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy1,                  &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_ENERGY1))
     ENDIF
@@ -1555,7 +1555,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%pressure,                 &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_PRESSURE))
     ENDIF
@@ -1580,7 +1580,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%viscosity,                &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_VISCOSITY))
     ENDIF
@@ -1605,7 +1605,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%soundspeed,               &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        left_right_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -1630,7 +1630,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel0,                    &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_XVEL0))
     ENDIF
@@ -1655,7 +1655,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel1,                    &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_XVEL1))
     ENDIF
@@ -1680,7 +1680,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel0,                    &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_YVEL0))
     ENDIF
@@ -1705,9 +1705,59 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel1,                    &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        left_right_offset(FIELD_YVEL1))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL0).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_right(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%zvel0,                    &
+                                     chunks(chunk)%right_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     left_right_offset(FIELD_ZVEL0))
+    ELSE
+      CALL clover_pack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel0,                    &
+                                       chunks(chunk)%right_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth, VERTEX_DATA,                           &
+                                       left_right_offset(FIELD_ZVEL0))
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_ZVEL1).EQ.1) THEN
+    IF(use_fortran_kernels) THEN
+      CALL clover_pack_message_right(chunks(chunk)%field%x_min,                    &
+                                     chunks(chunk)%field%x_max,                    &
+                                     chunks(chunk)%field%y_min,                    &
+                                     chunks(chunk)%field%y_max,                    &
+                                     chunks(chunk)%field%z_min,                    &
+                                     chunks(chunk)%field%z_max,                    &
+                                     chunks(chunk)%field%zvel1,                    &
+                                     chunks(chunk)%right_snd_buffer,               &
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
+                                     depth, VERTEX_DATA,                           &
+                                     left_right_offset(FIELD_ZVEL1))
+    ELSE
+      CALL clover_pack_message_right_c(chunks(chunk)%field%x_min,                    &
+                                       chunks(chunk)%field%x_max,                    &
+                                       chunks(chunk)%field%y_min,                    &
+                                       chunks(chunk)%field%y_max,                    &
+                                       chunks(chunk)%field%zvel1,                    &
+                                       chunks(chunk)%right_snd_buffer,               &
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth, VERTEX_DATA,                           &
+                                       left_right_offset(FIELD_ZVEL1))
     ENDIF
   ENDIF
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
@@ -1730,7 +1780,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_x,               &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        left_right_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -1755,7 +1805,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_y,               &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -1780,7 +1830,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_z,               &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Z_FACE_DATA,                           &
                                        left_right_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -1805,7 +1855,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_x,              &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -1830,7 +1880,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_y,              &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -1855,7 +1905,7 @@ SUBROUTINE clover_pack_right(chunk, fields, depth, left_right_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_z,              &
                                        chunks(chunk)%right_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Z_FACE_DATA,                           &
                                        left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -1917,7 +1967,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%density0,                 &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_DENSITY0))
     ENDIF
@@ -1942,7 +1992,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%density1,                 &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_DENSITY1))
     ENDIF
@@ -1967,7 +2017,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%energy0,                  &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_ENERGY0))
     ENDIF
@@ -1992,7 +2042,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%energy1,                  &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_ENERGY1))
     ENDIF
@@ -2017,7 +2067,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%pressure,                 &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_PRESSURE))
     ENDIF
@@ -2042,7 +2092,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%viscosity,                &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_VISCOSITY))
     ENDIF
@@ -2067,7 +2117,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%soundspeed,               &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          left_right_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -2092,7 +2142,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%xvel0,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_XVEL0))
     ENDIF
@@ -2117,7 +2167,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%xvel1,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_XVEL1))
     ENDIF
@@ -2142,7 +2192,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%yvel0,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_YVEL0))
     ENDIF
@@ -2167,7 +2217,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%yvel1,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_YVEL1))
     ENDIF
@@ -2192,7 +2242,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%zvel0,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_ZVEL0))
     ENDIF
@@ -2217,7 +2267,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%zvel1,                    &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          left_right_offset(FIELD_ZVEL1))
     ENDIF
@@ -2242,7 +2292,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_x,               &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, X_FACE_DATA,                           &
                                          left_right_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -2267,7 +2317,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_y,               &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Y_FACE_DATA,                           &
                                          left_right_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -2292,7 +2342,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_z,               &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Z_FACE_DATA,                           &
                                          left_right_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -2317,7 +2367,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%mass_flux_x,              &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, X_FACE_DATA,                           &
                                          left_right_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -2342,7 +2392,7 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%mass_flux_y,              &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Y_FACE_DATA,                           &
                                          left_right_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -2365,11 +2415,11 @@ SUBROUTINE clover_unpack_right(fields, chunk, depth,                          &
                                          chunks(chunk)%field%x_max,                    &
                                          chunks(chunk)%field%y_min,                    &
                                          chunks(chunk)%field%y_max,                    &
-                                         chunks(chunk)%field%mass_flux_y,              &
+                                         chunks(chunk)%field%mass_flux_z,              &
                                          chunks(chunk)%right_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                         depth, Y_FACE_DATA,                           &
-                                         left_right_offset(FIELD_MASS_FLUX_Y))
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                         depth, Z_FACE_DATA,                           &
+                                         left_right_offset(FIELD_MASS_FLUX_Z))
     ENDIF
   ENDIF
 END SUBROUTINE clover_unpack_right
@@ -2402,7 +2452,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%density0,                 &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_DENSITY0))
     ENDIF
@@ -2427,7 +2477,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%density1,                 &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_DENSITY1))
     ENDIF
@@ -2452,7 +2502,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%energy0,                  &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_ENERGY0))
     ENDIF
@@ -2477,7 +2527,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%energy1,                  &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_ENERGY1))
     ENDIF
@@ -2502,7 +2552,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%pressure,                 &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_PRESSURE))
     ENDIF
@@ -2527,7 +2577,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%viscosity,                &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_VISCOSITY))
     ENDIF
@@ -2552,7 +2602,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%soundspeed,               &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, CELL_DATA,                             &
                                      bottom_top_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -2577,7 +2627,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%xvel0,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_XVEL0))
     ENDIF
@@ -2602,7 +2652,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%xvel1,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_XVEL1))
     ENDIF
@@ -2627,7 +2677,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%yvel0,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_YVEL0))
     ENDIF
@@ -2652,7 +2702,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%yvel1,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_YVEL1))
     ENDIF
@@ -2677,7 +2727,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%zvel0,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_ZVEL0))
     ENDIF
@@ -2702,7 +2752,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%zvel1,                    &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, VERTEX_DATA,                           &
                                      bottom_top_offset(FIELD_ZVEL1))
     ENDIF
@@ -2727,7 +2777,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%vol_flux_x,               &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, X_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -2752,7 +2802,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%vol_flux_y,               &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, Y_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -2775,11 +2825,11 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%x_max,                    &
                                      chunks(chunk)%field%y_min,                    &
                                      chunks(chunk)%field%y_max,                    &
-                                     chunks(chunk)%field%vol_flux_y,               &
+                                     chunks(chunk)%field%vol_flux_z,               &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                     depth, Y_FACE_DATA,                           &
-                                     bottom_top_offset(FIELD_VOL_FLUX_Y))
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                     depth, Z_FACE_DATA,                           &
+                                     bottom_top_offset(FIELD_VOL_FLUX_Z))
     ENDIF
   ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
@@ -2802,7 +2852,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%mass_flux_x,              &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, X_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -2827,7 +2877,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%mass_flux_y,              &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, Y_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -2852,7 +2902,7 @@ SUBROUTINE clover_pack_top(chunk, fields, depth, bottom_top_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%mass_flux_z,              &
                                      chunks(chunk)%top_snd_buffer,                 &
-                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                      depth, Z_FACE_DATA,                           &
                                      bottom_top_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -2913,7 +2963,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density0,                 &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_DENSITY0))
     ENDIF
@@ -2938,7 +2988,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density1,                 &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_DENSITY1))
     ENDIF
@@ -2963,7 +3013,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy0,                  &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_ENERGY0))
     ENDIF
@@ -2988,7 +3038,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy1,                  &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_ENERGY1))
     ENDIF
@@ -3013,7 +3063,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%pressure,                 &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_PRESSURE))
     ENDIF
@@ -3038,7 +3088,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%viscosity,                &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_VISCOSITY))
     ENDIF
@@ -3063,7 +3113,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%soundspeed,               &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        bottom_top_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -3088,7 +3138,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel0,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_XVEL0))
     ENDIF
@@ -3113,7 +3163,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel1,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_XVEL1))
     ENDIF
@@ -3138,7 +3188,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel0,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_YVEL0))
     ENDIF
@@ -3163,7 +3213,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel1,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_YVEL1))
     ENDIF
@@ -3188,7 +3238,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%zvel0,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_ZVEL0))
     ENDIF
@@ -3213,7 +3263,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%zvel1,                    &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        bottom_top_offset(FIELD_ZVEL1))
     ENDIF
@@ -3238,7 +3288,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_x,               &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -3263,7 +3313,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_y,               &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -3288,7 +3338,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_z,               &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Z_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -3313,7 +3363,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_x,              &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -3338,7 +3388,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_y,              &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -3363,7 +3413,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_z,              &
                                        chunks(chunk)%top_rcv_buffer,                 &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Z_FACE_DATA,                           &
                                        bottom_top_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -3398,7 +3448,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density0,                 &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_DENSITY0))
     ENDIF
@@ -3423,7 +3473,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density1,                 &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_DENSITY1))
     ENDIF
@@ -3448,7 +3498,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy0,                  &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_ENERGY0))
     ENDIF
@@ -3473,7 +3523,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy1,                  &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_ENERGY1))
     ENDIF
@@ -3498,7 +3548,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%pressure,                 &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_PRESSURE))
     ENDIF
@@ -3523,7 +3573,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%viscosity,                &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_VISCOSITY))
     ENDIF
@@ -3548,7 +3598,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%soundspeed,               &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         bottom_top_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -3573,7 +3623,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel0     ,               &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_XVEL0))
     ENDIF
@@ -3598,7 +3648,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel1,                    &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_XVEL1))
     ENDIF
@@ -3623,7 +3673,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel0,                    &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_YVEL0))
     ENDIF
@@ -3648,7 +3698,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel1,                    &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_YVEL1))
     ENDIF
@@ -3673,7 +3723,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel0,                    &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_ZVEL0))
     ENDIF
@@ -3686,7 +3736,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%yvel1,                    &
+                                      chunks(chunk)%field%zvel1,                    &
                                       chunks(chunk)%bottom_snd_buffer,              &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, VERTEX_DATA,                           &
@@ -3698,7 +3748,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel1,                    &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         bottom_top_offset(FIELD_ZVEL1))
     ENDIF
@@ -3723,7 +3773,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_x,               &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -3748,7 +3798,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_y,               &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -3771,11 +3821,11 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%x_max,                    &
                                         chunks(chunk)%field%y_min,                    &
                                         chunks(chunk)%field%y_max,                    &
-                                        chunks(chunk)%field%vol_flux_y,               &
+                                        chunks(chunk)%field%vol_flux_z,               &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                        depth, Y_FACE_DATA,                           &
-                                        bottom_top_offset(FIELD_VOL_FLUX_Y))
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                        depth, Z_FACE_DATA,                           &
+                                        bottom_top_offset(FIELD_VOL_FLUX_Z))
     ENDIF
   ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
@@ -3798,7 +3848,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_x,              &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -3823,7 +3873,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_y,              &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -3848,7 +3898,7 @@ SUBROUTINE clover_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_z,              &
                                         chunks(chunk)%bottom_snd_buffer,              &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Z_FACE_DATA,                           &
                                         bottom_top_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -3909,7 +3959,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%density0,                 &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_DENSITY0))
     ENDIF
@@ -3934,7 +3984,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%density1,                 &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_DENSITY1))
     ENDIF
@@ -3959,7 +4009,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%energy0,                  &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_ENERGY0))
     ENDIF
@@ -3984,7 +4034,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%energy1,                  &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_ENERGY1))
     ENDIF
@@ -4009,7 +4059,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%pressure,                 &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_PRESSURE))
     ENDIF
@@ -4034,7 +4084,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%viscosity,                &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_VISCOSITY))
     ENDIF
@@ -4059,7 +4109,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%soundspeed,               &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, CELL_DATA,                             &
                                           bottom_top_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -4084,7 +4134,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%xvel0,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_XVEL0))
     ENDIF
@@ -4109,7 +4159,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%xvel1,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_XVEL1))
     ENDIF
@@ -4134,7 +4184,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%yvel0,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_YVEL0))
     ENDIF
@@ -4159,7 +4209,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%yvel1,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_YVEL1))
     ENDIF
@@ -4184,7 +4234,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%zvel0,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_ZVEL0))
     ENDIF
@@ -4209,7 +4259,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%zvel1,                    &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, VERTEX_DATA,                           &
                                           bottom_top_offset(FIELD_ZVEL1))
     ENDIF
@@ -4234,7 +4284,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%vol_flux_x,               &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, X_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -4259,7 +4309,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%vol_flux_y,               &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, Y_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -4284,7 +4334,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%vol_flux_z,               &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, Z_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -4309,7 +4359,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%mass_flux_x,              &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, X_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -4334,7 +4384,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%mass_flux_y,              &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, Y_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -4359,7 +4409,7 @@ SUBROUTINE clover_unpack_bottom(fields, chunk, depth,                        &
                                           chunks(chunk)%field%y_max,                    &
                                           chunks(chunk)%field%mass_flux_z,              &
                                           chunks(chunk)%bottom_rcv_buffer,              &
-                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                          CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                           depth, Z_FACE_DATA,                           &
                                           bottom_top_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -4394,7 +4444,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%density0,                 &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_DENSITY0))
     ENDIF
@@ -4419,7 +4469,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%density1,                 &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_DENSITY1))
     ENDIF
@@ -4444,7 +4494,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%energy0,                  &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_ENERGY0))
     ENDIF
@@ -4469,7 +4519,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%energy1,                  &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_ENERGY1))
     ENDIF
@@ -4494,7 +4544,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%pressure,                 &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_PRESSURE))
     ENDIF
@@ -4519,7 +4569,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%viscosity,                &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_VISCOSITY))
     ENDIF
@@ -4544,7 +4594,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%soundspeed,               &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
                                       back_front_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -4569,7 +4619,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%xvel0,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_XVEL0))
     ENDIF 
@@ -4594,7 +4644,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%xvel1,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_XVEL1))
     ENDIF
@@ -4619,7 +4669,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%yvel0,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_YVEL0))
     ENDIF
@@ -4644,7 +4694,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%yvel1,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_YVEL1))
     ENDIF
@@ -4669,7 +4719,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%zvel0,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_ZVEL0))
     ENDIF
@@ -4694,7 +4744,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%zvel1,                    &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, VERTEX_DATA,                           &
                                       back_front_offset(FIELD_ZVEL1))
     ENDIF
@@ -4719,7 +4769,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%vol_flux_x,               &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       back_front_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -4744,7 +4794,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%vol_flux_y,               &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       back_front_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -4767,11 +4817,11 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%x_max,                    &
                                       chunks(chunk)%field%y_min,                    &
                                       chunks(chunk)%field%y_max,                    &
-                                      chunks(chunk)%field%vol_flux_y,               &
+                                      chunks(chunk)%field%vol_flux_z,               &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                      depth, Y_FACE_DATA,                           &
-                                      back_front_offset(FIELD_VOL_FLUX_Y))
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                      depth, Z_FACE_DATA,                           &
+                                      back_front_offset(FIELD_VOL_FLUX_Z))
     ENDIF
   ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
@@ -4794,7 +4844,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_x,              &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, X_FACE_DATA,                           &
                                       back_front_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -4819,7 +4869,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_y,              &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Y_FACE_DATA,                           &
                                       back_front_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -4844,7 +4894,7 @@ SUBROUTINE clover_pack_back(chunk, fields, depth, back_front_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%mass_flux_z,              &
                                       chunks(chunk)%back_snd_buffer,                &
-                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, Z_FACE_DATA,                           &
                                       back_front_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -4905,7 +4955,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density0,                 &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_DENSITY0))
     ENDIF
@@ -4930,7 +4980,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%density1,                 &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_DENSITY1))
     ENDIF
@@ -4955,7 +5005,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy0,                  &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_ENERGY0))
     ENDIF
@@ -4980,7 +5030,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%energy1,                  &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_ENERGY1))
     ENDIF
@@ -5005,7 +5055,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%pressure,                 &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_PRESSURE))
     ENDIF
@@ -5030,7 +5080,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%viscosity,                &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_VISCOSITY))
     ENDIF
@@ -5055,7 +5105,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%soundspeed,               &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, CELL_DATA,                             &
                                         back_front_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -5080,7 +5130,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel0,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_XVEL0))
     ENDIF
@@ -5105,7 +5155,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%xvel1,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_XVEL1))
     ENDIF
@@ -5130,7 +5180,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel0,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_YVEL0))
     ENDIF
@@ -5155,7 +5205,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%yvel1,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_YVEL1))
     ENDIF
@@ -5180,7 +5230,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel0,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_ZVEL0))
     ENDIF
@@ -5205,7 +5255,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%zvel1,                    &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, VERTEX_DATA,                           &
                                         back_front_offset(FIELD_ZVEL1))
     ENDIF
@@ -5230,7 +5280,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_x,               &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         back_front_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -5255,7 +5305,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_y,               &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         back_front_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -5280,7 +5330,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%vol_flux_z,               &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Z_FACE_DATA,                           &
                                         back_front_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -5305,7 +5355,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_x,              &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, X_FACE_DATA,                           &
                                         back_front_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -5330,7 +5380,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_y,              &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Y_FACE_DATA,                           &
                                         back_front_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -5355,7 +5405,7 @@ SUBROUTINE clover_unpack_back(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%mass_flux_z,              &
                                         chunks(chunk)%back_rcv_buffer,                &
-                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                         depth, Z_FACE_DATA,                           &
                                         back_front_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -5390,7 +5440,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density0,                 &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_DENSITY0))
     ENDIF
@@ -5415,7 +5465,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%density1,                 &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_DENSITY1))
     ENDIF
@@ -5440,7 +5490,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy0,                  &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_ENERGY0))
     ENDIF
@@ -5465,7 +5515,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%energy1,                  &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_ENERGY1))
     ENDIF
@@ -5490,7 +5540,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%pressure,                 &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_PRESSURE))
     ENDIF
@@ -5515,7 +5565,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%viscosity,                &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_VISCOSITY))
     ENDIF
@@ -5540,7 +5590,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%soundspeed,               &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, CELL_DATA,                             &
                                        back_front_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -5565,7 +5615,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel0     ,               &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_XVEL0))
     ENDIF
@@ -5590,7 +5640,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%xvel1,                    &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_XVEL1))
     ENDIF
@@ -5615,7 +5665,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel0,                    &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_YVEL0))
     ENDIF
@@ -5640,7 +5690,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%yvel1,                    &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_YVEL1))
     ENDIF
@@ -5665,7 +5715,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%zvel0,                    &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_ZVEL0))
     ENDIF
@@ -5678,7 +5728,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%yvel1,                    &
+                                     chunks(chunk)%field%zvel1,                    &
                                      chunks(chunk)%front_snd_buffer,               &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, VERTEX_DATA,                           &
@@ -5690,7 +5740,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%zvel1,                    &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, VERTEX_DATA,                           &
                                        back_front_offset(FIELD_ZVEL1))
     ENDIF
@@ -5715,7 +5765,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_x,               &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        back_front_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -5740,7 +5790,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%vol_flux_y,               &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        back_front_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -5763,11 +5813,11 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%x_max,                    &
                                        chunks(chunk)%field%y_min,                    &
                                        chunks(chunk)%field%y_max,                    &
-                                       chunks(chunk)%field%vol_flux_y,               &
+                                       chunks(chunk)%field%vol_flux_z,               &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
-                                       depth, Y_FACE_DATA,                           &
-                                       back_front_offset(FIELD_VOL_FLUX_Y))
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
+                                       depth, Z_FACE_DATA,                           &
+                                       back_front_offset(FIELD_VOL_FLUX_Z))
     ENDIF
   ENDIF
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
@@ -5790,7 +5840,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_x,              &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, X_FACE_DATA,                           &
                                        back_front_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -5815,7 +5865,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_y,              &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Y_FACE_DATA,                           &
                                        back_front_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -5840,7 +5890,7 @@ SUBROUTINE clover_pack_front(chunk, fields, depth, back_front_offset)
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%mass_flux_z,              &
                                        chunks(chunk)%front_snd_buffer,               &
-                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                        depth, Z_FACE_DATA,                           &
                                        back_front_offset(FIELD_MASS_FLUX_Z))
     ENDIF
@@ -5901,7 +5951,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%density0,                 &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_DENSITY0))
     ENDIF
@@ -5926,7 +5976,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%density1,                 &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_DENSITY1))
     ENDIF
@@ -5951,7 +6001,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%energy0,                  &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_ENERGY0))
     ENDIF
@@ -5976,7 +6026,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%energy1,                  &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_ENERGY1))
     ENDIF
@@ -6001,7 +6051,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%pressure,                 &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_PRESSURE))
     ENDIF
@@ -6026,7 +6076,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%viscosity,                &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_VISCOSITY))
     ENDIF
@@ -6051,7 +6101,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%soundspeed,               &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, CELL_DATA,                             &
                                          back_front_offset(FIELD_SOUNDSPEED))
     ENDIF
@@ -6076,7 +6126,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%xvel0,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_XVEL0))
     ENDIF
@@ -6101,7 +6151,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%xvel1,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_XVEL1))
     ENDIF
@@ -6126,7 +6176,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%yvel0,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_YVEL0))
     ENDIF
@@ -6151,7 +6201,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%yvel1,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_YVEL1))
     ENDIF
@@ -6176,7 +6226,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%zvel0,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_ZVEL0))
     ENDIF
@@ -6201,7 +6251,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%zvel1,                    &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, VERTEX_DATA,                           &
                                          back_front_offset(FIELD_ZVEL1))
     ENDIF
@@ -6226,7 +6276,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_x,               &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, X_FACE_DATA,                           &
                                          back_front_offset(FIELD_VOL_FLUX_X))
     ENDIF
@@ -6251,7 +6301,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_y,               &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Y_FACE_DATA,                           &
                                          back_front_offset(FIELD_VOL_FLUX_Y))
     ENDIF
@@ -6276,7 +6326,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%vol_flux_z,               &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Z_FACE_DATA,                           &
                                          back_front_offset(FIELD_VOL_FLUX_Z))
     ENDIF
@@ -6301,7 +6351,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%mass_flux_x,              &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, X_FACE_DATA,                           &
                                          back_front_offset(FIELD_MASS_FLUX_X))
     ENDIF
@@ -6326,7 +6376,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%mass_flux_y,              &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Y_FACE_DATA,                           &
                                          back_front_offset(FIELD_MASS_FLUX_Y))
     ENDIF
@@ -6351,7 +6401,7 @@ SUBROUTINE clover_unpack_front(fields, chunk, depth,                        &
                                          chunks(chunk)%field%y_max,                    &
                                          chunks(chunk)%field%mass_flux_z,              &
                                          chunks(chunk)%front_rcv_buffer,               &
-                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,&
+                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                          depth, Z_FACE_DATA,                           &
                                          back_front_offset(FIELD_MASS_FLUX_Z))
     ENDIF
