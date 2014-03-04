@@ -96,19 +96,25 @@ SUBROUTINE calc_dt(chunk,local_dt,local_control,xl_pos,yl_pos,zl_pos,jldt,kldt,l
                         chunks(chunk)%field%x_max,     &
                         chunks(chunk)%field%y_min,     &
                         chunks(chunk)%field%y_max,     &
+                        chunks(chunk)%field%z_min,     &
+                        chunks(chunk)%field%z_max,     &
                         g_small,                       &
                         g_big,                         &
                         dtmin,                         &
                         dtc_safe,                      &
                         dtu_safe,                      &
                         dtv_safe,                      &
+                        dtw_safe,                      &
                         dtdiv_safe,                    &
                         chunks(chunk)%field%xarea,     &
                         chunks(chunk)%field%yarea,     &
+                        chunks(chunk)%field%zarea,     &
                         chunks(chunk)%field%cellx,     &
                         chunks(chunk)%field%celly,     &
+                        chunks(chunk)%field%cellz,     &
                         chunks(chunk)%field%celldx,    &
                         chunks(chunk)%field%celldy,    &
+                        chunks(chunk)%field%celldz,    &
                         chunks(chunk)%field%volume,    &
                         chunks(chunk)%field%density0,  &
                         chunks(chunk)%field%energy0,   &
@@ -117,13 +123,16 @@ SUBROUTINE calc_dt(chunk,local_dt,local_control,xl_pos,yl_pos,zl_pos,jldt,kldt,l
                         chunks(chunk)%field%soundspeed,&
                         chunks(chunk)%field%xvel0,     &
                         chunks(chunk)%field%yvel0,     &
+                        chunks(chunk)%field%zvel0,     &
                         chunks(chunk)%field%work_array1,&
                         local_dt,                      &
                         l_control,                     &
                         xl_pos,                        &
                         yl_pos,                        &
+                        zl_pos,                        &
                         jldt,                          &
                         kldt,                          &
+                        lldt,                          &
                         small                          )
 
   ENDIF 
@@ -131,7 +140,8 @@ SUBROUTINE calc_dt(chunk,local_dt,local_control,xl_pos,yl_pos,zl_pos,jldt,kldt,l
   IF(l_control.EQ.1) local_control='sound'
   IF(l_control.EQ.2) local_control='xvel'
   IF(l_control.EQ.3) local_control='yvel'
-  IF(l_control.EQ.4) local_control='div'
+  IF(l_control.EQ.4) local_control='zvel'
+  IF(l_control.EQ.5) local_control='div'
 
 END SUBROUTINE calc_dt
 

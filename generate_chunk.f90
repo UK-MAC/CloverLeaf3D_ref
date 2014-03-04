@@ -97,15 +97,19 @@ SUBROUTINE generate_chunk(chunk)
                                  chunks(chunk)%field%energy0,           &
                                  chunks(chunk)%field%xvel0,             &
                                  chunks(chunk)%field%yvel0,             &
+                                 chunks(chunk)%field%zvel0,             &
                                  number_of_states,                      &
                                  state_density,                         &
                                  state_energy,                          &
                                  state_xvel,                            &
                                  state_yvel,                            &
+                                 state_zvel,                            &
                                  state_xmin,                            &
                                  state_xmax,                            &
                                  state_ymin,                            &
                                  state_ymax,                            &
+                                 state_zmin,                            &
+                                 state_zmax,                            &
                                  state_radius,                          &
                                  state_geometry,                        &
                                  g_rect,                                &

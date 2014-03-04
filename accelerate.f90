@@ -75,8 +75,10 @@ SUBROUTINE accelerate()
                              chunks(c)%field%viscosity,              &
                              chunks(c)%field%xvel0,                  &
                              chunks(c)%field%yvel0,                  &
+                             chunks(c)%field%zvel0,                  &
                              chunks(c)%field%xvel1,                  &
                              chunks(c)%field%yvel1,                  &
+                             chunks(c)%field%zvel1,                  &
                              chunks(c)%field%work_array1             )
       ENDIF
 

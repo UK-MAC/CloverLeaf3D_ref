@@ -71,12 +71,17 @@ SUBROUTINE advec_mom_driver(chunk,which_vel,direction,sweep_number)
                           chunks(chunk)%field%x_max,              &
                           chunks(chunk)%field%y_min,              &
                           chunks(chunk)%field%y_max,              &
+                          chunks(chunk)%field%z_min,              &
+                          chunks(chunk)%field%z_max,              &
                           chunks(chunk)%field%xvel1,              &
                           chunks(chunk)%field%yvel1,              &
+                          chunks(chunk)%field%zvel1,              &
                           chunks(chunk)%field%mass_flux_x,        &
                           chunks(chunk)%field%vol_flux_x,         &
                           chunks(chunk)%field%mass_flux_y,        &
                           chunks(chunk)%field%vol_flux_y,         &
+                          chunks(chunk)%field%mass_flux_z,        &
+                          chunks(chunk)%field%vol_flux_z,         &
                           chunks(chunk)%field%volume,             &
                           chunks(chunk)%field%density1,           &
                           chunks(chunk)%field%work_array1,        &
@@ -88,6 +93,7 @@ SUBROUTINE advec_mom_driver(chunk,which_vel,direction,sweep_number)
                           chunks(chunk)%field%work_array7,        &
                           chunks(chunk)%field%celldx,             &
                           chunks(chunk)%field%celldy,             &
+                          chunks(chunk)%field%celldz,             &
                           which_vel,                              &
                           sweep_number,                           &
                           direction                               )

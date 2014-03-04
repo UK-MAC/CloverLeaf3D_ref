@@ -103,6 +103,8 @@ SUBROUTINE PdV(predict)
                       chunks(c)%field%xvel1,      &
                       chunks(c)%field%yvel0,      &
                       chunks(c)%field%yvel1,      &
+                      chunks(c)%field%zvel0,      &
+                      chunks(c)%field%zvel1,      &
                       chunks(c)%field%work_array1 )
       ENDIF
     ENDIF
