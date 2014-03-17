@@ -86,9 +86,9 @@ SUBROUTINE advec_cell_kernel(x_min,       &
 
   INTEGER :: j,k,l,upwind,donor,downwind,dif
 
-  REAL(KIND=8) :: sigma,sigmat,sigmav,sigmam,sigma3,sigma4
+  REAL(KIND=8) :: wind,sigma,sigmat,sigmav,sigmam,sigma3,sigma4
   REAL(KIND=8) :: diffuw,diffdw,limiter
-  REAL(KIND=8), PARAMETER :: one_by_six=1.0_8/6.0_8
+  REAL(KIND=8) :: one_by_six=1.0_8/6.0_8
 
 !$OMP PARALLEL
 

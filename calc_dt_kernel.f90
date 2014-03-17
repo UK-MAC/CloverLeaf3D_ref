@@ -45,7 +45,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
                           density0,                            &
                           energy0,                             &
                           pressure,                            &
-                          viscosity,                           &
+                          viscosity_a,                         &
                           soundspeed,                          &
                           xvel0,yvel0,zvel0,                   &
                           dt_min,                              &
@@ -77,7 +77,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: pressure
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: viscosity
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: viscosity_a
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: soundspeed
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0,zvel0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: dt_min
@@ -107,7 +107,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         dsz=celldz(l)
 
         cc=soundspeed(j,k,l)*soundspeed(j,k,l)
-        cc=cc+2.0_8*viscosity(j,k,l)/density0(j,k,l)
+        cc=cc+2.0_8*viscosity_a(j,k,l)/density0(j,k,l)
         cc=MAX(SQRT(cc),g_small)
 
         dtct=dtc_safe*MIN(dsx,dsy,dsz)/cc

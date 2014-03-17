@@ -606,7 +606,6 @@ SUBROUTINE clover_pack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field, 
 
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: front_snd_buffer(:)
-
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
   INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset
@@ -663,7 +662,6 @@ SUBROUTINE clover_unpack_message_front(x_min,x_max,y_min,y_max,z_min,z_max,field
 
   REAL(KIND=8) :: field(-1:,-1:,-1:) ! This seems to work for any type of mesh data
   REAL(KIND=8) :: front_rcv_buffer(:)
-
   INTEGER      :: CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA
   INTEGER      :: depth,field_type,x_min,x_max,y_min,y_max,z_min,z_max
   INTEGER      :: j,k,l,x_inc,y_inc,z_inc,index,buffer_offset

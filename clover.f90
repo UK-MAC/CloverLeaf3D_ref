@@ -194,26 +194,28 @@ SUBROUTINE clover_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,f
         IF(cx.LE.mod_x)add_x=1
         IF(cy.LE.mod_y)add_y=1
         IF(cz.LE.mod_z)add_z=1
-        ! Mesh chunks
-        left(chunk)=(cx-1)*delta_x+1+add_x_prev
-        right(chunk)=left(chunk)+delta_x-1+add_x
-        bottom(chunk)=(cy-1)*delta_y+1+add_y_prev
-        top(chunk)=bottom(chunk)+delta_y-1+add_y
-        back(chunk)=(cz-1)*delta_z+1+add_z_prev
-        front(chunk)=back(chunk)+delta_z-1+add_z
-        ! Chunk connectivity
-        chunks(chunk)%chunk_neighbours(chunk_left)=  chunk-1
-        chunks(chunk)%chunk_neighbours(chunk_right)= chunk+1
-        chunks(chunk)%chunk_neighbours(chunk_bottom)=chunk-chunk_x
-        chunks(chunk)%chunk_neighbours(chunk_top)=   chunk+chunk_x
-        chunks(chunk)%chunk_neighbours(chunk_back)=  chunk-chunk_x*chunk_y
-        chunks(chunk)%chunk_neighbours(chunk_front)= chunk+chunk_x*chunk_y
-        IF(cx.EQ.1)chunks(chunk)%chunk_neighbours(chunk_left)=external_face
-        IF(cx.EQ.chunk_x)chunks(chunk)%chunk_neighbours(chunk_right)=external_face
-        IF(cy.EQ.1)chunks(chunk)%chunk_neighbours(chunk_bottom)=external_face
-        IF(cy.EQ.chunk_y)chunks(chunk)%chunk_neighbours(chunk_top)=external_face
-        IF(cz.EQ.1)chunks(chunk)%chunk_neighbours(chunk_back)=external_face
-        IF(cz.EQ.chunk_z)chunks(chunk)%chunk_neighbours(chunk_front)=external_face
+        IF (chunk .EQ. parallel%task+1) THEN
+          ! Mesh chunks
+          left(1)=(cx-1)*delta_x+1+add_x_prev
+          right(1)=left(1)+delta_x-1+add_x
+          bottom(1)=(cy-1)*delta_y+1+add_y_prev
+          top(1)=bottom(1)+delta_y-1+add_y
+          back(1)=(cz-1)*delta_z+1+add_z_prev
+          front(1)=back(1)+delta_z-1+add_z
+          ! Chunk connectivity
+          chunks(1)%chunk_neighbours(chunk_left)=  chunk-1
+          chunks(1)%chunk_neighbours(chunk_right)= chunk+1
+          chunks(1)%chunk_neighbours(chunk_bottom)=chunk-chunk_x
+          chunks(1)%chunk_neighbours(chunk_top)=   chunk+chunk_x
+          chunks(1)%chunk_neighbours(chunk_back)=  chunk-chunk_x*chunk_y
+          chunks(1)%chunk_neighbours(chunk_front)= chunk+chunk_x*chunk_y
+          IF(cx.EQ.1)chunks(1)%chunk_neighbours(chunk_left)=external_face
+          IF(cx.EQ.chunk_x)chunks(1)%chunk_neighbours(chunk_right)=external_face
+          IF(cy.EQ.1)chunks(1)%chunk_neighbours(chunk_bottom)=external_face
+          IF(cy.EQ.chunk_y)chunks(1)%chunk_neighbours(chunk_top)=external_face
+          IF(cz.EQ.1)chunks(1)%chunk_neighbours(chunk_back)=external_face
+          IF(cz.EQ.chunk_z)chunks(1)%chunk_neighbours(chunk_front)=external_face
+        ENDIF
         IF(cx.LE.mod_x)add_x_prev=add_x_prev+1
         chunk=chunk+1
       ENDDO
@@ -274,7 +276,7 @@ SUBROUTINE clover_exchange(fields,depth)
     request=0
     message_count=0
 
-    chunk = parallel%task+1 
+    chunk = 1 
 
     end_pack_index_left_right=0
     end_pack_index_bottom_top=0
@@ -926,7 +928,7 @@ SUBROUTINE clover_send_recv_message_left(left_snd_buffer, left_rcv_buffer,      
   INTEGER         :: total_size, tag_send, tag_recv, err
   INTEGER         :: req_send, req_recv
 
-  left_task =chunks(chunks(chunk)%chunk_neighbours(chunk_left))%task
+  left_task =chunks(chunk)%chunk_neighbours(chunk_left) - 1
 
   CALL MPI_ISEND(left_snd_buffer,total_size,MPI_DOUBLE_PRECISION,left_task,tag_send &
                 ,MPI_COMM_WORLD,req_send,err)
@@ -1926,7 +1928,7 @@ SUBROUTINE clover_send_recv_message_right(right_snd_buffer, right_rcv_buffer,   
   INTEGER      :: total_size, tag_send, tag_recv, err
   INTEGER      :: req_send, req_recv
 
-  right_task=chunks(chunks(chunk)%chunk_neighbours(chunk_right))%task
+  right_task=chunks(chunk)%chunk_neighbours(chunk_right) - 1
 
   CALL MPI_ISEND(right_snd_buffer,total_size,MPI_DOUBLE_PRECISION,right_task,tag_send, &
                  MPI_COMM_WORLD,req_send,err)
@@ -2914,21 +2916,21 @@ SUBROUTINE clover_send_recv_message_top(top_snd_buffer, top_rcv_buffer,     &
                                         tag_send, tag_recv,                 &
                                         req_send, req_recv)
 
-  IMPLICIT NONE
+    IMPLICIT NONE
 
-  REAL(KIND=8) :: top_snd_buffer(:), top_rcv_buffer(:)
-  INTEGER      :: top_task
-  INTEGER      :: chunk
-  INTEGER      :: total_size, tag_send, tag_recv, err
-  INTEGER      :: req_send, req_recv
+    REAL(KIND=8) :: top_snd_buffer(:), top_rcv_buffer(:)
+    INTEGER      :: top_task
+    INTEGER      :: chunk
+    INTEGER      :: total_size, tag_send, tag_recv, err
+    INTEGER      :: req_send, req_recv
 
-    top_task=chunks(chunks(chunk)%chunk_neighbours(chunk_top))%task
+    top_task=chunks(chunk)%chunk_neighbours(chunk_top) - 1
 
-  CALL MPI_ISEND(top_snd_buffer,total_size,MPI_DOUBLE_PRECISION,top_task,tag_send, &
-                 MPI_COMM_WORLD,req_send,err)
+    CALL MPI_ISEND(top_snd_buffer,total_size,MPI_DOUBLE_PRECISION,top_task,tag_send, &
+                   MPI_COMM_WORLD,req_send,err)
 
-  CALL MPI_IRECV(top_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,top_task,tag_recv, &
-                 MPI_COMM_WORLD,req_recv,err)
+    CALL MPI_IRECV(top_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,top_task,tag_recv, &
+                   MPI_COMM_WORLD,req_recv,err)
 
 END SUBROUTINE clover_send_recv_message_top
 
@@ -2942,6 +2944,7 @@ SUBROUTINE clover_unpack_top(fields, chunk, depth,                        &
 
   INTEGER         :: fields(:), chunk, total_in_top_buff, depth, bottom_top_offset(:)
   REAL(KIND=8)    :: top_rcv_buffer(:)
+
 
   IF(fields(FIELD_DENSITY0).EQ.1) THEN
     IF(use_fortran_kernels) THEN
@@ -3918,7 +3921,7 @@ SUBROUTINE clover_send_recv_message_bottom(bottom_snd_buffer, bottom_rcv_buffer,
   INTEGER      :: total_size, tag_send, tag_recv, err
   INTEGER      :: req_send, req_recv
 
-  bottom_task=chunks(chunks(chunk)%chunk_neighbours(chunk_bottom))%task
+  bottom_task=chunks(chunk)%chunk_neighbours(chunk_bottom) - 1
 
   CALL MPI_ISEND(bottom_snd_buffer,total_size,MPI_DOUBLE_PRECISION,bottom_task,tag_send &
                 ,MPI_COMM_WORLD,req_send,err)
@@ -4914,7 +4917,7 @@ SUBROUTINE clover_send_recv_message_back(back_snd_buffer, back_rcv_buffer,     &
   INTEGER      :: total_size, tag_send, tag_recv, err
   INTEGER      :: req_send, req_recv
 
-  back_task=chunks(chunks(chunk)%chunk_neighbours(chunk_back))%task
+  back_task=chunks(chunk)%chunk_neighbours(chunk_back)-1
 
   CALL MPI_ISEND(back_snd_buffer,total_size,MPI_DOUBLE_PRECISION,back_task,tag_send, &
                  MPI_COMM_WORLD,req_send,err)
@@ -5910,7 +5913,7 @@ SUBROUTINE clover_send_recv_message_front(front_snd_buffer, front_rcv_buffer,   
   INTEGER      :: total_size, tag_send, tag_recv, err
   INTEGER      :: req_send, req_recv
 
-  front_task=chunks(chunks(chunk)%chunk_neighbours(chunk_front))%task
+  front_task=chunks(chunk)%chunk_neighbours(chunk_front)-1
 
   CALL MPI_ISEND(front_snd_buffer,total_size,MPI_DOUBLE_PRECISION,front_task,tag_send &
                 ,MPI_COMM_WORLD,req_send,err)

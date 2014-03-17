@@ -39,12 +39,12 @@ SUBROUTINE read_input()
 
   state_max=0
 
-  grid%xmin=  0.0
-  grid%ymin=  0.0
-  grid%zmin=  0.0
-  grid%xmax=100.0
-  grid%ymax=100.0
-  grid%zmax=  1.0
+  grid%xmin=  0.0_8
+  grid%ymin=  0.0_8
+  grid%zmin=  0.0_8
+  grid%xmax=100.0_8
+  grid%ymax=100.0_8
+  grid%zmax=  1.0_8
 
   grid%x_cells=10
   grid%y_cells=10
@@ -57,20 +57,19 @@ SUBROUTINE read_input()
   visit_frequency=0
   summary_frequency=10
 
-  dtinit=0.1
+  dtinit=0.1_8
   dtmax=1.0
-  dtmin=0.0000001
-  dtrise=1.5
-  dtc_safe=0.7
-  dtu_safe=0.5
-  dtv_safe=0.5
-  dtw_safe=0.5
-  dtdiv_safe=0.7
+  dtmin=0.0000001_8
+  dtrise=1.5_8
+  dtc_safe=0.7_8
+  dtu_safe=0.5_8
+  dtv_safe=0.5_8
+  dtw_safe=0.5_8
+  dtdiv_safe=0.7_8
 
   use_fortran_kernels=.TRUE.
   use_C_kernels=.FALSE.
   use_OA_kernels=.FALSE.
-  use_vector_loops=.FALSE.
   profiler_on=.FALSE.
   profiler%timestep=0.0
   profiler%acceleration=0.0
@@ -188,8 +187,6 @@ SUBROUTINE read_input()
         use_fortran_kernels=.FALSE.
         use_C_kernels=.FALSE.
         use_OA_kernels=.TRUE.
-      CASE('use_vector_loops')
-        use_vector_loops=.TRUE.
       CASE('profiler_on')
         profiler_on=.TRUE.
         IF(parallel%boss)WRITE(g_out,"(1x,a25)")'Profiler on'
@@ -291,12 +288,12 @@ SUBROUTINE read_input()
   dy=(grid%ymax-grid%ymin)/float(grid%y_cells)
   dz=(grid%zmax-grid%zmin)/float(grid%z_cells)
   DO n=2,number_of_states
-    states(n)%xmin=states(n)%xmin+(dx/100.0)
-    states(n)%ymin=states(n)%ymin+(dy/100.0)
-    states(n)%zmin=states(n)%zmin+(dz/100.0)
-    states(n)%xmax=states(n)%xmax-(dx/100.0)
-    states(n)%ymax=states(n)%ymax-(dy/100.0)
-    states(n)%zmax=states(n)%zmax-(dz/100.0)
+    states(n)%xmin=states(n)%xmin+(dx/100.0_8)
+    states(n)%ymin=states(n)%ymin+(dy/100.0_8)
+    states(n)%zmin=states(n)%zmin+(dz/100.0_8)
+    states(n)%xmax=states(n)%xmax-(dx/100.0_8)
+    states(n)%ymax=states(n)%ymax-(dy/100.0_8)
+    states(n)%zmax=states(n)%zmax-(dz/100.0_8)
   ENDDO
 
 END SUBROUTINE read_input
