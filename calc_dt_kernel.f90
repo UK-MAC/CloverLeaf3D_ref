@@ -119,23 +119,23 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
         div=div+dv2-dv1
 
-        dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+        dtut=dtu_safe*4.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
         dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))*yarea(j  ,k  ,l  )
         dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))*yarea(j  ,k+1,l  )
 
         div=div+dv2-dv1
 
-        dtvt=dtv_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+        dtvt=dtv_safe*4.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
         dv1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l  )
         dv2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1))*zarea(j  ,k  ,l+1)
 
         div=div+dv2-dv1
 
-        dtwt=dtw_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+        dtwt=dtw_safe*4.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
 
-        div=div/(2.0_8*volume(j,k,l))
+        div=div/(4.0_8*volume(j,k,l))
 
         IF(div.LT.-g_small)THEN
           dtdivt=dtdiv_safe*(-1.0_8/div)
