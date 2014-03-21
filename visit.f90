@@ -86,7 +86,7 @@ SUBROUTINE visit
     OPEN(UNIT=u,FILE=filename,STATUS='UNKNOWN',POSITION='APPEND',IOSTAT=err)
 
     DO c = 1, number_of_chunks
-      WRITE(chunk_name, '(i6)') c+100000
+      WRITE(chunk_name, '(i6)') parallel%task+100001
       chunk_name(1:1) = "."
       WRITE(step_name, '(i6)') step+100000
       step_name(1:1) = "."
