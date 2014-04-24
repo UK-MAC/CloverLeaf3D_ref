@@ -44,11 +44,11 @@ SUBROUTINE read_input()
   grid%zmin=  0.0_8
   grid%xmax=100.0_8
   grid%ymax=100.0_8
-  grid%zmax=  1.0_8
+  grid%zmax=100.0_8
 
   grid%x_cells=10
   grid%y_cells=10
-  grid%z_cells=1
+  grid%z_cells=10
 
   end_time=10.0
   end_step=g_ibig
@@ -58,7 +58,7 @@ SUBROUTINE read_input()
   summary_frequency=10
 
   dtinit=0.1_8
-  dtmax=1.0
+  dtmax=1.0_8
   dtmin=0.0000001_8
   dtrise=1.5_8
   dtc_safe=0.7_8
