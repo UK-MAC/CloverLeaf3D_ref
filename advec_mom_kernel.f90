@@ -353,8 +353,8 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           DO j=x_min,x_max+1
             ! Find staggered mesh mass fluxes and nodal masses and volumes.
             node_flux(j,k,l)=0.125_8*(mass_flux_z(j-1,k  ,l  )+mass_flux_z(j  ,k  ,l  ) &
-                                     +mass_flux_z(j-1,k  ,l+1)+mass_flux_z(j  ,k-1,l+1) &
-                                     +mass_flux_z(j-1,k-1,l  )+mass_flux_z(j  ,k  ,l  ) &
+                                     +mass_flux_z(j-1,k  ,l+1)+mass_flux_z(j  ,k  ,l+1) &
+                                     +mass_flux_z(j-1,k-1,l  )+mass_flux_z(j  ,k-1,l  ) &
                                      +mass_flux_z(j-1,k-1,l+1)+mass_flux_z(j  ,k-1,l+1))
           ENDDO
         ENDDO
