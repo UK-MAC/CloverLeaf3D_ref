@@ -1061,7 +1061,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            vol_flux_x(j,k,z_max+l)=vol_flux_x(j,k,z_max+1-l)
+            vol_flux_x(j,k,z_max+l)=vol_flux_x(j,k,z_max-l)
           ENDDO
         ENDDO
       ENDDO
@@ -1130,7 +1130,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            mass_flux_x(j,k,z_max+l)=mass_flux_x(j,k,z_max+1-l)
+            mass_flux_x(j,k,z_max+l)=mass_flux_x(j,k,z_max-l)
           ENDDO
         ENDDO
       ENDDO
@@ -1347,7 +1347,7 @@ CONTAINS
   IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
     IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
 !$OMP DO
-      DO l=z_min-depth,z_max+depth
+      DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+depth
           DO k=1,depth
             mass_flux_z(j,1-k,l)=mass_flux_z(j,1+k,l)
@@ -1383,7 +1383,7 @@ CONTAINS
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            mass_flux_z(x_max+j,k,l)=mass_flux_z(x_max+1-j,k,l)
+            mass_flux_z(x_max+j,k,l)=mass_flux_z(x_max-j,k,l)
           ENDDO
         ENDDO
       ENDDO
