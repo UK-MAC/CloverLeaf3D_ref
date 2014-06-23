@@ -50,7 +50,7 @@ SUBROUTINE read_input()
   grid%y_cells=10
   grid%z_cells=10
 
-  end_time=10.0
+  end_time=10.0_8
   end_step=g_ibig
   complete=.FALSE.
 
