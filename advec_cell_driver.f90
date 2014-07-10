@@ -63,35 +63,6 @@ SUBROUTINE advec_cell_driver(chunk,sweep_number,dir)
                            chunks(chunk)%field%work_array5,           &
                            chunks(chunk)%field%work_array6,           &
                            chunks(chunk)%field%work_array7            )
-    ELSEIF(use_C_kernels)THEN
-      CALL advec_cell_kernel_c(chunks(chunk)%field%x_min,             &
-                           chunks(chunk)%field%x_max,                 &
-                           chunks(chunk)%field%y_min,                 &
-                           chunks(chunk)%field%y_max,                 &
-                           chunks(chunk)%field%z_min,                 &
-                           chunks(chunk)%field%z_max,                 &
-                           advect_x,                                  &
-                           dir,                                       &
-                           sweep_number,                              &
-                           chunks(chunk)%field%vertexdx,              &
-                           chunks(chunk)%field%vertexdy,              &
-                           chunks(chunk)%field%vertexdz,              &
-                           chunks(chunk)%field%volume,                &
-                           chunks(chunk)%field%density1,              &
-                           chunks(chunk)%field%energy1,               &
-                           chunks(chunk)%field%mass_flux_x,           &
-                           chunks(chunk)%field%vol_flux_x,            &
-                           chunks(chunk)%field%mass_flux_y,           &
-                           chunks(chunk)%field%vol_flux_y,            &
-                           chunks(chunk)%field%mass_flux_z,           &
-                           chunks(chunk)%field%vol_flux_z,            &
-                           chunks(chunk)%field%work_array1,           &
-                           chunks(chunk)%field%work_array2,           &
-                           chunks(chunk)%field%work_array3,           &
-                           chunks(chunk)%field%work_array4,           &
-                           chunks(chunk)%field%work_array5,           &
-                           chunks(chunk)%field%work_array6,           &
-                           chunks(chunk)%field%work_array7            )
     ENDIF
 
   ENDIF
