@@ -168,41 +168,11 @@ clover_leaf: c_lover *.f90 Makefile
 	hydro.f90			\
 	visit.f90			\
 	clover_leaf.f90			\
-	accelerate_kernel_c.o           \
-	PdV_kernel_c.o                  \
-	flux_calc_kernel_c.o            \
-	revert_kernel_c.o               \
-	reset_field_kernel_c.o          \
-	ideal_gas_kernel_c.o            \
-	viscosity_kernel_c.o            \
-	advec_mom_kernel_c.o            \
-	advec_cell_kernel_c.o           \
-	calc_dt_kernel_c.o		\
-	field_summary_kernel_c.o	\
-	update_halo_kernel_c.o		\
 	timer_c.o                       \
-	pack_kernel_c.o			\
-	generate_chunk_kernel_c.o	\
-	initialise_chunk_kernel_c.o	\
 	-o clover_leaf; echo $(MESSAGE)
 
 c_lover: *.c Makefile
 	$(C_MPI_COMPILER) $(CFLAGS)     \
-	accelerate_kernel_c.c           \
-	PdV_kernel_c.c                  \
-	flux_calc_kernel_c.c            \
-	revert_kernel_c.c               \
-	reset_field_kernel_c.c          \
-	ideal_gas_kernel_c.c            \
-	viscosity_kernel_c.c            \
-	advec_mom_kernel_c.c            \
-	advec_cell_kernel_c.c           \
-	calc_dt_kernel_c.c		\
-	field_summary_kernel_c.c	\
-	update_halo_kernel_c.c		\
-	pack_kernel_c.c			\
-	generate_chunk_kernel_c.c	\
-	initialise_chunk_kernel_c.c	\
 	timer_c.c
 
 

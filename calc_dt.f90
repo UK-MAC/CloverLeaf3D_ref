@@ -90,51 +90,6 @@ SUBROUTINE calc_dt(chunk,local_dt,local_control,xl_pos,yl_pos,zl_pos,jldt,kldt,l
                         lldt,                          &
                         small                          )
 
-  ELSEIF(use_C_kernels)THEN
-
-    CALL calc_dt_kernel_c(chunks(chunk)%field%x_min,   &
-                        chunks(chunk)%field%x_max,     &
-                        chunks(chunk)%field%y_min,     &
-                        chunks(chunk)%field%y_max,     &
-                        chunks(chunk)%field%z_min,     &
-                        chunks(chunk)%field%z_max,     &
-                        g_small,                       &
-                        g_big,                         &
-                        dtmin,                         &
-                        dtc_safe,                      &
-                        dtu_safe,                      &
-                        dtv_safe,                      &
-                        dtw_safe,                      &
-                        dtdiv_safe,                    &
-                        chunks(chunk)%field%xarea,     &
-                        chunks(chunk)%field%yarea,     &
-                        chunks(chunk)%field%zarea,     &
-                        chunks(chunk)%field%cellx,     &
-                        chunks(chunk)%field%celly,     &
-                        chunks(chunk)%field%cellz,     &
-                        chunks(chunk)%field%celldx,    &
-                        chunks(chunk)%field%celldy,    &
-                        chunks(chunk)%field%celldz,    &
-                        chunks(chunk)%field%volume,    &
-                        chunks(chunk)%field%density0,  &
-                        chunks(chunk)%field%energy0,   &
-                        chunks(chunk)%field%pressure,  &
-                        chunks(chunk)%field%viscosity, &
-                        chunks(chunk)%field%soundspeed,&
-                        chunks(chunk)%field%xvel0,     &
-                        chunks(chunk)%field%yvel0,     &
-                        chunks(chunk)%field%zvel0,     &
-                        chunks(chunk)%field%work_array1,&
-                        local_dt,                      &
-                        l_control,                     &
-                        xl_pos,                        &
-                        yl_pos,                        &
-                        zl_pos,                        &
-                        jldt,                          &
-                        kldt,                          &
-                        lldt,                          &
-                        small                          )
-
   ENDIF 
 
   IF(l_control.EQ.1) local_control='sound'

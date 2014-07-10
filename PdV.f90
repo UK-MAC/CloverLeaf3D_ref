@@ -76,36 +76,6 @@ SUBROUTINE PdV(predict)
                       chunks(c)%field%zvel0,      &
                       chunks(c)%field%zvel1,      &
                       chunks(c)%field%work_array1 )
-      ELSEIF(use_C_kernels)THEN
-
-        IF(predict) THEN
-          prdct=0
-        ELSE
-          prdct=1
-        ENDIF
-
-        CALL PdV_kernel_c(prdct,                  &
-                      chunks(c)%field%x_min,      &
-                      chunks(c)%field%x_max,      &
-                      chunks(c)%field%y_min,      &
-                      chunks(c)%field%y_max,      &
-                      dt,                         &
-                      chunks(c)%field%xarea,      &
-                      chunks(c)%field%yarea,      &
-                      chunks(c)%field%volume ,    &
-                      chunks(c)%field%density0,   &
-                      chunks(c)%field%density1,   &
-                      chunks(c)%field%energy0,    &
-                      chunks(c)%field%energy1,    &
-                      chunks(c)%field%pressure,   &
-                      chunks(c)%field%viscosity,  &
-                      chunks(c)%field%xvel0,      &
-                      chunks(c)%field%xvel1,      &
-                      chunks(c)%field%yvel0,      &
-                      chunks(c)%field%yvel1,      &
-                      chunks(c)%field%zvel0,      &
-                      chunks(c)%field%zvel1,      &
-                      chunks(c)%field%work_array1 )
       ENDIF
     ENDIF
 

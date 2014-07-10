@@ -49,32 +49,10 @@ SUBROUTINE ideal_gas(chunk,predict)
                             chunks(chunk)%field%energy0,    &
                             chunks(chunk)%field%pressure,   &
                             chunks(chunk)%field%soundspeed  )
-      ELSEIF(use_C_kernels)THEN
-        CALL ideal_gas_kernel_c(chunks(chunk)%field%x_min,  &
-                            chunks(chunk)%field%x_max,      &
-                            chunks(chunk)%field%y_min,      &
-                            chunks(chunk)%field%y_max,      &
-                            chunks(chunk)%field%z_min,      &
-                            chunks(chunk)%field%z_max,      &
-                            chunks(chunk)%field%density0,   &
-                            chunks(chunk)%field%energy0,    &
-                            chunks(chunk)%field%pressure,   &
-                            chunks(chunk)%field%soundspeed  )
       ENDIF
     ELSE
       IF(use_fortran_kernels)THEN
         CALL ideal_gas_kernel(chunks(chunk)%field%x_min,    &
-                            chunks(chunk)%field%x_max,      &
-                            chunks(chunk)%field%y_min,      &
-                            chunks(chunk)%field%y_max,      &
-                            chunks(chunk)%field%z_min,      &
-                            chunks(chunk)%field%z_max,      &
-                            chunks(chunk)%field%density1,   &
-                            chunks(chunk)%field%energy1,    &
-                            chunks(chunk)%field%pressure,   &
-                            chunks(chunk)%field%soundspeed  )
-      ELSEIF(use_C_kernels)THEN
-        CALL ideal_gas_kernel_c(chunks(chunk)%field%x_min,  &
                             chunks(chunk)%field%x_max,      &
                             chunks(chunk)%field%y_min,      &
                             chunks(chunk)%field%y_max,      &
