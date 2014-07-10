@@ -89,7 +89,8 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
   INTEGER          :: j,k,l
 
-  REAL(KIND=8)     :: div,dsx,dsy,dsz,dtut,dtvt,dtwt,dtct,dtdivt,cc,dv1,dv2,jkl_control
+  REAL(KIND=8)     :: ds,div,dtut,dtvt,dtwt,dtct,dtdivt,cc,jkl_control
+  REAL(KIND=8)     :: du1,du2,dv1,dv2,dw1,dw2
 
   small=0
   dt_min_val = g_big
@@ -97,51 +98,39 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
 !$OMP PARALLEL
 
-!$OMP DO PRIVATE(dsx,dsy,dsz,cc,dv1,dv2,div,dtct,dtut,dtvt,dtwt,dtdivt)
+!$OMP DO PRIVATE(ds,cc,du1,du2,dv1,dv2,dw1,dw2,div,dtct,dtut,dtvt,dtwt,dtdivt)
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
 
-        dsx=celldx(j)
-        dsy=celldy(k)
-        dsz=celldz(l)
+        ds=1.8_8/MIN(celldx(j),celldy(k),celldz(k))**2.0_8
 
         cc=soundspeed(j,k,l)*soundspeed(j,k,l)
         cc=cc+2.0_8*viscosity_a(j,k,l)/density0(j,k,l)
         cc=MAX(SQRT(cc),g_small)
 
-        dtct=dtc_safe*MIN(dsx,dsy,dsz)/cc
+        dtct=ds*cc
+        dtct=dtc_safe*1.0_8/MAX(SQRT(dtct),g_small)
 
-        div=0.0
+        du1=(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))*xarea(j,k,l)
+        du2=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1))*xarea(j,k,l)
 
-        dv1=(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1))*xarea(j  ,k  ,l  )
-        dv2=(xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1))*xarea(j+1,k  ,l  )
+        dtut=dtu_safe*4.0_8*volume(j,k,l  )/MAX(ABS(du1),ABS(du2),1.0e-5_8*volume(j,k,l))
 
-        div=div+dv2-dv1
+        dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))*yarea(j,k,l)
+        dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))*yarea(j,k,l)
 
-        dtut=dtu_safe*2.0_8*volume(j,k,l  )/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+        dtvt=dtv_safe*4.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),1.0e-5_8*volume(j,k,l))
 
-        dv1=(yvel0(j  ,k  ,l  )+yvel0(j+1,k  ,l  )+yvel0(j  ,k  ,l+1)+yvel0(j+1,k  ,l+1))*yarea(j  ,k  ,l  )
-        dv2=(yvel0(j  ,k+1,l  )+yvel0(j+1,k+1,l  )+yvel0(j  ,k+1,l+1)+yvel0(j+1,k+1,l+1))*yarea(j  ,k+1,l  )
+        dw1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l  )
+        dw2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1))*zarea(j  ,k  ,l  )
 
-        div=div+dv2-dv1
 
-        dtvt=dtv_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
+        dtwt=dtw_safe*4.0_8*volume(j,k,l)/MAX(ABS(dw1),ABS(dw2),1.0e-5_8*volume(j,k,l))
 
-        dv1=(zvel0(j  ,k  ,l  )+zvel0(j+1,k  ,l  )+zvel0(j  ,k+1,l  )+zvel0(j+1,k+1,l  ))*zarea(j  ,k  ,l  )
-        dv2=(zvel0(j  ,k  ,l+1)+zvel0(j+1,k  ,l+1)+zvel0(j  ,k+1,l+1)+zvel0(j+1,k+1,l+1))*zarea(j  ,k  ,l+1)
+        div=du2-du1+dv2-dv1+dw2-dw1
 
-        div=div+dv2-dv1
-
-        dtwt=dtw_safe*2.0_8*volume(j,k,l)/MAX(ABS(dv1),ABS(dv2),g_small*volume(j,k,l))
-
-        div=div/(2.0_8*volume(j,k,l))
-
-        IF(div.LT.-g_small)THEN
-          dtdivt=dtdiv_safe*(-1.0_8/div)
-        ELSE
-          dtdivt=g_big
-        ENDIF
+        dtdivt=dtdiv_safe*4.0_8*(volume(j,k,l))/MAX(volume(j,k,l)*1.0e-05_8,ABS(div))
 
         dt_min(j,k,l)=MIN(dtct,dtut,dtvt,dtwt,dtdivt)
 
