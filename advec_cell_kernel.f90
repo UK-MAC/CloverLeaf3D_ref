@@ -194,8 +194,8 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           DO k=y_min-2,y_max+2
             DO j=x_min-2,x_max+2
               pre_vol(j,k,l) =volume(j,k,l)  +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
-                                             +vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
               post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l))
+                                             +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
             ENDDO
           ENDDO
         ENDDO
@@ -206,7 +206,7 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           DO k=y_min-2,y_max+2
             DO j=x_min-2,x_max+2
               pre_vol(j,k,l) =volume(j,k,l)  +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
-                                             +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
+                                             +vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
               post_vol(j,k,l)=pre_vol(j,k,l)-(vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l))
             ENDDO
           ENDDO

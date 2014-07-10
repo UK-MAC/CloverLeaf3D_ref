@@ -60,12 +60,12 @@ SUBROUTINE read_input()
   dtinit=0.1_8
   dtmax=1.0_8
   dtmin=0.0000001_8
-  dtrise=1.5_8
-  dtc_safe=0.7_8
+  dtrise=1.05_8
+  dtc_safe=0.75_8
   dtu_safe=0.5_8
   dtv_safe=0.5_8
   dtw_safe=0.5_8
-  dtdiv_safe=0.7_8
+  dtdiv_safe=0.5_8
 
   use_fortran_kernels=.TRUE.
   use_C_kernels=.FALSE.
