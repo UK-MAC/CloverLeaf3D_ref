@@ -87,9 +87,8 @@ SUBROUTINE initialise
       WRITE(out_unit,'(A)')' ymax=2.0'
       WRITE(out_unit,'(A)')' zmax=2.0'
       WRITE(out_unit,'(A)')' initial_timestep=0.04'
-      WRITE(out_unit,'(A)')' timestep_rise=1.05'
       WRITE(out_unit,'(A)')' max_timestep=0.04'
-      WRITE(out_unit,'(A)')' end_time=3.0'
+      WRITE(out_unit,'(A)')' end_step=75'
       WRITE(out_unit,'(A)')' test_problem 1'
       WRITE(out_unit,'(A)')'*endclover'
       CLOSE(out_unit)

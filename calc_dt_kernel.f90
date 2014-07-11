@@ -103,7 +103,7 @@ SUBROUTINE calc_dt_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
     DO k=y_min,y_max
       DO j=x_min,x_max
 
-        ds=1.8_8/MIN(celldx(j),celldy(k),celldz(l))**2.0_8
+        ds=1.0_8/MIN(celldx(j),celldy(k),celldz(l))**2.0_8
 
         cc=soundspeed(j,k,l)*soundspeed(j,k,l)
         cc=cc+2.0_8*viscosity_a(j,k,l)/density0(j,k,l)
