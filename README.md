@@ -1,14 +1,15 @@
 CloverLeaf3D_ref
 ==============
 
-The reference version of CloverLeaf3D
+The reference version of CloverLeaf3D with TyphonIO capability
 
 This repo is forked from the 2D CloverLeaf reference version at https://github.com/Warwick-PCAV/CloverLeaf_ref from version 1.1.
 
 
 # Build Instructions
 
-These remain the same as CloverLeaf:
+These remain the same as CloverLeaf apart from HDF5 must be available on the system and the TyphonIO library prebuilt for this build to succeed.
+
 In many case just typing make in the required software directory will work. This is the case if the mpif90 and mpicc wrappers are available on the system. This is true even for the Serial and OpenMP versions.
 
 If the MPI compilers have different names then the build process needs to notified of this by defining two environment variables, `MPI_COMPILER` and `C_MPI_COMPILER`.

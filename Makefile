@@ -122,11 +122,11 @@ CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
 MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 
-HDF_DIR=/hdf5/1.8.5
+HDF_DIR=./hdf5/1.8.5
 HDF_DIR_INC=$(HDF_DIR)/include
 HDF_DIR_LIB=$(HDF_DIR)/lib
 
-TYPH_DIR = /typhonio/1.6
+TYPH_DIR = ./typhonio/1.6
 
 TYPH_DIR_INC=$(TYPH_DIR)/include
 TYPH_DIR_LIB=$(TYPH_DIR)/lib
