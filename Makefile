@@ -122,8 +122,17 @@ CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
 MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 
+HDF_DIR=/hdf5/1.8.5
+HDF_DIR_INC=$(HDF_DIR)/include
+HDF_DIR_LIB=$(HDF_DIR)/lib
+
+TYPH_DIR = /typhonio/1.6
+
+TYPH_DIR_INC=$(TYPH_DIR)/include
+TYPH_DIR_LIB=$(TYPH_DIR)/lib
+
 clover_leaf: c_lover *.f90 Makefile
-	$(MPI_COMPILER) $(FLAGS)	\
+	$(MPI_COMPILER) $(FLAGS) -I$(HDF_DIR_INC) -I$(TYPH_DIR_INC) \
 	data.f90			\
 	definitions.f90			\
 	pack_kernel.f90			\
@@ -139,7 +148,6 @@ clover_leaf: c_lover *.f90 Makefile
 	update_halo.f90			\
 	ideal_gas_kernel.f90		\
 	ideal_gas.f90			\
-	start.f90			\
 	generate_chunk_kernel.f90	\
 	generate_chunk.f90		\
 	initialise.f90			\
@@ -167,9 +175,11 @@ clover_leaf: c_lover *.f90 Makefile
 	reset_field.f90			\
 	hydro.f90			\
 	visit.f90			\
+        write_TIO.f90                   \
+	start.f90			\
 	clover_leaf.f90			\
 	timer_c.o                       \
-	-o clover_leaf; echo $(MESSAGE)
+	-L$(HDF_DIR_LIB) -L$(TYPH_DIR_LIB) -ltyphonio_f -ltyphonio -lhdf5 -lz -o clover_leaf; echo $(MESSAGE)
 
 c_lover: *.c Makefile
 	$(C_MPI_COMPILER) $(CFLAGS)     \

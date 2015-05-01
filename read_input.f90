@@ -55,6 +55,7 @@ SUBROUTINE read_input()
   complete=.FALSE.
 
   visit_frequency=0
+  typhonio_frequency=0
   summary_frequency=10
 
   dtinit=0.1_8
@@ -170,6 +171,9 @@ SUBROUTINE read_input()
       CASE('visit_frequency')
         visit_frequency=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'visit_frequency',visit_frequency
+      CASE('typhonio_frequency')
+        typhonio_frequency=parse_getival(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'typhonio_frequency',typhonio_frequency
       CASE('summary_frequency')
         summary_frequency=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'summary_frequency',summary_frequency

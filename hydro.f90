@@ -30,6 +30,8 @@ SUBROUTINE hydro
   USE flux_calc_module
   USE advection_module
   USE reset_field_module
+  USE write_TIO_module 
+  USE TyphonIO
 
   IMPLICIT NONE
 
@@ -73,6 +75,9 @@ SUBROUTINE hydro
     IF(visit_frequency.NE.0) THEN
       IF(MOD(step, visit_frequency).EQ.0) CALL visit()
     ENDIF
+    IF(typhonio_frequency.NE.0) THEN
+      IF(MOD(step, typhonio_frequency).EQ.0) CALL write_TIO_Results(file_id)
+    ENDIF
 
     ! Sometimes there can be a significant start up cost that appears in the first step.
     ! Sometimes it is due to the number of MPI tasks, or OpenCL kernel compilation.
@@ -86,6 +91,11 @@ SUBROUTINE hydro
       complete=.TRUE.
       CALL field_summary()
       IF(visit_frequency.NE.0) CALL visit()
+      ! write last step info, for VTK or typhonio
+      IF(typhonio_frequency.NE.0) THEN 
+        CALL write_TIO_Results(file_id)
+        CALL Close_TIO(file_id)
+      ENDIF
 
       wall_clock=timer() - timerstart
       IF ( parallel%boss ) THEN

@@ -27,7 +27,10 @@ SUBROUTINE start
   USE clover_module
   USE parse_module
   USE update_halo_module
+  USE write_TIO_module
+  USE viscosity_module
   USE ideal_gas_module
+  USE TyphonIO
   USE build_field_module
 
   IMPLICIT NONE
@@ -165,6 +168,10 @@ SUBROUTINE start
   CALL field_summary()
 
   IF(visit_frequency.NE.0) CALL visit()
+  IF(typhonio_frequency.NE.0) THEN
+    CALL start_TIO(file_id)
+    CALL write_TIO_Results(file_id)
+  ENDIF
 
   CALL clover_barrier
 

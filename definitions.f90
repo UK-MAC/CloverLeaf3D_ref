@@ -118,7 +118,8 @@ MODULE definitions_module
                   ,dtw            &
                   ,dtdiv
 
-   INTEGER      :: visit_frequency   &
+   INTEGER      :: visit_frequency    &
+                  ,typhonio_frequency &
                   ,summary_frequency
 
    INTEGER         :: jdt,kdt
