@@ -173,9 +173,9 @@ clover_leaf: c_lover *.f90 Makefile
 	advection.f90			\
 	reset_field_kernel.f90		\
 	reset_field.f90			\
-	hydro.f90			\
 	visit.f90			\
         write_TIO.f90                   \
+	hydro.f90			\
 	start.f90			\
 	clover_leaf.f90			\
 	timer_c.o                       \

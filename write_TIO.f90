@@ -29,9 +29,12 @@ MODULE write_TIO_module
   USE viscosity_module
   USE ideal_gas_module
   USE TyphonIO
+  USE MPI
 
   IMPLICIT NONE
 
+
+  INTEGER :: err
   INTEGER(kind=tio_sizek)                           :: counter=0
   INTEGER(kind=tio_errk)                            :: terr
   INTEGER(kind=tio_filek)                           :: file_id
@@ -93,22 +96,6 @@ contains
     LOGICAL                                    :: fileExists =.false.
 
 
-    !Before doing any write, need to make sure the data is consistent
-    !Following lines are replications from the visit.f90 file
-
-    DO counter=1,number_of_chunks
-      CALL ideal_gas(counter,.FALSE.)
-    END DO
-    
-    fields=0
-    fields(FIELD_PRESSURE)=1
-    fields(FIELD_XVEL0)=1
-    fields(FIELD_YVEL0)=1
-    fields(FIELD_ZVEL0)=1
-    CALL update_halo(fields,1)
-    CALL viscosity()
-    ! TODO check if all the above codes are required.??? 
-
     !Set file information
     code_name         = "CloverLeaf3D"
     version_name      = "CloverLeaf3D-TyphonIO"
@@ -123,7 +110,7 @@ contains
       INQUIRE(FILE=tiofname,EXIST=fileExists)
     ENDIF
  
-    IF(fileExists .EQ. .FALSE.) THEN
+    IF(fileExists .EQV. .FALSE.) THEN
       !On the first instance, need to create a TIO file
       terr = TIO_Create_f( filename = trim(adjustl(tiofname)),   &
            fileID    = file_id, ACCESS = TIO_ACC_REPLACE_F,      &
@@ -154,7 +141,8 @@ contains
     INTEGER(kind=TIO_SIZEK)                    :: c=0
     INTEGER                                    :: xx, yy, zz
 
-    INTEGER(kind=TIO_SIZEK)                    :: xl, xh, yl, yh, zl, zh
+    INTEGER(kind=TIO_SIZEK), DIMENSION(6)      :: nn
+    
     INTEGER(kind=TIO_SIZEK)                    :: il, ih, jl, jh, kl, kh
 
     !Number of points along x/y/z
@@ -182,7 +170,7 @@ contains
          name = state_name, stateID = state_id,                  &
          step = state_num, time = state_time,                    &
          units = "-"    )
-    !If file is already there, trying to create a state with same name will cause an error
+    !If file is alaredy there, trying to create a state with same name will cause an error
     !following handles that error
     IF (terr /= TIO_SUCCESS_F) THEN
         WRITE(*,*) "Error from TIO - State already exists. Returning... ", terr
@@ -299,32 +287,34 @@ contains
                               ismixed  = .false.,                         &
                               units    = "unknown")
 
-
     DO c=1,number_of_chunks
 
-    xl = chunks(c)%field%left
-    xh = chunks(c)%field%right+1
-    yl = chunks(c)%field%bottom
-    yh = chunks(c)%field%top+1
-    zl = chunks(c)%field%back
-    zh = chunks(c)%field%front+1
+
+    nn(1) = chunks(1)%field%left
+    nn(2) = chunks(1)%field%right+1
+    nn(3) = chunks(1)%field%bottom
+    nn(4) = chunks(1)%field%top+1
+    nn(5) = chunks(1)%field%back
+    nn(6) = chunks(1)%field%front+1
+
+    CALL MPI_Bcast( nn ,6, MPI_INTEGER, c-1, MPI_COMM_WORLD, err) 
 
     terr = TIO_Set_Quad_Chunk_f( fileID   = file_id,     & 
                                  meshID   = mesh_id,     &
                                  idx      = c,           &
                                  ndims    = TIO_3D_F,    &
-                                 il       = xl,          &
-                                 ih       = xh,          &
-                                 jl       = yl,          &
-                                 jh       = yh,          &
-                                 kl       = zl,          &
-                                 kh       = zh,          &
+                                 il       = nn(1),       &
+                                 ih       = nn(2),       &
+                                 jl       = nn(3),       &
+                                 jh       = nn(4),       &
+                                 kl       = nn(5),       &
+                                 kh       = nn(6),       &
                                  nmixcell = 0,           &
                                  nmixcomp = 0            )
 
     END DO
 
-     
+    
    IF (parallel%boss) THEN    
     !Work out the mesh coordinates - 
 
@@ -363,16 +353,16 @@ contains
  
       c= parallel%task+1
 
-      il = chunks(c)%field%x_min
-      ih = chunks(c)%field%x_max
-      jl = chunks(c)%field%y_min
-      jh = chunks(c)%field%y_max
-      kl = chunks(c)%field%z_min
-      kh = chunks(c)%field%z_max
+      il = chunks(1)%field%x_min
+      ih = chunks(1)%field%x_max
+      jl = chunks(1)%field%y_min
+      jh = chunks(1)%field%y_max
+      kl = chunks(1)%field%z_min
+      kh = chunks(1)%field%z_max
 
       IF(.NOT. allocated(ps_data)) ALLOCATE (ps_data(il:ih,jl:jh,kl:kh))
 
-      ps_data(il:ih,jl:jh,kl:kh) = chunks(c)%field%pressure(il:ih,jl:jh,kl:kh)
+      ps_data(il:ih,jl:jh,kl:kh) = chunks(1)%field%pressure(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id,                 &
@@ -383,8 +373,12 @@ contains
 
       deallocate (ps_data)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                             quantID  = quant_id)
+
+
       IF(.NOT. allocated(er_data)) ALLOCATE (er_data(il:ih,jl:jh,kl:kh))
-      er_data(il:ih,jl:jh,kl:kh) = chunks(c)%field%energy0(il:ih,jl:jh,kl:kh)
+      er_data(il:ih,jl:jh,kl:kh) = chunks(1)%field%energy0(il:ih,jl:jh,kl:kh)
            
 
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
@@ -396,8 +390,11 @@ contains
 
       deallocate (er_data)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                             quantID  = quant_id1)
+
       IF(.NOT. allocated(ds_data)) ALLOCATE (ds_data(il:ih,jl:jh,kl:kh))
-      ds_data(il:ih,jl:jh,kl:kh) = chunks(c)%field%density0(il:ih,jl:jh,kl:kh)
+      ds_data(il:ih,jl:jh,kl:kh) = chunks(1)%field%density0(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id2,                &
@@ -408,8 +405,11 @@ contains
 
       deallocate (ds_data)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                             quantID  = quant_id2)
+
       IF(.NOT. allocated(vs_data)) ALLOCATE (vs_data(il:ih,jl:jh,kl:kh))
-      vs_data(il:ih,jl:jh,kl:kh) = chunks(c)%field%viscosity(il:ih,jl:jh,kl:kh)
+      vs_data(il:ih,jl:jh,kl:kh) = chunks(1)%field%viscosity(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id3,                &
@@ -420,17 +420,20 @@ contains
 
       deallocate (vs_data)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                             quantID  = quant_id3)
 
-      il = chunks(c)%field%x_min
-      ih = chunks(c)%field%x_max+1
-      jl = chunks(c)%field%y_min
-      jh = chunks(c)%field%y_max+1
-      kl = chunks(c)%field%z_min
-      kh = chunks(c)%field%z_max+1
+
+      il = chunks(1)%field%x_min
+      ih = chunks(1)%field%x_max+1
+      jl = chunks(1)%field%y_min
+      jh = chunks(1)%field%y_max+1
+      kl = chunks(1)%field%z_min
+      kh = chunks(1)%field%z_max+1
 
 
       IF(.NOT. allocated(vsdatax)) ALLOCATE (vsdatax(il:ih,jl:jh,kl:kh))
-      vsdatax(il:ih,jl:jh,kl:kh) = chunks(c)%field%xvel0(il:ih,jl:jh,kl:kh)
+      vsdatax(il:ih,jl:jh,kl:kh) = chunks(1)%field%xvel0(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id4,                &
@@ -441,9 +444,12 @@ contains
 
       deallocate (vsdatax)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                             quantID  = quant_id4)
+
 
       IF(.NOT. allocated(vsdatay)) ALLOCATE (vsdatay(il:ih,jl:jh,kl:kh))
-      vsdatay(il:ih,jl:jh,kl:kh) = chunks(c)%field%yvel0(il:ih,jl:jh,kl:kh)
+      vsdatay(il:ih,jl:jh,kl:kh) = chunks(1)%field%yvel0(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id5,                &
@@ -454,9 +460,12 @@ contains
 
       deallocate (vsdatay)
 
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                               quantID  = quant_id5)
+
 
       IF(.NOT. allocated(vsdataz)) ALLOCATE (vsdataz(il:ih,jl:jh,kl:kh))
-      vsdataz(il:ih,jl:jh,kl:kh) = chunks(c)%field%zvel0(il:ih,jl:jh,kl:kh)
+      vsdataz(il:ih,jl:jh,kl:kh) = chunks(1)%field%zvel0(il:ih,jl:jh,kl:kh)
       
       terr = TIO_Write_QuadQuant_Chunk_f(fileID   = file_id,                  &
                                          quantID  = quant_id6,                &
@@ -466,6 +475,16 @@ contains
                                          qdat     = vsdataz(il:ih,jl:jh,kl:kh) )
 
       deallocate (vsdataz)
+
+      terr = TIO_Close_Quant_f(fileID   = file_id,                  &
+                               quantID  = quant_id6)
+
+      terr = TIO_Close_Mesh_f(fileID   = file_id,                  &
+                              meshID  = mesh_id)
+
+      terr = TIO_Close_State_f(fileID   = file_id,                  &
+                               stateID  = state_id)
+
 
     IF (parallel%boss) THEN
       WRITE(*,*) "State is ", state_name

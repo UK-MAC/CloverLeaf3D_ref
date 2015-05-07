@@ -43,6 +43,8 @@ SUBROUTINE hydro
   REAL(KIND=8)    :: first_step,second_step
   REAL(KIND=8)    :: kernel_total,totals(parallel%max_task)
 
+  LOGICAL :: wrote_tio
+
   timerstart = timer()
 
   DO
@@ -75,8 +77,12 @@ SUBROUTINE hydro
     IF(visit_frequency.NE.0) THEN
       IF(MOD(step, visit_frequency).EQ.0) CALL visit()
     ENDIF
+    wrote_tio=.FALSE.
     IF(typhonio_frequency.NE.0) THEN
-      IF(MOD(step, typhonio_frequency).EQ.0) CALL write_TIO_Results(file_id)
+      IF(MOD(step, typhonio_frequency).EQ.0) THEN
+        CALL write_TIO_Results(file_id)
+        wrote_tio=.TRUE.
+      ENDIF
     ENDIF
 
     ! Sometimes there can be a significant start up cost that appears in the first step.
@@ -93,7 +99,9 @@ SUBROUTINE hydro
       IF(visit_frequency.NE.0) CALL visit()
       ! write last step info, for VTK or typhonio
       IF(typhonio_frequency.NE.0) THEN 
-        CALL write_TIO_Results(file_id)
+        IF(.NOT.wrote_tio) THEN
+          CALL write_TIO_Results(file_id)
+        ENDIF
         CALL Close_TIO(file_id)
       ENDIF
 
