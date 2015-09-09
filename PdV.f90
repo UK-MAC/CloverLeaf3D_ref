@@ -38,7 +38,7 @@ SUBROUTINE PdV(predict)
 
   INTEGER :: prdct
 
-  INTEGER :: c
+  INTEGER :: tile
   INTEGER :: fields(NUM_FIELDS)
 
   REAL(KIND=8) :: kernel_time,timer
@@ -46,40 +46,38 @@ SUBROUTINE PdV(predict)
   error_condition=0 ! Not used yet due to issue with OpenA reduction
 
   IF(profiler_on) kernel_time=timer()
-  DO c=1,chunks_per_task
+!$OMP PARALLEL DO
+  DO tile=1,tiles_per_chunk
 
-    IF(chunks(c)%task.EQ.parallel%task) THEN
 
-      IF(use_fortran_kernels)THEN
         CALL PdV_kernel(predict,                  &
-                      chunks(c)%field%x_min,      &
-                      chunks(c)%field%x_max,      &
-                      chunks(c)%field%y_min,      &
-                      chunks(c)%field%y_max,      &
-                      chunks(c)%field%z_min,      &
-                      chunks(c)%field%z_max,      &
+                      chunk%tiles(tile)%t_xmin,      &
+                      chunk%tiles(tile)%t_xmax,      &
+                      chunk%tiles(tile)%t_ymin,      &
+                      chunk%tiles(tile)%t_ymax,      &
+                      chunk%tiles(tile)%t_zmin,      &
+                      chunk%tiles(tile)%t_zmax,      &
                       dt,                         &
-                      chunks(c)%field%xarea,      &
-                      chunks(c)%field%yarea,      &
-                      chunks(c)%field%zarea,      &
-                      chunks(c)%field%volume ,    &
-                      chunks(c)%field%density0,   &
-                      chunks(c)%field%density1,   &
-                      chunks(c)%field%energy0,    &
-                      chunks(c)%field%energy1,    &
-                      chunks(c)%field%pressure,   &
-                      chunks(c)%field%viscosity,  &
-                      chunks(c)%field%xvel0,      &
-                      chunks(c)%field%xvel1,      &
-                      chunks(c)%field%yvel0,      &
-                      chunks(c)%field%yvel1,      &
-                      chunks(c)%field%zvel0,      &
-                      chunks(c)%field%zvel1,      &
-                      chunks(c)%field%work_array1 )
-      ENDIF
-    ENDIF
+                      chunk%tiles(tile)%field%xarea,      &
+                      chunk%tiles(tile)%field%yarea,      &
+                      chunk%tiles(tile)%field%zarea,      &
+                      chunk%tiles(tile)%field%volume ,    &
+                      chunk%tiles(tile)%field%density0,   &
+                      chunk%tiles(tile)%field%density1,   &
+                      chunk%tiles(tile)%field%energy0,    &
+                      chunk%tiles(tile)%field%energy1,    &
+                      chunk%tiles(tile)%field%pressure,   &
+                      chunk%tiles(tile)%field%viscosity,  &
+                      chunk%tiles(tile)%field%xvel0,      &
+                      chunk%tiles(tile)%field%xvel1,      &
+                      chunk%tiles(tile)%field%yvel0,      &
+                      chunk%tiles(tile)%field%yvel1,      &
+                      chunk%tiles(tile)%field%zvel0,      &
+                      chunk%tiles(tile)%field%zvel1,      &
+                      chunk%tiles(tile)%field%work_array1 )
 
   ENDDO
+!$OMP END PARALLEL DO
 
   CALL clover_check_error(error_condition)
   IF(profiler_on) profiler%PdV=profiler%PdV+(timer()-kernel_time)
@@ -90,9 +88,11 @@ SUBROUTINE PdV(predict)
 
   IF(predict)THEN
     IF(profiler_on) kernel_time=timer()
-    DO c=1,chunks_per_task
-      CALL ideal_gas(c,.TRUE.)
+!$OMP PARALLEL DO
+    DO tile=1,tiles_per_chunk
+      CALL ideal_gas(tile,.TRUE.)
     ENDDO
+!$OMP END PARALLEL DO
     IF(profiler_on) profiler%ideal_gas=profiler%ideal_gas+(timer()-kernel_time)
     fields=0
     fields(FIELD_PRESSURE)=1

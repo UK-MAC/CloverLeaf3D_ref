@@ -19,14 +19,14 @@
 !>  @author Wayne Gaudin
 !>  @details Invokes the user specified chunk initialisation kernel.
 
-SUBROUTINE initialise_chunk(chunk)
+SUBROUTINE initialise_chunk(tile)
 
   USE clover_module
   USE initialise_chunk_kernel_module
 
   IMPLICIT NONE
 
-  INTEGER :: chunk
+  INTEGER :: tile
 
   REAL(KIND=8) :: xmin,ymin,zmin,dx,dy,dz
 
@@ -34,36 +34,42 @@ SUBROUTINE initialise_chunk(chunk)
   dy=(grid%ymax-grid%ymin)/float(grid%y_cells)
   dz=(grid%zmax-grid%zmin)/float(grid%z_cells)
 
-  xmin=grid%xmin+dx*float(chunks(chunk)%field%left-1)
+  write(*,*) "Left:", chunk%tiles(tile)%t_left
+  write(*,*) "Bottom:", chunk%tiles(tile)%t_left
+  write(*,*) "Back:", chunk%tiles(tile)%t_left
 
-  ymin=grid%ymin+dy*float(chunks(chunk)%field%bottom-1)
+  xmin=grid%xmin+dx*float(chunk%tiles(tile)%t_left-1)
 
-  zmin=grid%zmin+dz*float(chunks(chunk)%field%back-1)
+  ymin=grid%ymin+dy*float(chunk%tiles(tile)%t_bottom-1)
+
+  zmin=grid%zmin+dz*float(chunk%tiles(tile)%t_back-1)
+
+  write(*,*) xmin, ymin, zmin
 
   IF(use_fortran_kernels) THEN
-    CALL initialise_chunk_kernel(chunks(chunk)%field%x_min,    &
-                                 chunks(chunk)%field%x_max,    &
-                                 chunks(chunk)%field%y_min,    &
-                                 chunks(chunk)%field%y_max,    &
-                                 chunks(chunk)%field%z_min,    &
-                                 chunks(chunk)%field%z_max,    &
+    CALL initialise_chunk_kernel(chunk%tiles(tile)%t_xmin,    &
+                                 chunk%tiles(tile)%t_xmax,    &
+                                 chunk%tiles(tile)%t_ymin,    &
+                                 chunk%tiles(tile)%t_ymax,    &
+                                 chunk%tiles(tile)%t_zmin,    &
+                                 chunk%tiles(tile)%t_zmax,    &
                                  xmin,ymin,zmin,dx,dy,dz,      &
-                                 chunks(chunk)%field%vertexx,  &
-                                 chunks(chunk)%field%vertexdx, &
-                                 chunks(chunk)%field%vertexy,  &
-                                 chunks(chunk)%field%vertexdy, &
-                                 chunks(chunk)%field%vertexz,  &
-                                 chunks(chunk)%field%vertexdz, &
-                                 chunks(chunk)%field%cellx,    &
-                                 chunks(chunk)%field%celldx,   &
-                                 chunks(chunk)%field%celly,    &
-                                 chunks(chunk)%field%celldy,   &
-                                 chunks(chunk)%field%cellz,    &
-                                 chunks(chunk)%field%celldz,   &
-                                 chunks(chunk)%field%volume,   &
-                                 chunks(chunk)%field%xarea,    &
-                                 chunks(chunk)%field%yarea,    &
-                                 chunks(chunk)%field%zarea     )
+                                 chunk%tiles(tile)%field%vertexx,  &
+                                 chunk%tiles(tile)%field%vertexdx, &
+                                 chunk%tiles(tile)%field%vertexy,  &
+                                 chunk%tiles(tile)%field%vertexdy, &
+                                 chunk%tiles(tile)%field%vertexz,  &
+                                 chunk%tiles(tile)%field%vertexdz, &
+                                 chunk%tiles(tile)%field%cellx,    &
+                                 chunk%tiles(tile)%field%celldx,   &
+                                 chunk%tiles(tile)%field%celly,    &
+                                 chunk%tiles(tile)%field%celldy,   &
+                                 chunk%tiles(tile)%field%cellz,    &
+                                 chunk%tiles(tile)%field%celldz,   &
+                                 chunk%tiles(tile)%field%volume,   &
+                                 chunk%tiles(tile)%field%xarea,    &
+                                 chunk%tiles(tile)%field%yarea,    &
+                                 chunk%tiles(tile)%field%zarea     )
   ENDIF
 
 

@@ -30,28 +30,23 @@ SUBROUTINE revert()
 
   IMPLICIT NONE
 
-  INTEGER :: c
+  INTEGER :: tile
+!$OMP PARALLEL DO
+  DO tile=1,tiles_per_chunk
 
-  DO c=1,chunks_per_task
-
-    IF(chunks(c)%task.EQ.parallel%task) THEN
-
-      IF(use_fortran_kernels)THEN
-        CALL revert_kernel(chunks(c)%field%x_min,   &
-                         chunks(c)%field%x_max,     &
-                         chunks(c)%field%y_min,     &
-                         chunks(c)%field%y_max,     &
-                         chunks(c)%field%z_min,     &
-                         chunks(c)%field%z_max,     &
-                         chunks(c)%field%density0,  &
-                         chunks(c)%field%density1,  &
-                         chunks(c)%field%energy0,   &
-                         chunks(c)%field%energy1    )
-      ENDIF
-
-    ENDIF
+        CALL revert_kernel(chunk%tiles(tile)%t_xmin,   &
+                         chunk%tiles(tile)%t_xmax,     &
+                         chunk%tiles(tile)%t_ymin,     &
+                         chunk%tiles(tile)%t_ymax,     &
+                         chunk%tiles(tile)%t_zmin,     &
+                         chunk%tiles(tile)%t_zmax,     &
+                         chunk%tiles(tile)%field%density0,  &
+                         chunk%tiles(tile)%field%density1,  &
+                         chunk%tiles(tile)%field%energy0,   &
+                         chunk%tiles(tile)%field%energy1    )
 
   ENDDO
+!$OMP END PARALLEL DO
 
 END SUBROUTINE revert
 

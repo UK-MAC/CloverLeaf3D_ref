@@ -143,25 +143,7 @@ MODULE definitions_module
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array6 !pre_vol, post_ener
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array7 !post_vol, ener_flux
 
-     INTEGER         :: left            &
-                       ,right           &
-                       ,bottom          &
-                       ,top             &
-                       ,back            &
-                       ,front           &
-                       ,left_boundary   &
-                       ,right_boundary  &
-                       ,bottom_boundary &
-                       ,top_boundary    &
-                       ,front_boundary  &
-                       ,back_boundary
 
-     INTEGER         :: x_min  &
-                       ,y_min  &
-                       ,z_min  &
-                       ,x_max  &
-                       ,y_max  &
-                       ,z_max
 
      REAL(KIND=8), DIMENSION(:),   ALLOCATABLE :: cellx    &
                                                  ,celly    &
@@ -183,6 +165,23 @@ MODULE definitions_module
 
    END TYPE field_type
    
+
+   TYPE tile_type
+
+     TYPE(field_type):: field
+
+     INTEGER :: t_xmin, t_xmax
+     INTEGER :: t_ymin, t_ymax
+     INTEGER :: t_zmin, t_zmax
+
+     INTEGER :: t_top, t_bottom, t_left, t_right, t_back, t_front
+
+     INTEGER :: tile_neighbours(6)
+     INTEGER :: external_tile_mask(6)
+
+
+   END TYPE tile_type
+
    TYPE chunk_type
 
      INTEGER         :: task   !mpi task
@@ -200,13 +199,37 @@ MODULE definitions_module
      REAL(KIND=8),ALLOCATABLE:: bottom_snd_buffer(:),top_snd_buffer(:)
      REAL(KIND=8),ALLOCATABLE:: back_snd_buffer(:),front_snd_buffer(:)
 
-     TYPE(field_type):: field
+     !TYPE(field_type):: field
+     TYPE(tile_type), DIMENSION(:), ALLOCATABLE :: tiles
+
+     INTEGER         :: left            &
+                       ,right           &
+                       ,bottom          &
+                       ,top             &
+                       ,back            &
+                       ,front           &
+                       ,left_boundary   &
+                       ,right_boundary  &
+                       ,bottom_boundary &
+                       ,top_boundary    &
+                       ,front_boundary  &
+                       ,back_boundary
+
+     INTEGER         :: x_min  &
+                       ,y_min  &
+                       ,z_min  &
+                       ,x_max  &
+                       ,y_max  &
+                       ,z_max
+
 
   END TYPE chunk_type
 
 
-  TYPE(chunk_type),  ALLOCATABLE       :: chunks(:)
-  INTEGER                              :: number_of_chunks
+  TYPE(chunk_type)       :: chunk ! 1 Chunk per process
+  INTEGER                :: number_of_chunks
+
+  LOGICAL :: tile_1d, tile_2d, tile_3d
 
   TYPE(grid_type)                      :: grid
 

@@ -71,7 +71,7 @@ OMP_PATHSCALE = -mp
 OMP_XL        = -qsmp=omp -qthreaded
 OMP=$(OMP_$(COMPILER))
 
-FLAGS_INTEL     = -O3 -no-prec-div
+FLAGS_INTEL     = -O3 -g -no-prec-div
 FLAGS_SUN       = -fast -xipo=2 -Xlistv4
 FLAGS_GNU       = -O3 -march=native -funroll-loops
 FLAGS_CRAY      = -em -ra -h acc_model=fast_addr:no_deep_copy:auto_async_all
@@ -135,6 +135,8 @@ clover_leaf: c_lover *.f90 Makefile
 	initialise_chunk_kernel.f90	\
 	initialise_chunk.f90		\
 	build_field.f90			\
+	update_tile_halo_kernel.f90		\
+	update_tile_halo.f90		\
 	update_halo_kernel.f90		\
 	update_halo.f90			\
 	ideal_gas_kernel.f90		\

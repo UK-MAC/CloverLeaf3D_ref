@@ -56,6 +56,7 @@ SUBROUTINE read_input()
 
   visit_frequency=0
   summary_frequency=10
+  tiles_per_chunk=1
 
   dtinit=0.1_8
   dtmax=1.0_8
@@ -115,6 +116,12 @@ SUBROUTINE read_input()
   states(:)%yvel=0.0
   states(:)%zvel=0.0
 
+
+  ! Tile decomposition - Default to 3D
+  tile_1d=.FALSE.
+  tile_2d=.FALSE.
+  tile_3d=.TRUE.
+
   DO
     stat=parse_getline(dummy)
 
@@ -173,6 +180,21 @@ SUBROUTINE read_input()
       CASE('summary_frequency')
         summary_frequency=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'summary_frequency',summary_frequency
+      CASE('tiles_per_chunk')
+        tiles_per_chunk=parse_getival(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'tiles_per_chunk',tiles_per_chunk
+      CASE('1d_tile_decomposition')
+        tile_1d=.TRUE.
+        tile_2d=.FALSE.
+        tile_3d=.FALSE.
+      CASE('2d_tile_decomposition')
+        tile_1d=.FALSE.
+        tile_2d=.TRUE.
+        tile_3d=.FALSE.
+      CASE('3d_tile_decomposition')
+        tile_1d=.FALSE.
+        tile_2d=.FALSE.
+        tile_3d=.TRUE.
       CASE('use_fortran_kernels')
         use_fortran_kernels=.TRUE.
       CASE('profiler_on')
