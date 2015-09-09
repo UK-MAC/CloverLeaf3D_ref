@@ -32,8 +32,8 @@ SUBROUTINE build_field(tile)
 
    INTEGER :: tile
 
-   write(*,*) "Tile ", tile, chunk%tiles(tile)%t_xmin, chunk%tiles(tile)%t_xmax, chunk%tiles(tile)%t_ymin, chunk%tiles(tile)%t_ymax, &
-            chunk%tiles(tile)%t_zmin, chunk%tiles(tile)%t_zmax
+   write(*,*) "Tile ", tile, chunk%tiles(tile)%t_xmin, chunk%tiles(tile)%t_xmax, &
+            chunk%tiles(tile)%t_ymin, chunk%tiles(tile)%t_ymax, chunk%tiles(tile)%t_zmin, chunk%tiles(tile)%t_zmax
 
 
 
