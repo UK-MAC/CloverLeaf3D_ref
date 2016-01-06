@@ -1,9 +1,11 @@
 CloverLeaf3D_ref
 ==============
 
-The reference version of CloverLeaf3D
+The reference version of CloverLeaf3D v1.2
 
-This repo is forked from the 2D CloverLeaf reference version at https://github.com/Warwick-PCAV/CloverLeaf_ref from version 1.1.
+This repo is forked from the 2D CloverLeaf reference version at https://github.com/UK-MAC/CloverLeaf_ref from version 1.1.
+The code has since been updated to mimic the style of CloverLeaf2D v1.3.
+This adds the tiling scheme and a number of optimisations.
 
 
 # Build Instructions

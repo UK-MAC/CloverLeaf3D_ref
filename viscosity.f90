@@ -31,36 +31,32 @@ SUBROUTINE viscosity()
   
   IMPLICIT NONE
 
-  INTEGER :: c
+  INTEGER :: tile
 
-  DO c=1,chunks_per_task
 
-    IF(chunks(c)%task.EQ.parallel%task) THEN
+  DO tile=1,tiles_per_chunk
 
-      IF(use_fortran_kernels)THEN
-        CALL viscosity_kernel(chunks(c)%field%x_min,                   &
-                            chunks(c)%field%x_max,                     &
-                            chunks(c)%field%y_min,                     &
-                            chunks(c)%field%y_max,                     &
-                            chunks(c)%field%z_min,                     &
-                            chunks(c)%field%z_max,                     &
-                            chunks(c)%field%xarea,                     &
-                            chunks(c)%field%yarea,                     &
-                            chunks(c)%field%zarea,                     &
-                            chunks(c)%field%celldx,                    &
-                            chunks(c)%field%celldy,                    &
-                            chunks(c)%field%celldz,                    &
-                            chunks(c)%field%density0,                  &
-                            chunks(c)%field%pressure,                  &
-                            chunks(c)%field%viscosity,                 &
-                            chunks(c)%field%xvel0,                     &
-                            chunks(c)%field%yvel0,                     &
-                            chunks(c)%field%zvel0                      )
-      ENDIF
-
-    ENDIF
+        CALL viscosity_kernel(chunk%tiles(tile)%t_xmin,                   &
+                            chunk%tiles(tile)%t_xmax,                     &
+                            chunk%tiles(tile)%t_ymin,                     &
+                            chunk%tiles(tile)%t_ymax,                     &
+                            chunk%tiles(tile)%t_zmin,                     &
+                            chunk%tiles(tile)%t_zmax,                     &
+                            chunk%tiles(tile)%field%xarea,                     &
+                            chunk%tiles(tile)%field%yarea,                     &
+                            chunk%tiles(tile)%field%zarea,                     &
+                            chunk%tiles(tile)%field%celldx,                    &
+                            chunk%tiles(tile)%field%celldy,                    &
+                            chunk%tiles(tile)%field%celldz,                    &
+                            chunk%tiles(tile)%field%density0,                  &
+                            chunk%tiles(tile)%field%pressure,                  &
+                            chunk%tiles(tile)%field%viscosity,                 &
+                            chunk%tiles(tile)%field%xvel0,                     &
+                            chunk%tiles(tile)%field%yvel0,                     &
+                            chunk%tiles(tile)%field%zvel0                      )
 
   ENDDO
+
 
 END SUBROUTINE viscosity
 

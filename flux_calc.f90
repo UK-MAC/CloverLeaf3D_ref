@@ -30,40 +30,37 @@ SUBROUTINE flux_calc()
 
   IMPLICIT NONE
 
-  INTEGER :: c
+  INTEGER :: tile
 
   REAL(KIND=8) :: kernel_time,timer
 
   IF(profiler_on) kernel_time=timer()
-  DO c=1,chunks_per_task
 
-    IF(chunks(c)%task.EQ.parallel%task) THEN
+  DO tile=1,tiles_per_chunk
 
-      IF(use_fortran_kernels)THEN
-        CALL flux_calc_kernel(chunks(c)%field%x_min,         &
-                            chunks(c)%field%x_max,           &
-                            chunks(c)%field%y_min,           &
-                            chunks(c)%field%y_max,           &
-                            chunks(c)%field%z_min,           &
-                            chunks(c)%field%z_max,           &
+        CALL flux_calc_kernel(chunk%tiles(tile)%t_xmin,         &
+                            chunk%tiles(tile)%t_xmax,           &
+                            chunk%tiles(tile)%t_ymin,           &
+                            chunk%tiles(tile)%t_ymax,           &
+                            chunk%tiles(tile)%t_zmin,           &
+                            chunk%tiles(tile)%t_zmax,           &
                             dt,                              &
-                            chunks(c)%field%xarea,           &
-                            chunks(c)%field%yarea,           &
-                            chunks(c)%field%zarea,           &
-                            chunks(c)%field%xvel0,           &
-                            chunks(c)%field%yvel0,           &
-                            chunks(c)%field%zvel0,           &
-                            chunks(c)%field%xvel1,           &
-                            chunks(c)%field%yvel1,           &
-                            chunks(c)%field%zvel1,           &
-                            chunks(c)%field%vol_flux_x,      &
-                            chunks(c)%field%vol_flux_y,      &
-                            chunks(c)%field%vol_flux_z       )
-      ENDIF
-
-    ENDIF
+                            chunk%tiles(tile)%field%xarea,           &
+                            chunk%tiles(tile)%field%yarea,           &
+                            chunk%tiles(tile)%field%zarea,           &
+                            chunk%tiles(tile)%field%xvel0,           &
+                            chunk%tiles(tile)%field%yvel0,           &
+                            chunk%tiles(tile)%field%zvel0,           &
+                            chunk%tiles(tile)%field%xvel1,           &
+                            chunk%tiles(tile)%field%yvel1,           &
+                            chunk%tiles(tile)%field%zvel1,           &
+                            chunk%tiles(tile)%field%vol_flux_x,      &
+                            chunk%tiles(tile)%field%vol_flux_y,      &
+                            chunk%tiles(tile)%field%vol_flux_z       )
 
   ENDDO
+
+
   IF(profiler_on) profiler%flux=profiler%flux+(timer()-kernel_time)
 
 END SUBROUTINE flux_calc

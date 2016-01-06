@@ -44,6 +44,14 @@ MODULE data_module
                              ,CHUNK_FRONT  =6    &
                              ,EXTERNAL_FACE=-1
 
+   INTEGER,      PARAMETER :: TILE_LEFT   =1    &
+                             ,TILE_RIGHT  =2    &
+                             ,TILE_BOTTOM =3    &
+                             ,TILE_TOP    =4    &
+                             ,TILE_BACK   =5    &
+                             ,TILE_FRONT  =6    &
+                             ,EXTERNAL_TILE=-1
+
    INTEGER,         PARAMETER :: FIELD_DENSITY0   = 1         &
                                 ,FIELD_DENSITY1   = 2         &
                                 ,FIELD_ENERGY0    = 3         &
@@ -102,5 +110,6 @@ MODULE data_module
    INTEGER,        PARAMETER ::g_len_max=500
 
    INTEGER,        PARAMETER :: chunks_per_task = 1
+   INTEGER                   :: tiles_per_chunk = 1
 
 END MODULE data_module

@@ -27,9 +27,7 @@ MODULE advec_mom_kernel_mod
 CONTAINS
 
 SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
-                            xvel1,                               &
-                            yvel1,                               &
-                            zvel1,                               &
+                            vel1,                                &
                             mass_flux_x,                         &
                             vol_flux_x,                          &
                             mass_flux_y,                         &
@@ -59,7 +57,7 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   INTEGER :: which_vel,sweep_number,direction
   LOGICAL :: advect_x
 
-  REAL(KIND=8), TARGET,DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel1,yvel1,zvel1
+  REAL(KIND=8), TARGET,DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: vel1
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: mass_flux_x
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: vol_flux_x
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: mass_flux_y
@@ -84,19 +82,11 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   INTEGER :: upwind,donor,downwind,dif
   REAL(KIND=8) :: sigma,wind,width
   REAL(KIND=8) :: vdiffuw,vdiffdw,auw,adw,limiter
-  REAL(KIND=8) :: vdiffuw2,vdiffdw2,auw2,limiter2
-  REAL(KIND=8), POINTER, DIMENSION(:,:,:) :: vel1
+  REAL(KIND=8) :: vdiffuw2,vdiffdw2,auw2,limiter2, advec_vel_s
 
   ! Choose the correct velocity, ideally, remove this pointer
   !  if it affects performance.
   ! Leave this one in as a test of performance
-  IF(which_vel.EQ.1)THEN
-    vel1=>xvel1
-  ELSEIF(which_vel.EQ.2)THEN
-    vel1=>yvel1
-  ELSEIF(which_vel.EQ.3)THEN
-    vel1=>zvel1
-  ENDIF
 
 !$OMP PARALLEL
 
@@ -244,8 +234,8 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
             IF(vdiffdw.LE.0.0) wind=-1.0_8
             limiter=wind*MIN(width*((2.0_8-sigma)*adw/width+(1.0_8+sigma)*auw/celldx(dif))/6.0_8,auw,adw)
           ENDIF
-          advec_vel(j,k,l)=vel1(donor,k,l)+(1.0-sigma)*limiter
-          mom_flux(j,k,l)=advec_vel(j,k,l)*node_flux(j,k,l)
+          advec_vel_s=vel1(donor,k,l)+(1.0-sigma)*limiter
+          mom_flux(j,k,l)=advec_vel_s*node_flux(j,k,l)
         ENDDO
       ENDDO
     ENDDO
@@ -329,8 +319,8 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
             IF(vdiffdw.LE.0.0) wind=-1.0_8
             limiter=wind*MIN(width*((2.0_8-sigma)*adw/width+(1.0_8+sigma)*auw/celldy(dif))/6.0_8,auw,adw)
           ENDIF
-          advec_vel(j,k,l)=vel1(j,donor,l)+(1.0_8-sigma)*limiter
-          mom_flux(j,k,l)=advec_vel(j,k,l)*node_flux(j,k,l)
+          advec_vel_s=vel1(j,donor,l)+(1.0_8-sigma)*limiter
+          mom_flux(j,k,l)=advec_vel_s*node_flux(j,k,l)
         ENDDO
       ENDDO
     ENDDO
@@ -415,8 +405,8 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
             IF(vdiffdw.LE.0.0) wind=-1.0_8
             limiter=wind*MIN(width*((2.0_8-sigma)*adw/width+(1.0_8+sigma)*auw/celldz(dif))/6.0_8,auw,adw)
           ENDIF
-          advec_vel(j,k,l)=vel1(j,k,donor)+(1.0_8-sigma)*limiter
-          mom_flux(j,k,l)=advec_vel(j,k,l)*node_flux(j,k,l)
+          advec_vel_s=vel1(j,k,donor)+(1.0_8-sigma)*limiter
+          mom_flux(j,k,l)=advec_vel_s*node_flux(j,k,l)
         ENDDO
       ENDDO
     ENDDO

@@ -56,6 +56,7 @@ SUBROUTINE read_input()
 
   visit_frequency=0
   summary_frequency=10
+  tiles_per_chunk=1
 
   dtinit=0.1_8
   dtmax=1.0_8
@@ -67,7 +68,6 @@ SUBROUTINE read_input()
   dtw_safe=0.5_8
   dtdiv_safe=0.5_8
 
-  use_fortran_kernels=.TRUE.
   profiler_on=.FALSE.
   profiler%timestep=0.0
   profiler%acceleration=0.0
@@ -81,7 +81,9 @@ SUBROUTINE read_input()
   profiler%reset=0.0
   profiler%revert=0.0
   profiler%flux=0.0
-  profiler%halo_exchange=0.0
+  profiler%self_halo_exchange=0.0
+  profiler%tile_halo_exchange=0.0
+  profiler%mpi_halo_exchange=0.0
 
   IF(parallel%boss)WRITE(g_out,*) 'Reading input file'
   IF(parallel%boss)WRITE(g_out,*)
@@ -114,6 +116,12 @@ SUBROUTINE read_input()
   states(:)%xvel=0.0
   states(:)%yvel=0.0
   states(:)%zvel=0.0
+
+
+  ! Tile decomposition - Default to 3D
+  tile_1d=.FALSE.
+  tile_2d=.FALSE.
+  tile_3d=.TRUE.
 
   DO
     stat=parse_getline(dummy)
@@ -173,8 +181,24 @@ SUBROUTINE read_input()
       CASE('summary_frequency')
         summary_frequency=parse_getival(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'summary_frequency',summary_frequency
-      CASE('use_fortran_kernels')
-        use_fortran_kernels=.TRUE.
+      CASE('tiles_per_chunk')
+        tiles_per_chunk=parse_getival(parse_getword(.TRUE.))
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'tiles_per_chunk',tiles_per_chunk
+      CASE('tiles_per_problem')
+        tiles_per_chunk=parse_getival(parse_getword(.TRUE.))/parallel%max_task
+        IF(parallel%boss)WRITE(g_out,"(1x,a25,i12)")'tiles_per_chunk',tiles_per_chunk
+      CASE('1d_tile_decomposition')
+        tile_1d=.TRUE.
+        tile_2d=.FALSE.
+        tile_3d=.FALSE.
+      CASE('2d_tile_decomposition')
+        tile_1d=.FALSE.
+        tile_2d=.TRUE.
+        tile_3d=.FALSE.
+      CASE('3d_tile_decomposition')
+        tile_1d=.FALSE.
+        tile_2d=.FALSE.
+        tile_3d=.TRUE.
       CASE('profiler_on')
         profiler_on=.TRUE.
         IF(parallel%boss)WRITE(g_out,"(1x,a25)")'Profiler on'
@@ -254,9 +278,7 @@ SUBROUTINE read_input()
 
   IF(parallel%boss) THEN
     WRITE(g_out,*)
-    IF(use_fortran_kernels) THEN
-      WRITE(g_out,"(1x,a25)")'Using Fortran Kernels'
-    ENDIF
+    WRITE(g_out,"(1x,a25)")'Using Fortran Kernels'
     WRITE(g_out,*)
     WRITE(g_out,*) 'Input read finished.'
     WRITE(g_out,*)

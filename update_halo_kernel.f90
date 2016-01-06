@@ -31,6 +31,7 @@ CONTAINS
 
   SUBROUTINE update_halo_kernel(x_min,x_max,y_min,y_max,z_min,z_max,                &
                         chunk_neighbours,                                           &
+                        tile_neighbours,                                            &
                         density0,                                                   &
                         energy0,                                                    &
                         pressure,                                                   &
@@ -55,7 +56,7 @@ CONTAINS
   IMPLICIT NONE
 
   INTEGER :: x_min,x_max,y_min,y_max,z_min,z_max
-  INTEGER, DIMENSION(6) :: chunk_neighbours
+  INTEGER, DIMENSION(6) :: tile_neighbours, chunk_neighbours
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density0,energy0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: pressure,viscosity,soundspeed
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density1,energy1
@@ -74,6 +75,14 @@ CONTAINS
                             ,CHUNK_BACK   =5    &
                             ,CHUNK_FRONT  =6    &
                             ,EXTERNAL_FACE=-1
+
+   INTEGER,      PARAMETER :: TILE_LEFT   =1    &
+                             ,TILE_RIGHT  =2    &
+                             ,TILE_BOTTOM =3    &
+                             ,TILE_TOP    =4    &
+                             ,TILE_BACK   =5    &
+                             ,TILE_FRONT  =6    &
+                             ,EXTERNAL_TILE=-1
 
   INTEGER,      PARAMETER :: FIELD_DENSITY0   = 1         &
                             ,FIELD_DENSITY1   = 2         &
@@ -104,7 +113,7 @@ CONTAINS
   ! that depth is either 1 or 2 so that it is more efficient to always thread
   ! loop along the mesh edge.
   IF(fields(FIELD_DENSITY0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -115,7 +124,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -126,7 +135,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -137,7 +146,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -148,7 +157,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -159,7 +168,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -173,7 +182,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_DENSITY1).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -184,7 +193,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -195,7 +204,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -206,7 +215,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -217,7 +226,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -228,7 +237,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -242,7 +251,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_ENERGY0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -253,7 +262,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -264,7 +273,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -275,7 +284,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -286,7 +295,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -297,7 +306,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -311,7 +320,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_ENERGY1).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -322,7 +331,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -333,7 +342,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -344,7 +353,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -355,7 +364,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -366,7 +375,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -380,7 +389,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_PRESSURE).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -391,7 +400,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -402,7 +411,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -413,7 +422,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -424,7 +433,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -435,7 +444,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -449,7 +458,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_VISCOSITY).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -460,7 +469,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -471,7 +480,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -482,7 +491,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -493,7 +502,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -504,7 +513,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -518,7 +527,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_SOUNDSPEED).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -529,7 +538,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -540,7 +549,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -551,7 +560,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -562,7 +571,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -573,7 +582,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -587,7 +596,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_XVEL0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -598,7 +607,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -609,7 +618,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -620,7 +629,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -631,7 +640,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -642,7 +651,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -656,7 +665,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_XVEL1).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -667,7 +676,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -678,7 +687,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -689,7 +698,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -700,7 +709,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -711,7 +720,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -725,7 +734,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_YVEL0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -736,7 +745,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -747,7 +756,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -758,7 +767,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -769,7 +778,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -780,7 +789,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -794,7 +803,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_YVEL1).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -805,7 +814,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -816,7 +825,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -827,7 +836,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -838,7 +847,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -849,7 +858,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -863,7 +872,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_ZVEL0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -874,7 +883,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -885,7 +894,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -896,7 +905,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -907,7 +916,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -918,7 +927,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -932,7 +941,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_ZVEL1).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -943,7 +952,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -954,7 +963,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -965,7 +974,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+1+depth
@@ -976,7 +985,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -987,7 +996,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+1+depth
         DO j=x_min-depth,x_max+1+depth
@@ -1001,7 +1010,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_VOL_FLUX_X).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+1+depth
@@ -1012,7 +1021,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+1+depth
@@ -1023,7 +1032,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -1034,7 +1043,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -1045,7 +1054,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1056,7 +1065,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1070,7 +1079,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_MASS_FLUX_X).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+1+depth
@@ -1081,7 +1090,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+1+depth
@@ -1092,7 +1101,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -1103,7 +1112,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
@@ -1114,7 +1123,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1125,7 +1134,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1139,7 +1148,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_VOL_FLUX_Y).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1150,7 +1159,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1161,7 +1170,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+1+depth
@@ -1172,7 +1181,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+1+depth
@@ -1183,7 +1192,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1194,7 +1203,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1208,7 +1217,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_MASS_FLUX_Y).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1219,7 +1228,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1230,7 +1239,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+1+depth
@@ -1241,7 +1250,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+1+depth
@@ -1252,7 +1261,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1263,7 +1272,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1277,7 +1286,7 @@ CONTAINS
   ENDIF
 
   IF(fields(FIELD_VOL_FLUX_Z).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1288,7 +1297,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+depth
@@ -1299,7 +1308,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
@@ -1310,7 +1319,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
@@ -1321,7 +1330,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1332,7 +1341,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1345,7 +1354,7 @@ CONTAINS
     ENDIF
   ENDIF
   IF(fields(FIELD_MASS_FLUX_Z).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BOTTOM).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+depth
@@ -1356,7 +1365,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_TOP).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO j=x_min-depth,x_max+depth
@@ -1367,7 +1376,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_LEFT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
@@ -1378,7 +1387,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_RIGHT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+1+depth
         DO k=y_min-depth,y_max+depth
@@ -1389,7 +1398,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_BACK).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
@@ -1400,7 +1409,7 @@ CONTAINS
       ENDDO
 !$OMP END DO
     ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+    IF( (chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) .AND. (tile_neighbours(TILE_FRONT).EQ.EXTERNAL_TILE) ) THEN
 !$OMP DO
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth

@@ -35,8 +35,7 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
                              zvel0,                                      &
                              xvel1,                                      &
                              yvel1,                                      &
-                             zvel1,                                      &
-                             stepbymass                                  )
+                             zvel1                                       )
 
   IMPLICIT NONE
 
@@ -52,14 +51,13 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2 ,y_min-2:y_max+2 ,z_min-2:z_max+2) :: viscosity
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+3 ,z_min-2:z_max+3) :: xvel0,yvel0,zvel0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+3 ,z_min-2:z_max+3) :: xvel1,yvel1,zvel1
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3 ,y_min-2:y_max+3 ,z_min-2:z_max+3) :: stepbymass
 
   INTEGER               :: j,k,l
-  REAL(KIND=8)          :: nodal_mass
+  REAL(KIND=8)          :: nodal_mass, stepbymass_s, xvel1_s, yvel1_s, zvel1_s
 
 !$OMP PARALLEL
 
-!$OMP DO PRIVATE(nodal_mass)
+!$OMP DO PRIVATE(nodal_mass, stepbymass_s, xvel1_s, yvel1_s, zvel1_s)
   DO l=z_min,z_max+1
     DO k=y_min,y_max+1
       DO j=x_min,x_max+1
@@ -74,100 +72,43 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
                    +density0(j-1,k  ,l-1)*volume(j-1,k  ,l-1)) &
                    *0.125_8
 
-        stepbymass(j,k,l)=0.25_8*dt/nodal_mass
+        stepbymass_s=0.25_8*dt/nodal_mass
+
+        xvel1_s=xvel0(j,k,l)-stepbymass_s*(xarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j-1,k  ,l  ))    &
+                                          +xarea(j  ,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j-1,k-1,l  ))    &
+                                          +xarea(j  ,k  ,l-1)*(pressure(j  ,k  ,l-1)-pressure(j-1,k  ,l-1))    &
+                                          +xarea(j  ,k-1,l-1)*(pressure(j  ,k-1,l-1)-pressure(j-1,k-1,l-1)))
+
+        yvel1_s=yvel0(j,k,l)-stepbymass_s*(yarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j  ,k-1,l  ))    &
+                                          +yarea(j-1,k  ,l  )*(pressure(j-1,k  ,l  )-pressure(j-1,k-1,l  ))    &
+                                          +yarea(j  ,k  ,l-1)*(pressure(j  ,k  ,l-1)-pressure(j  ,k-1,l-1))    &
+                                          +yarea(j-1,k  ,l-1)*(pressure(j-1,k  ,l-1)-pressure(j-1,k-1,l-1)))
+
+        zvel1_s=zvel0(j,k,l)-stepbymass_s*(zarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j  ,k  ,l-1))    &
+                                          +zarea(j  ,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j  ,k-1,l-1))    &
+                                          +zarea(j-1,k  ,l  )*(pressure(j-1,k  ,l  )-pressure(j-1,k  ,l-1))    &
+                                          +zarea(j-1,k-1,l  )*(pressure(j-1,k-1,l  )-pressure(j-1,k-1,l-1)))
+
+        xvel1(j,k,l)=xvel1_s-stepbymass_s*(xarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j-1,k  ,l  ))    &
+                                          +xarea(j  ,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j-1,k-1,l  ))    &
+                                          +xarea(j  ,k  ,l-1)*(viscosity(j  ,k  ,l-1)-viscosity(j-1,k  ,l-1))    &
+                                          +xarea(j  ,k-1,l-1)*(viscosity(j  ,k-1,l-1)-viscosity(j-1,k-1,l-1)))
+
+        yvel1(j,k,l)=yvel1_s-stepbymass_s*(yarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j  ,k-1,l  ))    &
+                                          +yarea(j-1,k  ,l  )*(viscosity(j-1,k  ,l  )-viscosity(j-1,k-1,l  ))    &
+                                          +yarea(j  ,k  ,l-1)*(viscosity(j  ,k  ,l-1)-viscosity(j  ,k-1,l-1))    &
+                                          +yarea(j-1,k  ,l-1)*(viscosity(j-1,k  ,l-1)-viscosity(j-1,k-1,l-1)))
+
+        zvel1(j,k,l)=zvel1_s-stepbymass_s*(zarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j  ,k  ,l-1))    &
+                                          +zarea(j  ,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j  ,k-1,l-1))    &
+                                          +zarea(j-1,k  ,l  )*(viscosity(j-1,k  ,l  )-viscosity(j-1,k  ,l-1))    &
+                                          +zarea(j-1,k-1,l  )*(viscosity(j-1,k-1,l  )-viscosity(j-1,k-1,l-1)))
 
       ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
 
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        xvel1(j,k,l)=xvel0(j,k,l)-stepbymass(j,k,l)*(xarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j-1,k  ,l  ))    &
-                                                    +xarea(j  ,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j-1,k-1,l  ))    &
-                                                    +xarea(j  ,k  ,l-1)*(pressure(j  ,k  ,l-1)-pressure(j-1,k  ,l-1))    &
-                                                    +xarea(j  ,k-1,l-1)*(pressure(j  ,k-1,l-1)-pressure(j-1,k-1,l-1)))
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        yvel1(j,k,l)=yvel0(j,k,l)-stepbymass(j,k,l)*(yarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j  ,k-1,l  ))    &
-                                                    +yarea(j-1,k  ,l  )*(pressure(j-1,k  ,l  )-pressure(j-1,k-1,l  ))    &
-                                                    +yarea(j  ,k  ,l-1)*(pressure(j  ,k  ,l-1)-pressure(j  ,k-1,l-1))    &
-                                                    +yarea(j-1,k  ,l-1)*(pressure(j-1,k  ,l-1)-pressure(j-1,k-1,l-1)))
-
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        zvel1(j,k,l)=zvel0(j,k,l)-stepbymass(j,k,l)*(zarea(j  ,k  ,l  )*(pressure(j  ,k  ,l  )-pressure(j  ,k  ,l-1))    &
-                                                    +zarea(j  ,k-1,l  )*(pressure(j  ,k-1,l  )-pressure(j  ,k-1,l-1))    &
-                                                    +zarea(j-1,k  ,l  )*(pressure(j-1,k  ,l  )-pressure(j-1,k  ,l-1))    &
-                                                    +zarea(j-1,k-1,l  )*(pressure(j-1,k-1,l  )-pressure(j-1,k-1,l-1)))
-
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        xvel1(j,k,l)=xvel1(j,k,l)-stepbymass(j,k,l)*(xarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j-1,k  ,l  ))    &
-                                                    +xarea(j  ,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j-1,k-1,l  ))    &
-                                                    +xarea(j  ,k  ,l-1)*(viscosity(j  ,k  ,l-1)-viscosity(j-1,k  ,l-1))    &
-                                                    +xarea(j  ,k-1,l-1)*(viscosity(j  ,k-1,l-1)-viscosity(j-1,k-1,l-1)))
-
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        yvel1(j,k,l)=yvel1(j,k,l)-stepbymass(j,k,l)*(yarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j  ,k-1,l  ))    &
-                                                    +yarea(j-1,k  ,l  )*(viscosity(j-1,k  ,l  )-viscosity(j-1,k-1,l  ))    &
-                                                    +yarea(j  ,k  ,l-1)*(viscosity(j  ,k  ,l-1)-viscosity(j  ,k-1,l-1))    &
-                                                    +yarea(j-1,k  ,l-1)*(viscosity(j-1,k  ,l-1)-viscosity(j-1,k-1,l-1)))
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-
-!$OMP DO
-  DO l=z_min,z_max+1
-    DO k=y_min,y_max+1
-      DO j=x_min,x_max+1
-
-        zvel1(j,k,l)=zvel1(j,k,l)-stepbymass(j,k,l)*(zarea(j  ,k  ,l  )*(viscosity(j  ,k  ,l  )-viscosity(j  ,k  ,l-1))    &
-                                                    +zarea(j  ,k-1,l  )*(viscosity(j  ,k-1,l  )-viscosity(j  ,k-1,l-1))    &
-                                                    +zarea(j-1,k  ,l  )*(viscosity(j-1,k  ,l  )-viscosity(j-1,k  ,l-1))    &
-                                                    +zarea(j-1,k-1,l  )*(viscosity(j-1,k-1,l  )-viscosity(j-1,k-1,l-1)))
-
-      ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
 
 !$OMP END PARALLEL
 
