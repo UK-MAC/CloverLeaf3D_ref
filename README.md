@@ -36,19 +36,7 @@ A tradeoff must be made between these two factors to achieve an overall performa
 
 Running the problem with a a single tile (per MPI rank), the default behaviour, will mimic the original untiled version of the code.
 
-Tiles can be controlled in the following way:
+Currently the OpenACC implementation only supports a single Tile per MPI rank.
+This is because the GPU implementation makes use of the loop level threading.
 
-### Tile Count
-
-Using the input deck you can specify the number of tiles you want to include in the problem.
-`tiles_per_chunk` Specifies how many tiles each MPI rank should have.
-`tiles_per_problem` Specifies how many tiles are to be used across all of the MPI ranks combined. This will automatically calculate the `tiles_per_chunk` at runtime based on the number of MPI ranks. If the total number of tiles is not divisable by the number of ranks, the floor of that value will be taken and usued.
-
-
-### Decomposition 
-
-In CloverLeaf3D the default tile decomposition is 3D with the closest match to the problem dimensions.
-This can be controlled at runtime to force the use of either a 3D, 2D or 1D decomposition:
-* `1d_tile_decomposition`
-* `2d_tile_decomposition`
-* `3d_tile_decomposition`
+This capability is currently in development.
