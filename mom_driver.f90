@@ -44,7 +44,8 @@ PROGRAM mom_driver
   REAL(KIND=8),ALLOCATABLE :: volume(:,:,:)
   REAL(KIND=8),ALLOCATABLE :: density0(:,:,:),energy0(:,:,:),pressure(:,:,:),soundspeed(:,:,:),density1(:,:,:)
   REAL(KIND=8),ALLOCATABLE :: xvel0(:,:,:),yvel0(:,:,:),zvel0(:,:,:),xvel1(:,:,:),yvel1(:,:,:),zvel1(:,:,:)
-  REAL(KIND=8),ALLOCATABLE :: vol_flux_x(:,:,:),vol_flux_y(:,:,:),vol_flux_z(:,:,:),mass_flux_x(:,:,:),mass_flux_y(:,:,:),mass_flux_z(:,:,:)
+  REAL(KIND=8),ALLOCATABLE :: vol_flux_x(:,:,:),vol_flux_y(:,:,:),vol_flux_z(:,:,:)
+  REAL(KIND=8),ALLOCATABLE :: mass_flux_x(:,:,:),mass_flux_y(:,:,:),mass_flux_z(:,:,:)
   REAL(KIND=8),ALLOCATABLE :: node_flux(:,:,:),node_mass_post(:,:,:),node_mass_pre(:,:,:)
   REAL(KIND=8),ALLOCATABLE :: advec_vel(:,:,:),mom_flux(:,:,:),pre_vol(:,:,:),post_vol(:,:,:)
 
@@ -153,8 +154,6 @@ PROGRAM mom_driver
       sweep_number=1
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
                             xvel1,                                 &
-                            yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -182,8 +181,6 @@ PROGRAM mom_driver
       sweep_number=1
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
                             xvel1,                                 &
-                            yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -211,8 +208,6 @@ PROGRAM mom_driver
       sweep_number=1
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
                             xvel1,                                 &
-                            yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -239,9 +234,7 @@ PROGRAM mom_driver
       which_vel=1
       sweep_number=2
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
                             yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -268,9 +261,7 @@ PROGRAM mom_driver
       which_vel=2
       sweep_number=2
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
                             yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -297,9 +288,7 @@ PROGRAM mom_driver
       which_vel=3
       sweep_number=2
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
                             yvel1,                                 &
-                            zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
                             mass_flux_y,                           &
@@ -326,8 +315,6 @@ PROGRAM mom_driver
       which_vel=1
       sweep_number=3
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
-                            yvel1,                                 &
                             zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
@@ -355,8 +342,6 @@ PROGRAM mom_driver
       which_vel=2
       sweep_number=3
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
-                            yvel1,                                 &
                             zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &
@@ -384,8 +369,6 @@ PROGRAM mom_driver
       which_vel=3
       sweep_number=3
       CALL advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max,   &
-                            xvel1,                                 &
-                            yvel1,                                 &
                             zvel1,                                 &
                             mass_flux_x,                           &
                             vol_flux_x,                            &

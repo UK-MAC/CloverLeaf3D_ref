@@ -119,8 +119,8 @@ endif
 
 FLAGS=$(FLAGS_$(COMPILER)) $(OMP) $(I3E) $(OPTIONS)
 CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
-MPI_COMPILER=mpif90
-C_MPI_COMPILER=mpicc
+MPI_COMPILER=gfortran
+C_MPI_COMPILER=gcc
 
 accelerate_driver:  accelerate_driver.f90 set_data.f90
 	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
@@ -157,8 +157,10 @@ ideal_gas_driver:  ideal_gas_driver.f90 set_data.f90
 	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 ideal_gas_kernel.f90 timer.f90 timer_c.o ideal_gas_driver.f90
 	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o ideal_gas_kernel.o timer.o ideal_gas_driver.o -o ideal_gas_driver ; echo $(MESSAGE)
 
+all: drivers
+
 drivers: accelerate_driver PdV_driver mom_driver reset_field_driver revert_driver viscosity_driver ideal_gas_driver
 
-clean_drivers:
-	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx accelerate_driver PdV_driver mom_driver reset_field_driver viscosity_driver ideal_gas_driver
+clean:
+	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx accelerate_driver PdV_driver mom_driver reset_field_driver revert_driver viscosity_driver ideal_gas_driver
 

@@ -150,8 +150,7 @@ PROGRAM accelerate_driver
                              zvel0,                  &
                              xvel1,                  &
                              yvel1,                  &
-                             zvel1,                  &
-                             work_array1             )
+                             zvel1                   )
     ENDDO
   ENDIF
 
