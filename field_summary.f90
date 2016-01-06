@@ -52,9 +52,11 @@ SUBROUTINE field_summary()
 
 
 
+    !$OMP PARALLEL DO
     DO tile = 1, tiles_per_chunk
         CALL ideal_gas(tile,.FALSE.)
     ENDDO
+    !$OMP END PARALLEL DO
 
 
 
@@ -70,6 +72,7 @@ SUBROUTINE field_summary()
 
 
 
+    !$OMP PARALLEL DO PRIVATE(vol, mass, ie, ke, press) REDUCTION(+ : t_vol, t_mass, t_ie, t_ke, t_press)
     DO tile = 1, tiles_per_chunk
         CALL field_summary_kernel(chunk%tiles(tile)%t_xmin,                   &
                                   chunk%tiles(tile)%t_xmax,                   &
@@ -91,6 +94,7 @@ SUBROUTINE field_summary()
         t_ke=t_ke+ke
         t_press=t_press+press
     ENDDO
+    !$OMP END PARALLEL DO
 
 
 

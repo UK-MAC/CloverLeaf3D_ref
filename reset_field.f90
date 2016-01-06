@@ -35,7 +35,7 @@ SUBROUTINE reset_field()
   REAL(KIND=8) :: kernel_time,timer
 
   IF(profiler_on) kernel_time=timer()
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
         CALL reset_field_kernel(chunk%tiles(tile)%t_xmin,   &
@@ -56,6 +56,7 @@ SUBROUTINE reset_field()
                               chunk%tiles(tile)%field%zvel1      )
 
   ENDDO
+!$OMP END PARALLEL DO
 
 
   IF(profiler_on) profiler%reset=profiler%reset+(timer()-kernel_time)

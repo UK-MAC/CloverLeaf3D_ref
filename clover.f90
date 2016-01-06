@@ -504,13 +504,13 @@ CONTAINS
 
         IF(chunk%chunk_neighbours(chunk_left).NE.external_face) THEN
                   ! do left exchanges
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_LEFT).EQ.1) THEN
                     CALL clover_pack_left(tile, fields, depth, left_right_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send and recv messagse to the left
             CALL clover_send_recv_message_left(chunk%left_snd_buffer,                      &
@@ -522,14 +522,14 @@ CONTAINS
         ENDIF
 
         IF(chunk%chunk_neighbours(chunk_right).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_RIGHT).EQ.1) THEN
                     ! do right exchanges
                     CALL clover_pack_right(tile, fields, depth, left_right_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send message to the right
             CALL clover_send_recv_message_right(chunk%right_snd_buffer,                     &
@@ -545,7 +545,7 @@ CONTAINS
 
         !unpack in left direction
         IF(chunk%chunk_neighbours(chunk_left).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_LEFT).EQ.1) THEN
                     CALL clover_unpack_left(fields, tile, depth,                      &
@@ -553,13 +553,13 @@ CONTAINS
                         left_right_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
 
         !unpack in right direction
         IF(chunk%chunk_neighbours(chunk_right).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_RIGHT).EQ.1) THEN
                     CALL clover_unpack_right(fields, tile, depth,                     &
@@ -567,21 +567,21 @@ CONTAINS
                         left_right_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
         message_count = 0
         request = 0
 
         IF(chunk%chunk_neighbours(chunk_bottom).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_BOTTOM).EQ.1) THEN
                     ! do bottom exchanges
                     CALL clover_pack_bottom(tile, fields, depth, bottom_top_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send message downwards
             CALL clover_send_recv_message_bottom(chunk%bottom_snd_buffer,                     &
@@ -593,14 +593,14 @@ CONTAINS
         ENDIF
 
         IF(chunk%chunk_neighbours(chunk_top).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_TOP).EQ.1) THEN
                     ! do top exchanges
                     CALL clover_pack_top(tile, fields, depth, bottom_top_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send message upwards
             CALL clover_send_recv_message_top(chunk%top_snd_buffer,                           &
@@ -616,7 +616,7 @@ CONTAINS
 
         !unpack in top direction
         IF( chunk%chunk_neighbours(chunk_top).NE.external_face ) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_TOP).EQ.1) THEN
                     CALL clover_unpack_top(fields, tile, depth,                       &
@@ -624,12 +624,12 @@ CONTAINS
                         bottom_top_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
         !unpack in bottom direction
         IF(chunk%chunk_neighbours(chunk_bottom).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_BOTTOM).EQ.1) THEN
                     CALL clover_unpack_bottom(fields, tile, depth,                   &
@@ -637,21 +637,21 @@ CONTAINS
                         bottom_top_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
         message_count = 0
         request = 0
 
         IF(chunk%chunk_neighbours(chunk_back).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_BACK).EQ.1) THEN
                     ! do back exchanges
                     CALL clover_pack_back(tile, fields, depth, back_front_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send message downwards
             CALL clover_send_recv_message_back(chunk%back_snd_buffer,                        &
@@ -663,14 +663,14 @@ CONTAINS
         ENDIF
 
         IF(chunk%chunk_neighbours(chunk_front).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_FRONT).EQ.1) THEN
                     ! do top exchanges
                     CALL clover_pack_front(tile, fields, depth, back_front_offset)
                 ENDIF
             ENDDO
-            
+            !$OMP END PARALLEL DO
 
             !send message upwards
             CALL clover_send_recv_message_front(chunk%front_snd_buffer,                       &
@@ -686,7 +686,7 @@ CONTAINS
 
         !unpack in front direction
         IF( chunk%chunk_neighbours(chunk_front).NE.external_face ) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_FRONT).EQ.1) THEN
                     CALL clover_unpack_front(fields, tile, depth,                       &
@@ -694,12 +694,12 @@ CONTAINS
                         back_front_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
         !unpack in back direction
         IF(chunk%chunk_neighbours(chunk_back).NE.external_face) THEN
-            
+            !$OMP PARALLEL DO
             DO tile=1,tiles_per_chunk
                 IF(chunk%tiles(tile)%external_tile_mask(TILE_BACK).EQ.1) THEN
                     CALL clover_unpack_back(fields, tile, depth,                   &
@@ -707,7 +707,7 @@ CONTAINS
                         back_front_offset)
                 ENDIF
             ENDDO
-        
+        !$OMP END PARALLEL DO
         ENDIF
 
     END SUBROUTINE clover_exchange

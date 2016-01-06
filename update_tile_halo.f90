@@ -43,7 +43,7 @@ SUBROUTINE update_tile_halo(fields,depth)
 
 
 
-
+!$OMP PARALLEL DO PRIVATE(t_up,t_down)
 DO tile=1,tiles_per_chunk
   t_up   =chunk%tiles(tile)%tile_neighbours(TILE_TOP)
   t_down =chunk%tiles(tile)%tile_neighbours(TILE_BOTTOM)
@@ -166,11 +166,12 @@ DO tile=1,tiles_per_chunk
 
   
 END DO
+!$OMP END PARALLEL DO
 
 
 ! Update Left Right - Ghost, Real, Ghost - > Real
 
-
+!$OMP PARALLEL DO PRIVATE(t_left, t_right)
 DO tile=1,tiles_per_chunk
   t_left   =chunk%tiles(tile)%tile_neighbours(TILE_LEFT)
   t_right  =chunk%tiles(tile)%tile_neighbours(TILE_RIGHT)
@@ -293,12 +294,13 @@ DO tile=1,tiles_per_chunk
 
 
 END DO
+!$OMP END PARALLEL DO
 
 
 
 ! Update Front Back - Ghost, Real, Ghost - > Real
 
-
+!$OMP PARALLEL DO PRIVATE(t_front, t_back)
 DO tile=1,tiles_per_chunk
   t_front   =chunk%tiles(tile)%tile_neighbours(TILE_FRONT)
   t_back   =chunk%tiles(tile)%tile_neighbours(TILE_BACK)
@@ -421,6 +423,7 @@ DO tile=1,tiles_per_chunk
 
 
 END DO
+!$OMP END PARALLEL DO
 
 
 

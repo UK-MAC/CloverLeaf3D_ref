@@ -46,7 +46,7 @@ SUBROUTINE PdV(predict)
   error_condition=0 ! Not used yet due to issue with OpenA reduction
 
   IF(profiler_on) kernel_time=timer()
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
 
@@ -77,6 +77,7 @@ SUBROUTINE PdV(predict)
                       chunk%tiles(tile)%field%work_array1 )
 
   ENDDO
+!$OMP END PARALLEL DO
 
 
   CALL clover_check_error(error_condition)
@@ -88,10 +89,11 @@ SUBROUTINE PdV(predict)
 
   IF(predict)THEN
     IF(profiler_on) kernel_time=timer()
-
+!$OMP PARALLEL DO
     DO tile=1,tiles_per_chunk
       CALL ideal_gas(tile,.TRUE.)
     ENDDO
+!$OMP END PARALLEL DO
 
     IF(profiler_on) profiler%ideal_gas=profiler%ideal_gas+(timer()-kernel_time)
     fields=0

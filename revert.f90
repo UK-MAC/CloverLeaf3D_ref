@@ -31,7 +31,7 @@ SUBROUTINE revert()
   IMPLICIT NONE
 
   INTEGER :: tile
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
         CALL revert_kernel(chunk%tiles(tile)%t_xmin,   &
@@ -46,6 +46,7 @@ SUBROUTINE revert()
                          chunk%tiles(tile)%field%energy1    )
 
   ENDDO
+!$OMP END PARALLEL DO
 
 
 END SUBROUTINE revert

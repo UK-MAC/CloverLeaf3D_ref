@@ -36,7 +36,7 @@ SUBROUTINE accelerate()
 
   IF(profiler_on) kernel_time=timer()
 
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
         CALL accelerate_kernel( chunk%tiles(tile)%t_xmin,               &
@@ -62,7 +62,7 @@ SUBROUTINE accelerate()
 
 
   ENDDO
-
+!$OMP END PARALLEL DO
 
   IF(profiler_on) profiler%acceleration=profiler%acceleration+(timer()-kernel_time)
 

@@ -48,7 +48,7 @@ SUBROUTINE update_halo(fields,depth)
 
 ! Boundary Conditions
   IF(profiler_on) kernel_time=timer()
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
         CALL update_halo_kernel(chunk%tiles(tile)%t_xmin,          &
@@ -82,6 +82,7 @@ SUBROUTINE update_halo(fields,depth)
                                 depth                           )
 
   ENDDO
+!$OMP END PARALLEL DO
 
   IF(profiler_on) profiler%self_halo_exchange=profiler%self_halo_exchange+(timer()-kernel_time)
 

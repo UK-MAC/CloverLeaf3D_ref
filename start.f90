@@ -75,9 +75,11 @@ SUBROUTINE start
     CALL clover_decompose_tile(x_cells,y_cells,z_cells)
 
 
+!$OMP PARALLEL DO
     DO t=1, tiles_per_chunk
       CALL build_field(t)
     END DO
+!$OMP END PARALLEL DO
 
 
 
@@ -90,10 +92,12 @@ SUBROUTINE start
      WRITE(g_out,*) 'Generating chunks'
   ENDIF
 
+!$OMP PARALLEL DO
   DO t=1,tiles_per_chunk
       CALL initialise_chunk(t)
       CALL generate_chunk(t)
   ENDDO
+!$OMP END PARALLEL DO
 
 
   advect_x=.TRUE.
@@ -106,9 +110,11 @@ SUBROUTINE start
   profiler_on=.FALSE.
 
 
+!$OMP PARALLEL DO
   DO t = 1, tiles_per_chunk
     CALL ideal_gas(t,.FALSE.)
   END DO
+!$OMP END PARALLEL DO
 
 
   ! Prime all halo data for the first step

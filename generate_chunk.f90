@@ -21,68 +21,68 @@
 
 SUBROUTINE generate_chunk(tile)
 
-    USE clover_module
-    USE generate_chunk_kernel_module
+  USE clover_module
+  USE generate_chunk_kernel_module
 
-    IMPLICIT NONE
+  IMPLICIT NONE
 
-    INTEGER         :: tile
+  INTEGER         :: tile
 
-    INTEGER         :: state
-    REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy,state_xvel,state_yvel,state_zvel
-    REAL(KIND=8), DIMENSION(number_of_states) :: state_xmin,state_xmax,state_ymin,state_ymax,state_zmin,state_zmax,state_radius
-    INTEGER,      DIMENSION(number_of_states) :: state_geometry
+  INTEGER         :: state
+  REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy,state_xvel,state_yvel,state_zvel
+  REAL(KIND=8), DIMENSION(number_of_states) :: state_xmin,state_xmax,state_ymin,state_ymax,state_zmin,state_zmax,state_radius
+  INTEGER,      DIMENSION(number_of_states) :: state_geometry
 
-    DO state=1,number_of_states
-        state_density(state)=states(state)%density
-        state_energy(state)=states(state)%energy
-        state_xvel(state)=states(state)%xvel
-        state_yvel(state)=states(state)%yvel
-        state_zvel(state)=states(state)%zvel
-        state_xmin(state)=states(state)%xmin
-        state_xmax(state)=states(state)%xmax
-        state_ymin(state)=states(state)%ymin
-        state_ymax(state)=states(state)%ymax
-        state_zmin(state)=states(state)%zmin
-        state_zmax(state)=states(state)%zmax
-        state_radius(state)=states(state)%radius
-        state_geometry(state)=states(state)%geometry
-    ENDDO
+  DO state=1,number_of_states 
+   state_density(state)=states(state)%density
+   state_energy(state)=states(state)%energy
+   state_xvel(state)=states(state)%xvel
+   state_yvel(state)=states(state)%yvel
+   state_zvel(state)=states(state)%zvel
+   state_xmin(state)=states(state)%xmin
+   state_xmax(state)=states(state)%xmax
+   state_ymin(state)=states(state)%ymin
+   state_ymax(state)=states(state)%ymax
+   state_zmin(state)=states(state)%zmin
+   state_zmax(state)=states(state)%zmax
+   state_radius(state)=states(state)%radius
+   state_geometry(state)=states(state)%geometry
+  ENDDO
 
-    CALL generate_chunk_kernel(chunk%tiles(tile)%t_xmin,             &
-                               chunk%tiles(tile)%t_xmax,             &
-                               chunk%tiles(tile)%t_ymin,             &
-                               chunk%tiles(tile)%t_ymax,             &
-                               chunk%tiles(tile)%t_zmin,             &
-                               chunk%tiles(tile)%t_zmax,             &
-                               chunk%tiles(tile)%field%vertexx,           &
-                               chunk%tiles(tile)%field%vertexy,           &
-                               chunk%tiles(tile)%field%vertexz,           &
-                               chunk%tiles(tile)%field%cellx,             &
-                               chunk%tiles(tile)%field%celly,             &
-                               chunk%tiles(tile)%field%cellz,             &
-                               chunk%tiles(tile)%field%density0,          &
-                               chunk%tiles(tile)%field%energy0,           &
-                               chunk%tiles(tile)%field%xvel0,             &
-                               chunk%tiles(tile)%field%yvel0,             &
-                               chunk%tiles(tile)%field%zvel0,             &
-                               number_of_states,                      &
-                               state_density,                         &
-                               state_energy,                          &
-                               state_xvel,                            &
-                               state_yvel,                            &
-                               state_zvel,                            &
-                               state_xmin,                            &
-                               state_xmax,                            &
-                               state_ymin,                            &
-                               state_ymax,                            &
-                               state_zmin,                            &
-                               state_zmax,                            &
-                               state_radius,                          &
-                               state_geometry,                        &
-                               g_rect,                                &
-                               g_circ,                                &
-                               g_point)
+  CALL generate_chunk_kernel(chunk%tiles(tile)%t_xmin,             &
+                             chunk%tiles(tile)%t_xmax,             &
+                             chunk%tiles(tile)%t_ymin,             &
+                             chunk%tiles(tile)%t_ymax,             &
+                             chunk%tiles(tile)%t_zmin,             &
+                             chunk%tiles(tile)%t_zmax,             &
+                             chunk%tiles(tile)%field%vertexx,      &
+                             chunk%tiles(tile)%field%vertexy,      &
+                             chunk%tiles(tile)%field%vertexz,      &
+                             chunk%tiles(tile)%field%cellx,        &
+                             chunk%tiles(tile)%field%celly,        &
+                             chunk%tiles(tile)%field%cellz,        &
+                             chunk%tiles(tile)%field%density0,     &
+                             chunk%tiles(tile)%field%energy0,      &
+                             chunk%tiles(tile)%field%xvel0,        &
+                             chunk%tiles(tile)%field%yvel0,        &
+                             chunk%tiles(tile)%field%zvel0,        &
+                             number_of_states,                      &
+                             state_density,                         &
+                             state_energy,                          &
+                             state_xvel,                            &
+                             state_yvel,                            &
+                             state_zvel,                            &
+                             state_xmin,                            &
+                             state_xmax,                            &
+                             state_ymin,                            &
+                             state_ymax,                            &
+                             state_zmin,                            &
+                             state_zmax,                            &
+                             state_radius,                          &
+                             state_geometry,                        &
+                             g_rect,                                &
+                             g_circ,                                &
+                             g_point)
 
 
 END SUBROUTINE generate_chunk

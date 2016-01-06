@@ -46,13 +46,13 @@ SUBROUTINE initialise_chunk(tile)
 
   !write(*,*) xmin, ymin, zmin
 
-  CALL initialise_chunk_kernel(chunk%tiles(tile)%t_xmin,    &
-                               chunk%tiles(tile)%t_xmax,    &
-                               chunk%tiles(tile)%t_ymin,    &
-                               chunk%tiles(tile)%t_ymax,    &
-                               chunk%tiles(tile)%t_zmin,    &
-                               chunk%tiles(tile)%t_zmax,    &
-                               xmin,ymin,zmin,dx,dy,dz,      &
+  CALL initialise_chunk_kernel(chunk%tiles(tile)%t_xmin,         &
+                               chunk%tiles(tile)%t_xmax,         &
+                               chunk%tiles(tile)%t_ymin,         &
+                               chunk%tiles(tile)%t_ymax,         &
+                               chunk%tiles(tile)%t_zmin,         &
+                               chunk%tiles(tile)%t_zmax,         &
+                               xmin,ymin,zmin,dx,dy,dz,          &
                                chunk%tiles(tile)%field%vertexx,  &
                                chunk%tiles(tile)%field%vertexdx, &
                                chunk%tiles(tile)%field%vertexy,  &

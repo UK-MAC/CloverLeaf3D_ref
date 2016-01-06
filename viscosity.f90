@@ -33,7 +33,7 @@ SUBROUTINE viscosity()
 
   INTEGER :: tile
 
-
+!$OMP PARALLEL DO
   DO tile=1,tiles_per_chunk
 
         CALL viscosity_kernel(chunk%tiles(tile)%t_xmin,                   &
@@ -56,6 +56,7 @@ SUBROUTINE viscosity()
                             chunk%tiles(tile)%field%zvel0                      )
 
   ENDDO
+!$OMP END PARALLEL DO
 
 
 END SUBROUTINE viscosity
