@@ -82,20 +82,28 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   INTEGER :: upwind,donor,downwind,dif
   REAL(KIND=8) :: sigma,wind,width
   REAL(KIND=8) :: vdiffuw,vdiffdw,auw,adw,limiter
-  REAL(KIND=8) :: vdiffuw2,vdiffdw2,auw2,limiter2, advec_vel_s
+  REAL(KIND=8) :: vdiffuw2,vdiffdw2,auw2,limiter2,advec_vel_s
 
   ! Choose the correct velocity, ideally, remove this pointer
   !  if it affects performance.
   ! Leave this one in as a test of performance
 
-!$OMP PARALLEL
+!$ACC DATA          &
+!$ACC PRESENT(vel1)    &
+!$ACC PRESENT(volume,mass_flux_x,mass_flux_y,mass_flux_z,vol_flux_x,vol_flux_y,vol_flux_z,density1,celldx,celldy,celldz) &
+!$ACC PRESENT(mom_flux,node_flux,node_mass_post,node_mass_pre,post_vol,pre_vol)
+
+!$ACC KERNELS
 
 ! I think these only have to be done once per cell advection sweep. So put in some logic so they are just done the first time
 
   IF(sweep_number.EQ.1.AND.direction.EQ.1)THEN ! x first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)= volume(j,k,l)+vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
                                         +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
@@ -103,11 +111,14 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(sweep_number.EQ.1.AND.direction.EQ.3)THEN ! z first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)= volume(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
                                         +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
@@ -115,58 +126,73 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(sweep_number.EQ.2.AND.advect_x)THEN ! x first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)=volume(j,k,l) +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
           pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(sweep_number.EQ.2.AND..NOT.advect_x)THEN ! Z first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)=volume(j,k,l) +vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
           pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(sweep_number.EQ.3.AND.direction.EQ.1)THEN ! z first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)=volume(j,k,l)
           pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(sweep_number.EQ.3.AND.direction.EQ.3)THEN ! x first
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
         DO j=x_min-2,x_max+2
           post_vol(j,k,l)=volume(j,k,l)
           pre_vol(j,k,l)=post_vol(j,k,l)+vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ENDIF
 
   IF(direction.EQ.1)THEN
     IF(which_vel.EQ.1) THEN
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min-2,x_max+2
             ! Find staggered mesh mass fluxes, nodal masses and volumes.
             node_flux(j,k,l)=0.125_8*(mass_flux_x(j  ,k-1,l  )+mass_flux_x(j  ,k,l  )  &
@@ -176,11 +202,14 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
 !And do I need to calc the node mass for all 3 directions, or just once?
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min-1,x_max+2
             ! Staggered cell mass post advection
             node_mass_post(j,k,l)=0.125_8*(density1(j  ,k-1,l  )*post_vol(j  ,k-1,l  )                   &
@@ -194,22 +223,28 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min-1,x_max+2
             ! Staggered cell mass pre advection
             node_mass_pre(j,k,l)=node_mass_post(j,k,l)-node_flux(j-1,k,l)+node_flux(j,k,l)
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
     ENDIF
 
-!$OMP DO PRIVATE(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind)
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,advec_vel_s)
         DO j=x_min-1,x_max+1
           IF(node_flux(j,k,l).LT.0.0)THEN
             upwind=j+2
@@ -239,22 +274,28 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max+1
           vel1 (j,k,l)=(vel1 (j,k,l)*node_mass_pre(j,k,l)+mom_flux(j-1,k,l)-mom_flux(j,k,l))/node_mass_post(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(direction.EQ.2)THEN
     IF(which_vel.EQ.1)THEN
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             ! Find staggered mesh mass fluxes and nodal masses and volumes.
             node_flux(j,k,l)=0.125_8*(mass_flux_y(j-1,k  ,l  )+mass_flux_y(j  ,k  ,l  ) &
@@ -264,10 +305,13 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min-1,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             node_mass_post(j,k,l)=0.125_8*(density1(j  ,k-1,l  )*post_vol(j  ,k-1,l  )                     &
                                           +density1(j  ,k  ,l  )*post_vol(j  ,k  ,l  )                     &
@@ -280,20 +324,26 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
         DO k=y_min-1,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             node_mass_pre(j,k,l)=node_mass_post(j,k,l)-node_flux(j,k-1,l)+node_flux(j,k,l)
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
     ENDIF
-!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind)
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min-1,y_max+1
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,donor,downwind,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,advec_vel_s)
         DO j=x_min,x_max+1
           IF(node_flux(j,k,l).LT.0.0)THEN
             upwind=k+2
@@ -324,22 +374,28 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
  
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max+1
           vel1 (j,k,l)=(vel1(j,k,l)*node_mass_pre(j,k,l)+mom_flux(j,k-1,l)-mom_flux(j,k,l))/node_mass_post(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ELSEIF(direction.EQ.3)THEN
     IF(which_vel.EQ.1) THEN
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             ! Find staggered mesh mass fluxes and nodal masses and volumes.
             node_flux(j,k,l)=0.125_8*(mass_flux_z(j-1,k  ,l  )+mass_flux_z(j  ,k  ,l  ) &
@@ -349,10 +405,13 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min-1,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             node_mass_post(j,k,l)=0.125_8*(density1(j  ,k-1,l  )*post_vol(j  ,k-1,l  )                     &
                                           +density1(j  ,k  ,l  )*post_vol(j  ,k  ,l  )                     &
@@ -365,21 +424,27 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
       DO l=z_min-1,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
           DO j=x_min,x_max+1
             ! Staggered cell mass pre advection
             node_mass_pre(j,k,l)=node_mass_post(j,k,l)-node_flux(j,k,l-1)+node_flux(j,k,l)
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
     ENDIF
-!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind)
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-1,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,donor,downwind,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,advec_vel_s)
         DO j=x_min,x_max+1
           IF(node_flux(j,k,l).LT.0.0)THEN
             upwind=l+2
@@ -410,20 +475,25 @@ SUBROUTINE advec_mom_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
  
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max+1
           vel1 (j,k,l)=(vel1(j,k,l)*node_mass_pre(j,k,l)+mom_flux(j,k,l-1)-mom_flux(j,k,l))/node_mass_post(j,k,l)
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
   ENDIF
 
-!$OMP END PARALLEL
+!$ACC END KERNELS
+
+!$ACC END DATA
 
 END SUBROUTINE advec_mom_kernel
 

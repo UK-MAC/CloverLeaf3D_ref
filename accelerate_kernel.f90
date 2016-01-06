@@ -55,11 +55,17 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
   INTEGER               :: j,k,l
   REAL(KIND=8)          :: nodal_mass, stepbymass_s, xvel1_s, yvel1_s, zvel1_s
 
-!$OMP PARALLEL
+!$ACC DATA &
+!$ACC PRESENT(density0,volume,pressure,viscosity,xarea,yarea,zarea,xvel0,yvel0,zvel0)&
+!$ACC PRESENT(xvel1,yvel1,zvel1)
 
-!$OMP DO PRIVATE(nodal_mass, stepbymass_s, xvel1_s, yvel1_s, zvel1_s)
+!$ACC KERNELS
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min,z_max+1
+!$ACC LOOP INDEPENDENT
     DO k=y_min,y_max+1
+!$ACC LOOP INDEPENDENT PRIVATE(j,k,l,nodal_mass, stepbymass_s, xvel1_s, yvel1_s, zvel1_s)
       DO j=x_min,x_max+1
 
         nodal_mass=(density0(j-1,k-1,l  )*volume(j-1,k-1,l  )  &
@@ -107,10 +113,10 @@ SUBROUTINE accelerate_kernel(x_min,x_max,y_min,y_max,z_min,z_max,dt,     &
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
+!$ACC END KERNELS
+!$ACC WAIT
 
-
-!$OMP END PARALLEL
+!$ACC END DATA
 
 END SUBROUTINE accelerate_kernel
 

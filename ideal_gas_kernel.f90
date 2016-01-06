@@ -42,10 +42,16 @@ SUBROUTINE ideal_gas_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
 
   REAL(KIND=8) :: sound_speed_squared,v,pressurebyenergy,pressurebyvolume
 
-!$OMP PARALLEL
-!$OMP DO PRIVATE(v,pressurebyenergy,pressurebyvolume,sound_speed_squared)
+!$ACC DATA &
+!$ACC PRESENT(density, energy, pressure, soundspeed)
+
+!$ACC KERNELS
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
     DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(v,pressurebyenergy,pressurebyvolume,sound_speed_squared)
       DO j=x_min,x_max
         v=1.0_8/density(j,k,l)
         pressure(j,k,l)=(1.4_8-1.0_8)*density(j,k,l)*energy(j,k,l)
@@ -56,8 +62,9 @@ SUBROUTINE ideal_gas_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP END PARALLEL
+
+!$ACC END KERNELS
+!$ACC END DATA
 
 END SUBROUTINE ideal_gas_kernel
 

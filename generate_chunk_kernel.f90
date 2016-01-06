@@ -93,63 +93,88 @@ SUBROUTINE generate_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
 
   ! State 1 is always the background state
 
-!$OMP PARALLEL SHARED(x_cent,y_cent)
-!$OMP DO
+!$ACC DATA &
+!$ACC PRESENT(energy0, density0, xvel0, yvel0, zvel0)
+
+
+!$ACC KERNELS
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
     DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
       DO j=x_min-2,x_max+2
         energy0(j,k,l)=state_energy(1)
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
     DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
       DO j=x_min-2,x_max+2
         density0(j,k,l)=state_density(1)
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
     DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
       DO j=x_min-2,x_max+2
         xvel0(j,k,l)=state_xvel(1)
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
     DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
       DO j=x_min-2,x_max+2
         yvel0(j,k,l)=state_yvel(1)
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP DO
+
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
     DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
       DO j=x_min-2,x_max+2
         zvel0(j,k,l)=state_zvel(1)
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
+
+!$ACC END KERNELS
 
   DO state=2,number_of_states
+
+!$ACC KERNELS
 
 ! Could the velocity setting be thread unsafe?
     x_cent=state_xmin(state)
     y_cent=state_ymin(state)
     z_cent=state_zmin(state)
 
-!$OMP DO PRIVATE(radius,jt,kt,lt)
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT PRIVATE(radius,jt,kt,lt)
         DO j=x_min-2,x_max+2
           IF(state_geometry(state).EQ.g_rect ) THEN
             IF(vertexx(j+1).GE.state_xmin(state).AND.vertexx(j).LT.state_xmax(state)) THEN
@@ -202,11 +227,12 @@ SUBROUTINE generate_chunk_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
+!$ACC END KERNELS
 
   ENDDO
 
-!$OMP END PARALLEL
+!$ACC END DATA
 
 END SUBROUTINE generate_chunk_kernel
 

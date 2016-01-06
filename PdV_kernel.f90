@@ -69,14 +69,23 @@ SUBROUTINE PdV_kernel(predict,                                          &
   REAL(KIND=8)  :: recip_volume,energy_change,min_cell_volume
   REAL(KIND=8)  :: right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux
 
-!$OMP PARALLEL
+!$ACC DATA &
+!$ACC PRESENT(density0,energy0,pressure,viscosity,volume,xarea) &
+!$ACC PRESENT(xvel0,yarea,yvel0,zarea,zvel0) &
+!$ACC PRESENT(density1,energy1) &
+!$ACC PRESENT(xvel1,yvel1,zvel1) &
+!$ACC PRESENT(volume_change)
 
   IF(predict)THEN
 
-!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
-!$OMP            energy_change,recip_volume)
+!$ACC KERNELS
+
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, energy_change,recip_volume)
         DO j=x_min,x_max
 
           left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1)   &
@@ -117,14 +126,19 @@ SUBROUTINE PdV_kernel(predict,                                          &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
+!$ACC END KERNELS
 
   ELSE
 
-!$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
-!$OMP            energy_change,recip_volume)
+!$ACC KERNELS
+
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume,energy_change,recip_volume)
         DO j=x_min,x_max
 
           left_flux=  (xarea(j  ,k  ,l  )*(xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1)   &
@@ -165,11 +179,14 @@ SUBROUTINE PdV_kernel(predict,                                          &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
+
+!$ACC END KERNELS
 
   ENDIF
 
-!$OMP END PARALLEL
+
+!$ACC END DATA
+
 
 END SUBROUTINE PdV_kernel
 

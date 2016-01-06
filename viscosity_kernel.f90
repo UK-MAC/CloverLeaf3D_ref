@@ -61,15 +61,21 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
   REAL(KIND=8)  :: grad2,pgradx,pgrady,pgradz,pgradx2,pgrady2,pgradz2,grad     &
                   ,ygrad,pgrad,xgrad,zgrad,div,limiter
 
-!$OMP PARALLEL
+!$ACC DATA &
+!$ACC PRESENT(density0,pressure,viscosity,xvel0,yvel0,zvel0, xarea, yarea, zarea, celldx, celldy, celldz)
 
-!$OMP DO PRIVATE(ugradx1,ugradx2,vgrady1,vgrady2,wgradz1,wgradz2,div,                     &
-!$OMP            ugrady1,ugrady2,vgradx1,vgradx2,wgradx1,wgradx2,                         &
-!$OMP            ugradz1,ugradz2,vgradz1,vgradz2,wgrady1,wgrady2,                         &
-!$OMP            pgradx,pgrady,pgradz,pgradx2,pgrady2,pgradz2,limiter,                    &
-!$OMP            pgrad,xgrad,ygrad,zgrad,grad,grad2,xx,yy,zz,xy,xz,yz)
+!$ACC KERNELS
+
+
+!$ACC LOOP INDEPENDENT
   DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
     DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(ugradx1,ugradx2,vgrady1,vgrady2,wgradz1,wgradz2,div) &
+!$ACC PRIVATE(ugrady1,ugrady2,vgradx1,vgradx2,wgradx1,wgradx2) &
+!$ACC PRIVATE(ugradz1,ugradz2,vgradz1,vgradz2,wgrady1,wgrady2) &
+!$ACC PRIVATE(pgradx,pgrady,pgradz,pgradx2,pgrady2,pgradz2,limiter) &
+!$ACC PRIVATE(pgrad,xgrad,ygrad,zgrad,grad,grad2,xx,yy,zz,xy,xz,yz)
       DO j=x_min,x_max
         ugradx1=xvel0(j  ,k  ,l  )+xvel0(j  ,k+1,l  )+xvel0(j  ,k  ,l+1)+xvel0(j  ,k+1,l+1)
         ugradx2=xvel0(j+1,k  ,l  )+xvel0(j+1,k+1,l  )+xvel0(j+1,k  ,l+1)+xvel0(j+1,k+1,l+1)
@@ -132,9 +138,10 @@ SUBROUTINE viscosity_kernel(x_min,x_max,y_min,y_max,z_min,z_max,    &
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
 
-!$OMP END PARALLEL
+!$ACC END KERNELS
+
+!$ACC END DATA
 
 END SUBROUTINE viscosity_kernel
 

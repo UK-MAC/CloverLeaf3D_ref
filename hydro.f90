@@ -43,6 +43,63 @@ SUBROUTINE hydro
 
   timerstart = timer()
 
+   !$ACC DATA &
+    !$ACC COPYIN(chunk%tiles(1)%field%density0)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%density1)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%energy0)    &
+    !$ACC COPYIN(chunk%tiles(1)%field%energy1)    &
+    !$ACC COPYIN(chunk%tiles(1)%field%pressure)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%soundspeed) &
+    !$ACC COPYIN(chunk%tiles(1)%field%viscosity)  &
+    !$ACC COPYIN(chunk%tiles(1)%field%xvel0)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%yvel0)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%zvel0)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%xvel1)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%yvel1)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%zvel1)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%vol_flux_x) &
+    !$ACC COPYIN(chunk%tiles(1)%field%vol_flux_y) &
+    !$ACC COPYIN(chunk%tiles(1)%field%vol_flux_z) &
+    !$ACC COPYIN(chunk%tiles(1)%field%mass_flux_x)&
+    !$ACC COPYIN(chunk%tiles(1)%field%mass_flux_y)&
+    !$ACC COPYIN(chunk%tiles(1)%field%mass_flux_z)&
+    !$ACC COPYIN(chunk%tiles(1)%field%volume)     &
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array1)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array2)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array3)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array4)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array5)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array6)&
+    !$ACC COPYIN(chunk%tiles(1)%field%work_array7)&
+    !$ACC COPYIN(chunk%tiles(1)%field%cellx)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%celly)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%cellz)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%celldx)     &
+    !$ACC COPYIN(chunk%tiles(1)%field%celldy)     &
+    !$ACC COPYIN(chunk%tiles(1)%field%celldz)     &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexx)    &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexdx)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexy)    &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexdy)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexz)    &
+    !$ACC COPYIN(chunk%tiles(1)%field%vertexdz)   &
+    !$ACC COPYIN(chunk%tiles(1)%field%xarea)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%yarea)      &
+    !$ACC COPYIN(chunk%tiles(1)%field%zarea)      &
+    !$ACC COPY(chunk%left_snd_buffer)    &
+    !$ACC COPY(chunk%left_rcv_buffer)    &
+    !$ACC COPY(chunk%right_snd_buffer)   &
+    !$ACC COPY(chunk%right_rcv_buffer)   &
+    !$ACC COPY(chunk%bottom_snd_buffer)  &
+    !$ACC COPY(chunk%bottom_rcv_buffer)  &
+    !$ACC COPY(chunk%top_snd_buffer)     &
+    !$ACC COPY(chunk%top_rcv_buffer)   &
+    !$ACC COPY(chunk%back_snd_buffer)  &
+    !$ACC COPY(chunk%back_rcv_buffer)  &
+    !$ACC COPY(chunk%front_snd_buffer)     &
+    !$ACC COPY(chunk%front_rcv_buffer)
+
+
   DO
 
     step_time = timer()
@@ -190,5 +247,6 @@ SUBROUTINE hydro
      END IF
 
   END DO
+!$ACC END DATA
 
 END SUBROUTINE hydro

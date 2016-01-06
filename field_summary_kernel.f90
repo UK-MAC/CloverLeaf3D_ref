@@ -52,10 +52,15 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   ke=0.0
   press=0.0
 
-!$OMP PARALLEL
-!$OMP DO PRIVATE(vsqrd,cell_vol,cell_mass,j,k,jv,kv,lv) REDUCTION(+ : vol,mass,press,ie,ke)
+!$ACC DATA &
+!$ACC PRESENT(volume,density0,energy0,pressure,xvel0,yvel0)
+!$ACC KERNELS
+
+!$ACC LOOP INDEPENDENT REDUCTION(+:vol) REDUCTION(+:mass) REDUCTION(+:press) REDUCTION(+:ie) REDUCTION(+:ke)
   DO l=z_min,z_max
+  !$ACC LOOP INDEPENDENT REDUCTION(+:vol) REDUCTION(+:mass) REDUCTION(+:press) REDUCTION(+:ie) REDUCTION(+:ke)
     DO k=y_min,y_max
+    !$ACC LOOP INDEPENDENT REDUCTION(+:vol) REDUCTION(+:mass) REDUCTION(+:press) REDUCTION(+:ie) REDUCTION(+:ke), private(vsqrd,cell_vol,cell_mass,jv,kv)
       DO j=x_min,x_max
         vsqrd=0.0
         DO lv=l,l+1
@@ -75,8 +80,10 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
       ENDDO
     ENDDO
   ENDDO
-!$OMP END DO
-!$OMP END PARALLEL
+
+!$ACC END KERNELS
+
+!$ACC END DATA
 
 END SUBROUTINE field_summary_kernel
 

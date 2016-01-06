@@ -90,14 +90,22 @@ SUBROUTINE advec_cell_kernel(x_min,       &
   REAL(KIND=8) :: diffuw,diffdw,limiter
   REAL(KIND=8) :: one_by_six=1.0_8/6.0_8
 
-!$OMP PARALLEL
+!$ACC DATA &
+!$ACC PRESENT(density1,energy1) &
+!$ACC PRESENT(vol_flux_x,vol_flux_y,vol_flux_z,volume,mass_flux_x,mass_flux_y,mass_flux_z) &
+!$ACC PRESENT(vertexdx,vertexdy,vertexdz,pre_vol,post_vol,ener_flux) &
+!$ACC PRESENT(pre_mass, post_mass, advec_vol,post_ener)
+
+!$ACC KERNELS
 
   IF(dir.EQ.g_xdir) THEN
 
     IF(sweep_number.EQ.1)THEN
-!$OMP DO
+!$ACC LOOP INDEPENDENT
       DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min-2,x_max+2
             pre_vol(j,k,l)=volume(j,k,l)  +(vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
                                            +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
@@ -106,24 +114,27 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           ENDDO
         ENDDO
       ENDDO 
-!$OMP END DO
+
     ELSEIF(sweep_number.EQ.3) THEN
-!$OMP DO
+!$ACC LOOP INDEPENDENT
       DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min-2,x_max+2
             pre_vol(j,k,l) =volume(j,k,l)+vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
             post_vol(j,k,l)=volume(j,k,l)
           ENDDO
         ENDDO
       ENDDO 
-!$OMP END DO
     ENDIF
 
-!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
-!$OMP            diffuw,diffdw,limiter)
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam,diffuw,diffdw,limiter)
         DO j=x_min,x_max+2
 
           IF(vol_flux_x(j,k,l).GT.0.0)THEN
@@ -169,11 +180,13 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max
           pre_mass(j,k,l)=density1(j,k,l)*pre_vol(j,k,l)
           post_mass(j,k,l)=pre_mass(j,k,l)+mass_flux_x(j,k,l)-mass_flux_x(j+1,k,l)
@@ -184,14 +197,16 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
   ELSEIF(dir.EQ.g_ydir) THEN
     IF(sweep_number.EQ.2) THEN
       IF(advect_x) THEN
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
         DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
           DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
             DO j=x_min-2,x_max+2
               pre_vol(j,k,l) =volume(j,k,l)  +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
                                              +vol_flux_z(j  ,k  ,l+1)-vol_flux_z(j,k,l)
@@ -199,11 +214,13 @@ SUBROUTINE advec_cell_kernel(x_min,       &
             ENDDO
           ENDDO
         ENDDO
-!$OMP END DO
+
       ELSE
-!$OMP DO
+!$ACC LOOP INDEPENDENT
         DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
           DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
             DO j=x_min-2,x_max+2
               pre_vol(j,k,l) =volume(j,k,l)  +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
                                              +vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l)
@@ -211,14 +228,15 @@ SUBROUTINE advec_cell_kernel(x_min,       &
             ENDDO
           ENDDO
         ENDDO
-!$OMP END DO
+
       ENDIF
     ENDIF
 
-!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
-!$OMP            diffuw,diffdw,limiter)
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max+2
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, diffuw,diffdw,limiter)
         DO j=x_min,x_max
 
           IF(vol_flux_y(j,k,l).GT.0.0)THEN
@@ -264,11 +282,13 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max
           pre_mass(j,k,l)=density1(j,k,l)*pre_vol(j,k,l)
           post_mass(j,k,l)=pre_mass(j,k,l)+mass_flux_y(j,k,l)-mass_flux_y(j,k+1,l)
@@ -279,15 +299,16 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
 
   ELSEIF(dir.EQ.g_zdir) THEN
 
     IF(sweep_number.EQ.1)THEN
-!$OMP DO
+!$ACC LOOP INDEPENDENT
       DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min-2,x_max+2
             pre_vol(j,k,l)=  volume(j,k,l)+(vol_flux_x(j+1,k  ,l  )-vol_flux_x(j,k,l) &
                                            +vol_flux_y(j  ,k+1,l  )-vol_flux_y(j,k,l) &
@@ -296,24 +317,27 @@ SUBROUTINE advec_cell_kernel(x_min,       &
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
     ELSEIF(sweep_number.EQ.3) THEN
-!$OMP DO
+!$ACC LOOP INDEPENDENT
       DO l=z_min-2,z_max+2
+!$ACC LOOP INDEPENDENT
         DO k=y_min-2,y_max+2
+!$ACC LOOP INDEPENDENT
           DO j=x_min-2,x_max+2
             pre_vol(j,k,l)= volume(j,k,l)+vol_flux_z(j  ,k,l+1)-vol_flux_z(j,k,l)
             post_vol(j,k,l)=volume(j,k,l)
           ENDDO
         ENDDO
       ENDDO
-!$OMP END DO
+
     ENDIF
 
-!$OMP DO PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, &
-!$OMP            diffuw,diffdw,limiter)
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max+2
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT PRIVATE(upwind,donor,downwind,dif,sigmat,sigma3,sigma4,sigmav,sigma,sigmam, diffuw,diffdw,limiter)
         DO j=x_min,x_max
 
           IF(vol_flux_z(j,k,l).GT.0.0)THEN
@@ -359,11 +383,13 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
-!$OMP DO
+
+!$ACC LOOP INDEPENDENT
     DO l=z_min,z_max
+!$ACC LOOP INDEPENDENT
       DO k=y_min,y_max
+!$ACC LOOP INDEPENDENT
         DO j=x_min,x_max
           pre_mass(j,k,l)=density1(j,k,l)*pre_vol(j,k,l)
           post_mass(j,k,l)=pre_mass(j,k,l)+mass_flux_z(j,k,l)-mass_flux_z(j,k,l+1)
@@ -374,11 +400,12 @@ SUBROUTINE advec_cell_kernel(x_min,       &
         ENDDO
       ENDDO
     ENDDO
-!$OMP END DO
 
   ENDIF
 
-!$OMP END PARALLEL
+!$ACC END KERNELS
+
+!$ACC END DATA
 
 END SUBROUTINE advec_cell_kernel
 

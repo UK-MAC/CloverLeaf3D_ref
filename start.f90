@@ -90,6 +90,64 @@ SUBROUTINE start
      WRITE(g_out,*) 'Generating chunks'
   ENDIF
 
+
+  !$ACC DATA &
+    !$ACC COPY(chunk%tiles(1)%field%density0)   &
+    !$ACC COPY(chunk%tiles(1)%field%density1)   &
+    !$ACC COPY(chunk%tiles(1)%field%energy0)    &
+    !$ACC COPY(chunk%tiles(1)%field%energy1)    &
+    !$ACC COPY(chunk%tiles(1)%field%pressure)   &
+    !$ACC COPY(chunk%tiles(1)%field%soundspeed) &
+    !$ACC COPY(chunk%tiles(1)%field%viscosity)  &
+    !$ACC COPY(chunk%tiles(1)%field%xvel0)      &
+    !$ACC COPY(chunk%tiles(1)%field%yvel0)      &
+    !$ACC COPY(chunk%tiles(1)%field%zvel0)      &
+    !$ACC COPY(chunk%tiles(1)%field%xvel1)      &
+    !$ACC COPY(chunk%tiles(1)%field%yvel1)      &
+    !$ACC COPY(chunk%tiles(1)%field%zvel1)      &
+    !$ACC COPY(chunk%tiles(1)%field%vol_flux_x) &
+    !$ACC COPY(chunk%tiles(1)%field%vol_flux_y) &
+    !$ACC COPY(chunk%tiles(1)%field%vol_flux_z) &
+    !$ACC COPY(chunk%tiles(1)%field%mass_flux_x)&
+    !$ACC COPY(chunk%tiles(1)%field%mass_flux_y)&
+    !$ACC COPY(chunk%tiles(1)%field%mass_flux_z)&
+    !$ACC COPY(chunk%tiles(1)%field%volume)     &
+    !$ACC COPY(chunk%tiles(1)%field%work_array1)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array2)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array3)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array4)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array5)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array6)&
+    !$ACC COPY(chunk%tiles(1)%field%work_array7)&
+    !$ACC COPY(chunk%tiles(1)%field%cellx)      &
+    !$ACC COPY(chunk%tiles(1)%field%celly)      &
+    !$ACC COPY(chunk%tiles(1)%field%cellz)      &
+    !$ACC COPY(chunk%tiles(1)%field%celldx)     &
+    !$ACC COPY(chunk%tiles(1)%field%celldy)     &
+    !$ACC COPY(chunk%tiles(1)%field%celldz)     &
+    !$ACC COPY(chunk%tiles(1)%field%vertexx)    &
+    !$ACC COPY(chunk%tiles(1)%field%vertexdx)   &
+    !$ACC COPY(chunk%tiles(1)%field%vertexy)    &
+    !$ACC COPY(chunk%tiles(1)%field%vertexdy)   &
+    !$ACC COPY(chunk%tiles(1)%field%vertexz)    &
+    !$ACC COPY(chunk%tiles(1)%field%vertexdz)   &
+    !$ACC COPY(chunk%tiles(1)%field%xarea)      &
+    !$ACC COPY(chunk%tiles(1)%field%yarea)      &
+    !$ACC COPY(chunk%tiles(1)%field%zarea)      &
+    !$ACC COPY(chunk%left_snd_buffer)    &
+    !$ACC COPY(chunk%left_rcv_buffer)    &
+    !$ACC COPY(chunk%right_snd_buffer)   &
+    !$ACC COPY(chunk%right_rcv_buffer)   &
+    !$ACC COPY(chunk%bottom_snd_buffer)  &
+    !$ACC COPY(chunk%bottom_rcv_buffer)  &
+    !$ACC COPY(chunk%top_snd_buffer)     &
+    !$ACC COPY(chunk%top_rcv_buffer)   &
+    !$ACC COPY(chunk%back_snd_buffer)  &
+    !$ACC COPY(chunk%back_rcv_buffer)  &
+    !$ACC COPY(chunk%front_snd_buffer)     &
+    !$ACC COPY(chunk%front_rcv_buffer)
+
+
   DO t=1,tiles_per_chunk
       CALL initialise_chunk(t)
       CALL generate_chunk(t)
@@ -136,6 +194,8 @@ SUBROUTINE start
   CALL field_summary()
 
   IF(visit_frequency.NE.0) CALL visit()
+
+!$ACC END DATA
 
   CALL clover_barrier
 

@@ -26,114 +26,109 @@
 
 SUBROUTINE field_summary()
 
-    USE clover_module
-    USE ideal_gas_module
-    USE field_summary_kernel_module
+  USE clover_module
+  USE ideal_gas_module
+  USE field_summary_kernel_module
 
-    IMPLICIT NONE
+  IMPLICIT NONE
 
-    REAL(KIND=8) :: vol,mass,ie,ke,press
-    REAL(KIND=8) :: qa_diff
-    REAL(KIND=8) :: t_vol,t_mass,t_ie,t_ke,t_press
-
-    !$ INTEGER :: OMP_GET_THREAD_NUM
-
-    INTEGER      :: tile
-
-    REAL(KIND=8) :: kernel_time,timer
-
-    IF(parallel%boss)THEN
-        WRITE(g_out,*)
-        WRITE(g_out,*) 'Time ',time
-        WRITE(g_out,'(a13,7a16)')'           ','Volume','Mass','Density','Pressure','Internal Energy','Kinetic Energy','Total Energy'
-    ENDIF
-
-    IF(profiler_on) kernel_time=timer()
+  REAL(KIND=8) :: vol,mass,ie,ke,press
+  REAL(KIND=8) :: qa_diff
+  REAL(KIND=8) :: t_vol,t_mass,t_ie,t_ke,t_press
 
 
+  INTEGER      :: tile
 
-    DO tile = 1, tiles_per_chunk
-        CALL ideal_gas(tile,.FALSE.)
-    ENDDO
+  REAL(KIND=8) :: kernel_time,timer
+
+  IF(parallel%boss)THEN
+    WRITE(g_out,*)
+    WRITE(g_out,*) 'Time ',time
+    WRITE(g_out,'(a13,7a16)')'           ','Volume','Mass','Density','Pressure','Internal Energy','Kinetic Energy','Total Energy'
+  ENDIF
+
+  IF(profiler_on) kernel_time=timer()
 
 
 
-    IF(profiler_on) profiler%ideal_gas=profiler%ideal_gas+(timer()-kernel_time)
-
-    IF(profiler_on) kernel_time=timer()
-
-    t_vol=0.0
-    t_mass=0.0
-    t_ie=0.0
-    t_ke=0.0
-    t_press=0.0
+  DO tile = 1, tiles_per_chunk
+    CALL ideal_gas(tile,.FALSE.)
+  ENDDO
 
 
 
-    DO tile = 1, tiles_per_chunk
-        CALL field_summary_kernel(chunk%tiles(tile)%t_xmin,                   &
-                                  chunk%tiles(tile)%t_xmax,                   &
-                                  chunk%tiles(tile)%t_ymin,                   &
-                                  chunk%tiles(tile)%t_ymax,                   &
-                                  chunk%tiles(tile)%t_zmin,                   &
-                                  chunk%tiles(tile)%t_zmax,                   &
-                                  chunk%tiles(tile)%field%volume,             &
-                                  chunk%tiles(tile)%field%density0,           &
-                                  chunk%tiles(tile)%field%energy0,            &
-                                  chunk%tiles(tile)%field%pressure,           &
-                                  chunk%tiles(tile)%field%xvel0,              &
-                                  chunk%tiles(tile)%field%yvel0,              &
-                                  chunk%tiles(tile)%field%zvel0,              &
-                                  vol,mass,ie,ke,press                        )
-        t_vol=t_vol+vol
-        t_mass=t_mass+mass
-        t_ie=t_ie+ie
-        t_ke=t_ke+ke
-        t_press=t_press+press
-    ENDDO
+  IF(profiler_on) profiler%ideal_gas=profiler%ideal_gas+(timer()-kernel_time)
+
+  IF(profiler_on) kernel_time=timer()
+
+  t_vol=0.0
+  t_mass=0.0
+  t_ie=0.0
+  t_ke=0.0
+  t_press=0.0
 
 
 
-    vol=t_vol
-    mass=t_mass
-    ie=t_ie
-    ke=t_ke
-    press=t_press
+  DO tile = 1, tiles_per_chunk
+      CALL field_summary_kernel(chunk%tiles(tile)%t_xmin,                   &
+                                chunk%tiles(tile)%t_xmax,                   &
+                                chunk%tiles(tile)%t_ymin,                   &
+                                chunk%tiles(tile)%t_ymax,                   &
+                                chunk%tiles(tile)%t_zmin,                   &
+                                chunk%tiles(tile)%t_zmax,                   &
+                                chunk%tiles(tile)%field%volume,             &
+                                chunk%tiles(tile)%field%density0,           &
+                                chunk%tiles(tile)%field%energy0,            &
+                                chunk%tiles(tile)%field%pressure,           &
+                                chunk%tiles(tile)%field%xvel0,              &
+                                chunk%tiles(tile)%field%yvel0,              &
+                                chunk%tiles(tile)%field%zvel0,              &
+                                vol,mass,ie,ke,press                        )
+     t_vol=t_vol+vol
+     t_mass=t_mass+mass
+     t_ie=t_ie+ie
+     t_ke=t_ke+ke
+     t_press=t_press+press
+  ENDDO
 
-    ! For mpi I need a reduction here
-    CALL clover_sum(vol)
-    CALL clover_sum(mass)
-    CALL clover_sum(press)
-    CALL clover_sum(ie)
-    CALL clover_sum(ke)
-    IF(profiler_on) profiler%summary=profiler%summary+(timer()-kernel_time)
 
+
+  vol=t_vol
+  mass=t_mass
+  ie=t_ie
+  ke=t_ke
+  press=t_press
+
+  ! For mpi I need a reduction here
+  CALL clover_sum(vol)
+  CALL clover_sum(mass)
+  CALL clover_sum(press)
+  CALL clover_sum(ie)
+  CALL clover_sum(ke)
+  IF(profiler_on) profiler%summary=profiler%summary+(timer()-kernel_time)
+
+  IF(parallel%boss) THEN
+      WRITE(g_out,'(a6,i7,7e16.8)')' step:',step,vol,mass,mass/vol,press/vol,ie,ke,ie+ke
+      WRITE(g_out,*)
+   ENDIF
+
+  !Check if this is the final call and if it is a test problem, check the result.
+  IF(complete) THEN
     IF(parallel%boss) THEN
-        !$  IF(OMP_GET_THREAD_NUM().EQ.0) THEN
-        WRITE(g_out,'(a6,i7,7e16.8)')' step:',step,vol,mass,mass/vol,press/vol,ie,ke,ie+ke
-        WRITE(g_out,*)
-    !$  ENDIF
-    ENDIF
-
-    !Check if this is the final call and if it is a test problem, check the result.
-    IF(complete) THEN
-        IF(parallel%boss) THEN
-            !$    IF(OMP_GET_THREAD_NUM().EQ.0) THEN
-            IF(test_problem.EQ.1) THEN
-                qa_diff=ABS((100.0_8*(ke/3.64560737191257_8))-100.0_8)
-                WRITE(*,*)"Test problem 1 is within",qa_diff,"% of the expected solution"
-                WRITE(g_out,*)"Test problem 1 is within",qa_diff,"% of the expected solution"
-                IF(qa_diff.LT.0.001_8) THEN
-                    WRITE(*,*)"This test is considered PASSED"
-                    WRITE(g_out,*)"This test is considered PASSED"
-                ELSE
-                    WRITE(*,*)"This test is considered NOT PASSED"
-                    WRITE(g_out,*)"This is test is considered NOT PASSED"
-                ENDIF
-            ENDIF
-        !$    ENDIF
+        IF(test_problem.EQ.1) THEN
+          qa_diff=ABS((100.0_8*(ke/3.64560737191257_8))-100.0_8)
+          WRITE(*,*)"Test problem 1 is within",qa_diff,"% of the expected solution"
+          WRITE(g_out,*)"Test problem 1 is within",qa_diff,"% of the expected solution"
+          IF(qa_diff.LT.0.001_8) THEN
+            WRITE(*,*)"This test is considered PASSED"
+            WRITE(g_out,*)"This test is considered PASSED"
+          ELSE
+            WRITE(*,*)"This test is considered NOT PASSED"
+            WRITE(g_out,*)"This is test is considered NOT PASSED"
+          ENDIF
         ENDIF
     ENDIF
+  ENDIF
 
 
 END SUBROUTINE field_summary
