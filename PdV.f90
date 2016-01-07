@@ -73,8 +73,7 @@ SUBROUTINE PdV(predict)
                       chunk%tiles(tile)%field%yvel0,      &
                       chunk%tiles(tile)%field%yvel1,      &
                       chunk%tiles(tile)%field%zvel0,      &
-                      chunk%tiles(tile)%field%zvel1,      &
-                      chunk%tiles(tile)%field%work_array1 )
+                      chunk%tiles(tile)%field%zvel1       )
 
   ENDDO
 !$OMP END PARALLEL DO
