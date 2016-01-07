@@ -220,6 +220,7 @@ SUBROUTINE build_field(tile)
    chunk%tiles(tile)%field%vertexz=0.0
    chunk%tiles(tile)%field%celldx=0.0
    chunk%tiles(tile)%field%celldy=0.0
+   chunk%tiles(tile)%field%celldz=0.0
    chunk%tiles(tile)%field%vertexdx=0.0
    chunk%tiles(tile)%field%vertexdy=0.0
    chunk%tiles(tile)%field%vertexdz=0.0
