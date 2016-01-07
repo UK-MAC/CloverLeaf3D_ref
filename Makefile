@@ -73,7 +73,7 @@ OMP=$(OMP_$(COMPILER))
 
 FLAGS_INTEL     = -O3 -g -no-prec-div
 FLAGS_SUN       = -fast -xipo=2 -Xlistv4
-FLAGS_GNU       = -O3 -march=native -funroll-loops
+FLAGS_GNU       = -O3 -march=native -funroll-loops -ffree-line-length-none
 FLAGS_CRAY      = -em -ra -h acc_model=fast_addr:no_deep_copy:auto_async_all
 FLAGS_PGI       = -fastsse -gopt -Mipa=fast -Mlist
 FLAGS_PATHSCALE = -O3
@@ -91,7 +91,7 @@ CFLAGS_          = -O3
 ifdef DEBUG
   FLAGS_INTEL     = -O0 -g -debug all -check all -traceback -check noarg_temp_created
   FLAGS_SUN       = -g -xopenmp=noopt -stackvar -u -fpover=yes -C -ftrap=common
-  FLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check
+  FLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check -ffree-line-length-none
   FLAGS_CRAY      = -O0 -g -em -eD
   FLAGS_PGI       = -O0 -g -C -Mchkstk -Ktrap=fp -Mchkfpstk -Mchkptr
   FLAGS_PATHSCALE = -O0 -g

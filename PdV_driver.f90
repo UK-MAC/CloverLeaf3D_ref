@@ -43,7 +43,7 @@ PROGRAM PdV_driver
   REAL(KIND=8),ALLOCATABLE :: celldx(:),celldy(:),celldz(:)
   REAL(KIND=8),ALLOCATABLE :: density0(:,:,:),density1(:,:,:),energy0(:,:,:),energy1(:,:,:)
   REAL(KIND=8),ALLOCATABLE :: pressure(:,:,:),soundspeed(:,:,:),viscosity(:,:,:)
-  REAL(KIND=8),ALLOCATABLE :: xvel0(:,:,:),yvel0(:,:,:),zvel0(:,:,:),xvel1(:,:,:),yvel1(:,:,:),zvel1(:,:,:),work_array1(:,:,:)
+  REAL(KIND=8),ALLOCATABLE :: xvel0(:,:,:),yvel0(:,:,:),zvel0(:,:,:),xvel1(:,:,:),yvel1(:,:,:),zvel1(:,:,:)
 
 !$OMP PARALLEL
 !$  IF(OMP_GET_THREAD_NUM().EQ.0) THEN
@@ -120,7 +120,6 @@ PROGRAM PdV_driver
                 yvel1=yvel1,                         &
                 zvel0=zvel0,                         &
                 zvel1=zvel1,                         &
-                work_array1=work_array1,             &
                 dt=dt                                )
 
   WRITE(*,*) "Setup time ",timer()-kernel_time
@@ -158,8 +157,7 @@ PROGRAM PdV_driver
                       yvel0,      &
                       yvel1,      &
                       zvel0,      &
-                      zvel1,      &
-                      work_array1 )
+                      zvel1       )
     ENDDO
   ENDIF
 
@@ -189,7 +187,6 @@ PROGRAM PdV_driver
   DEALLOCATE(xvel1)
   DEALLOCATE(yvel1)
   DEALLOCATE(zvel1)
-  DEALLOCATE(work_array1)
 
 END PROGRAM PdV_driver
 
