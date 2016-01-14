@@ -74,24 +74,24 @@ MODULE definitions_module
    INTEGER      :: test_problem
    LOGICAL      :: complete
 
-   LOGICAL      :: use_fortran_kernels
-
    LOGICAL      :: profiler_on ! Internal code profiler to make comparisons across systems easier
 
    TYPE profiler_type
-     REAL(KIND=8)       :: timestep        &
-                          ,acceleration    &
-                          ,PdV             &
-                          ,cell_advection  &
-                          ,mom_advection   &
-                          ,viscosity       &
-                          ,ideal_gas       &
-                          ,visit           &
-                          ,summary         &
-                          ,reset           &
-                          ,revert          &
-                          ,flux            &
-                          ,halo_exchange
+     REAL(KIND=8)       :: timestep           &
+                          ,acceleration       &
+                          ,PdV                &
+                          ,cell_advection     &
+                          ,mom_advection      &
+                          ,viscosity          &
+                          ,ideal_gas          &
+                          ,visit              &
+                          ,summary            &
+                          ,reset              &
+                          ,revert             &
+                          ,flux               &
+                          ,tile_halo_exchange &
+                          ,self_halo_exchange &
+                          ,mpi_halo_exchange
                      
    END TYPE profiler_type
    TYPE(profiler_type)  :: profiler
@@ -135,7 +135,7 @@ MODULE definitions_module
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: vol_flux_x,mass_flux_x
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: vol_flux_y,mass_flux_y
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: vol_flux_z,mass_flux_z
-     REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array1 !node_flux, stepbymass, volume_change, pre_vol
+     REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array1 !node_flux, volume_change, pre_vol
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array2 !node_mass_post, post_vol
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array3 !node_mass_pre,pre_mass
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array4 !advec_vel, post_mass
@@ -143,25 +143,7 @@ MODULE definitions_module
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array6 !pre_vol, post_ener
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array7 !post_vol, ener_flux
 
-     INTEGER         :: left            &
-                       ,right           &
-                       ,bottom          &
-                       ,top             &
-                       ,back            &
-                       ,front           &
-                       ,left_boundary   &
-                       ,right_boundary  &
-                       ,bottom_boundary &
-                       ,top_boundary    &
-                       ,front_boundary  &
-                       ,back_boundary
 
-     INTEGER         :: x_min  &
-                       ,y_min  &
-                       ,z_min  &
-                       ,x_max  &
-                       ,y_max  &
-                       ,z_max
 
      REAL(KIND=8), DIMENSION(:),   ALLOCATABLE :: cellx    &
                                                  ,celly    &
@@ -183,6 +165,23 @@ MODULE definitions_module
 
    END TYPE field_type
    
+
+   TYPE tile_type
+
+     TYPE(field_type):: field
+
+     INTEGER :: t_xmin, t_xmax
+     INTEGER :: t_ymin, t_ymax
+     INTEGER :: t_zmin, t_zmax
+
+     INTEGER :: t_top, t_bottom, t_left, t_right, t_back, t_front
+
+     INTEGER :: tile_neighbours(6)
+     INTEGER :: external_tile_mask(6)
+
+
+   END TYPE tile_type
+
    TYPE chunk_type
 
      INTEGER         :: task   !mpi task
@@ -200,13 +199,37 @@ MODULE definitions_module
      REAL(KIND=8),ALLOCATABLE:: bottom_snd_buffer(:),top_snd_buffer(:)
      REAL(KIND=8),ALLOCATABLE:: back_snd_buffer(:),front_snd_buffer(:)
 
-     TYPE(field_type):: field
+     !TYPE(field_type):: field
+     TYPE(tile_type), DIMENSION(:), ALLOCATABLE :: tiles
+
+     INTEGER         :: left            &
+                       ,right           &
+                       ,bottom          &
+                       ,top             &
+                       ,back            &
+                       ,front           &
+                       ,left_boundary   &
+                       ,right_boundary  &
+                       ,bottom_boundary &
+                       ,top_boundary    &
+                       ,front_boundary  &
+                       ,back_boundary
+
+     INTEGER         :: x_min  &
+                       ,y_min  &
+                       ,z_min  &
+                       ,x_max  &
+                       ,y_max  &
+                       ,z_max
+
 
   END TYPE chunk_type
 
 
-  TYPE(chunk_type),  ALLOCATABLE       :: chunks(:)
-  INTEGER                              :: number_of_chunks
+  TYPE(chunk_type)       :: chunk ! 1 Chunk per process
+  INTEGER                :: number_of_chunks
+
+  LOGICAL :: tile_1d, tile_2d, tile_3d
 
   TYPE(grid_type)                      :: grid
 

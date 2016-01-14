@@ -37,7 +37,7 @@ SUBROUTINE timestep()
 
   IMPLICIT NONE
 
-  INTEGER :: c
+  INTEGER :: tile
   INTEGER :: jldt,kldt,lldt
 
   REAL(KIND=8)    :: dtlp
@@ -57,9 +57,11 @@ SUBROUTINE timestep()
   small=0
 
   IF(profiler_on) kernel_time=timer()
-  DO c = 1, chunks_per_task
-    CALL ideal_gas(c,.FALSE.)
+
+  DO tile = 1, tiles_per_chunk
+    CALL ideal_gas(tile,.FALSE.)
   END DO
+
   IF(profiler_on) profiler%ideal_gas=profiler%ideal_gas+(timer()-kernel_time)
 
   fields=0
@@ -68,9 +70,9 @@ SUBROUTINE timestep()
   fields(FIELD_DENSITY0)=1
   fields(FIELD_XVEL0)=1
   fields(FIELD_YVEL0)=1
-  IF(profiler_on) kernel_time=timer()
+
   CALL update_halo(fields,1)
-  IF(profiler_on) profiler%halo_exchange=profiler%halo_exchange+(timer()-kernel_time)
+
 
   IF(profiler_on) kernel_time=timer()
   CALL viscosity()
@@ -78,13 +80,15 @@ SUBROUTINE timestep()
 
   fields=0
   fields(FIELD_VISCOSITY)=1
-  IF(profiler_on) kernel_time=timer()
+
   CALL update_halo(fields,1)
-  IF(profiler_on) profiler%halo_exchange=profiler%halo_exchange+(timer()-kernel_time)
+
 
   IF(profiler_on) kernel_time=timer()
-  DO c = 1, chunks_per_task
-    CALL calc_dt(c,dtlp,dtl_control,xl_pos,yl_pos,zl_pos,jldt,kldt,lldt)
+
+
+  DO tile = 1, tiles_per_chunk
+    CALL calc_dt(tile,dtlp,dtl_control,xl_pos,yl_pos,zl_pos,jldt,kldt,lldt)
 
     IF(dtlp.LE.dt) THEN
       dt=dtlp
@@ -94,7 +98,10 @@ SUBROUTINE timestep()
       jdt=jldt
       kdt=kldt
     ENDIF
+
   END DO
+
+
 
   dt = MIN(dt, (dtold * dtrise), dtmax)
 

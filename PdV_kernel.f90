@@ -43,8 +43,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
                       yvel0,                                            &
                       yvel1,                                            &
                       zvel0,                                            &
-                      zvel1,                                            &
-                      volume_change                                     )
+                      zvel1                                             )
 
   IMPLICIT NONE
 
@@ -62,11 +61,10 @@ SUBROUTINE PdV_kernel(predict,                                          &
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: viscosity
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel0,yvel0,zvel0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: xvel1,yvel1,zvel1
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+3) :: volume_change
 
   INTEGER :: j,k,l
 
-  REAL(KIND=8)  :: recip_volume,energy_change,min_cell_volume
+  REAL(KIND=8)  :: recip_volume,energy_change,min_cell_volume,vol_change_s
   REAL(KIND=8)  :: right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux
 
 !$OMP PARALLEL
@@ -74,7 +72,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
   IF(predict)THEN
 
 !$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
-!$OMP            energy_change,recip_volume)
+!$OMP            energy_change,recip_volume,vol_change_s)
     DO l=z_min,z_max
       DO k=y_min,y_max
         DO j=x_min,x_max
@@ -99,7 +97,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
                       *0.125_8*dt*0.5
           total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
-          volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
+          vol_change_s=volume(j,k,l)/(volume(j,k,l)+total_flux)
 
           min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux  &
                              ,volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux                       &
@@ -112,7 +110,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
 
           energy1(j,k,l)=energy0(j,k,l)-energy_change
 
-          density1(j,k,l)=density0(j,k,l)*volume_change(j,k,l)
+          density1(j,k,l)=density0(j,k,l)*vol_change_s
 
         ENDDO
       ENDDO
@@ -122,7 +120,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
   ELSE
 
 !$OMP DO PRIVATE(right_flux,left_flux,top_flux,bottom_flux,back_flux,front_flux,total_flux,min_cell_volume, &
-!$OMP            energy_change,recip_volume)
+!$OMP            energy_change,recip_volume,vol_change_s)
     DO l=z_min,z_max
       DO k=y_min,y_max
         DO j=x_min,x_max
@@ -147,7 +145,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
                       *0.125_8*dt
           total_flux=right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux
 
-          volume_change(j,k,l)=volume(j,k,l)/(volume(j,k,l)+total_flux)
+          vol_change_s=volume(j,k,l)/(volume(j,k,l)+total_flux)
 
           min_cell_volume=MIN(volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux+front_flux-back_flux  &
                              ,volume(j,k,l)+right_flux-left_flux+top_flux-bottom_flux                       &
@@ -160,7 +158,7 @@ SUBROUTINE PdV_kernel(predict,                                          &
 
           energy1(j,k,l)=energy0(j,k,l)-energy_change
 
-          density1(j,k,l)=density0(j,k,l)*volume_change(j,k,l)
+          density1(j,k,l)=density0(j,k,l)*vol_change_s
 
         ENDDO
       ENDDO

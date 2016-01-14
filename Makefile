@@ -71,13 +71,13 @@ OMP_PATHSCALE = -mp
 OMP_XL        = -qsmp=omp -qthreaded
 OMP=$(OMP_$(COMPILER))
 
-FLAGS_INTEL     = -O3 -no-prec-div
+FLAGS_INTEL     = -O3 -g -no-prec-div
 FLAGS_SUN       = -fast -xipo=2 -Xlistv4
-FLAGS_GNU       = -O3 -march=native -funroll-loops
+FLAGS_GNU       = -O3 -march=native -funroll-loops -ffree-line-length-none
 FLAGS_CRAY      = -em -ra -h acc_model=fast_addr:no_deep_copy:auto_async_all
 FLAGS_PGI       = -fastsse -gopt -Mipa=fast -Mlist
 FLAGS_PATHSCALE = -O3
-FLAGS_XL       = -O5 -qipa=partition=large -g -qfullpath -Q -qsigtrap -qextname=flush:ideal_gas_kernel_c:viscosity_kernel_c:pdv_kernel_c:revert_kernel_c:accelerate_kernel_c:flux_calc_kernel_c:advec_cell_kernel_c:advec_mom_kernel_c:reset_field_kernel_c:timer_c:unpack_top_bottom_buffers_c:pack_top_bottom_buffers_c:unpack_left_right_buffers_c:pack_left_right_buffers_c:field_summary_kernel_c:update_halo_kernel_c:generate_chunk_kernel_c:initialise_chunk_kernel_c:calc_dt_kernel_c -qlistopt -qattr=full -qlist -qreport -qxref=full -qsource -qsuppress=1506-224:1500-036
+FLAGS_XL       = -O5 -qipa=partition=large -g -qfullpath -Q -qsigtrap -qextname=flush:timer_c -qlistopt -qattr=full -qlist -qreport -qxref=full -qsource -qsuppress=1506-224:1500-036
 FLAGS_          = -O3
 CFLAGS_INTEL     = -O3 -no-prec-div -restrict -fno-alias
 CFLAGS_SUN       = -fast -xipo=2
@@ -91,11 +91,11 @@ CFLAGS_          = -O3
 ifdef DEBUG
   FLAGS_INTEL     = -O0 -g -debug all -check all -traceback -check noarg_temp_created
   FLAGS_SUN       = -g -xopenmp=noopt -stackvar -u -fpover=yes -C -ftrap=common
-  FLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check
+  FLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check -ffree-line-length-none
   FLAGS_CRAY      = -O0 -g -em -eD
   FLAGS_PGI       = -O0 -g -C -Mchkstk -Ktrap=fp -Mchkfpstk -Mchkptr
   FLAGS_PATHSCALE = -O0 -g
-  FLAGS_XL       = -O0 -g -qfullpath -qcheck -qflttrap=ov:zero:invalid:en -qsource -qinitauto=FF -qmaxmem=-1 -qinit=f90ptr -qsigtrap -qextname=flush:ideal_gas_kernel_c:viscosity_kernel_c:pdv_kernel_c:revert_kernel_c:accelerate_kernel_c:flux_calc_kernel_c:advec_cell_kernel_c:advec_mom_kernel_c:reset_field_kernel_c:timer_c:unpack_top_bottom_buffers_c:pack_top_bottom_buffers_c:unpack_left_right_buffers_c:pack_left_right_buffers_c:field_summary_kernel_c:update_halo_kernel_c:generate_chunk_kernel_c:initialise_chunk_kernel_c:calc_dt_kernel_c
+  FLAGS_XL       = -O0 -g -qfullpath -qcheck -qflttrap=ov:zero:invalid:en -qsource -qinitauto=FF -qmaxmem=-1 -qinit=f90ptr -qsigtrap -qextname=flush:timer_c
   FLAGS_          = -O0 -g
   CFLAGS_INTEL    = -O0 -g -debug all -traceback
   CFLAGS_SUN      = -g -O0 -xopenmp=noopt -stackvar -u -fpover=yes -C -ftrap=common
@@ -135,6 +135,8 @@ clover_leaf: c_lover *.f90 Makefile
 	initialise_chunk_kernel.f90	\
 	initialise_chunk.f90		\
 	build_field.f90			\
+	update_tile_halo_kernel.f90		\
+	update_tile_halo.f90		\
 	update_halo_kernel.f90		\
 	update_halo.f90			\
 	ideal_gas_kernel.f90		\
@@ -178,43 +180,3 @@ c_lover: *.c Makefile
 
 clean:
 	rm -f *.o *.mod *genmod* *cuda* *hmd* *.cu *.oo *.hmf *.lst *.cub *.ptx *.cl clover_leaf clover.in.tmp
-
-accelerate_driver:  accelerate_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 accelerate_kernel.f90 timer.f90 timer_c.o accelerate_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o accelerate_kernel.o timer.o accelerate_driver.o -o accelerate_driver ; echo $(MESSAGE)
-
-PdV_driver:  PdV_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 PdV_kernel.f90 timer.f90 timer_c.o PdV_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o PdV_kernel.o timer.o PdV_driver.o -o PdV_driver ; echo $(MESSAGE)
-
-mom_driver:  mom_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 advec_mom_kernel.f90 timer.f90 timer_c.o mom_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o advec_mom_kernel.o timer.o mom_driver.o -o mom_driver ; echo $(MESSAGE)
-
-reset_field_driver:  reset_field_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 reset_field_kernel.f90 timer.f90 timer_c.o reset_field_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o reset_field_kernel.o timer.o reset_field_driver.o -o reset_field_driver ; echo $(MESSAGE)
-
-revert_driver:  revert_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 revert_kernel.f90 timer.f90 timer_c.o revert_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o revert_kernel.o timer.o revert_driver.o -o revert_driver ; echo $(MESSAGE)
-
-viscosity_driver:  viscosity_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 viscosity_kernel.f90 timer.f90 timer_c.o viscosity_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o viscosity_kernel.o timer.o viscosity_driver.o -o viscosity_driver ; echo $(MESSAGE)
-
-ideal_gas_driver:  ideal_gas_driver.f90 set_data.f90
-	$(C_MPI_COMPILER) $(CFLAGS) timer_c.c
-	$(MPI_COMPILER) -c $(FLAGS) set_data.f90 ideal_gas_kernel.f90 timer.f90 timer_c.o ideal_gas_driver.f90
-	$(MPI_COMPILER) $(FLAGS) timer_c.o set_data.o ideal_gas_kernel.o timer.o ideal_gas_driver.o -o ideal_gas_driver ; echo $(MESSAGE)
-
-drivers: accelerate_driver PdV_driver mom_driver reset_field_driver revert_driver viscosity_driver ideal_gas_driver
-
-clean_drivers:
-	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx accelerate_driver PdV_driver mom_driver reset_field_driver viscosity_driver ideal_gas_driver
